@@ -1,0 +1,20 @@
+<!--Globus login page-->
+{% extends 'base.html' %}
+
+{% block content %}
+{% from "_formhelpers.html" import render_field %}
+
+<form method=post>
+    <div class="container-fluid">
+        <div>
+            <button type="submit"  class="btn btn-primary btn-lg"
+                    value="Search" onclick="spinner_index()">Login to SenNet</button>
+        </div>
+        <br>
+        <!-- Spinner that displays while logging in -->
+        <div id="spinner" class="loading">
+        </div>
+        <br>
+    </div>
+</form>
+{% endblock %}

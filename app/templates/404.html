@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<title>File Not Found (404)</title>
+<br>
+<div class="container text-left">
+    <h1>File Not Found</h1>
+    <p><br><br></p>
+    <div>
+        <img src="/static/404.png" alt="Not found" data-height="300" style="max-height: 168px;">
+        <br>
+        <br>
+        <p>{{ error }}</p>
+    </div>
+    <br>
+    <div class="d-grid gap-2 col-6 mx-auto">
+        <a href="/" class="btn btn-primary btn-lg">Return</a>
+    </div>
+</div>
+
+{% endblock %}
