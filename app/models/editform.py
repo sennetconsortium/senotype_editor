@@ -6,11 +6,6 @@ Form used to manage Senotype submisstion JSONs.
 from wtforms import (Form, StringField, SelectField, DecimalField, validators, ValidationError,
                      TextAreaField, SubmitField)
 
-# Helper classes
-# Represents the app.cfg file
-from models.appconfig import AppConfig
-from models.senlib import SenLib
-
 
 def validate_age(form, field):
     """
@@ -96,17 +91,15 @@ def validate_required_selectfield(form, field):
 
 
 class EditForm(Form):
+    senotypeid = SelectField('ID', choices=[])
+    senotypename = StringField('Name')
+    senotypedescription = TextAreaField('Description')
+    submitterfirst = StringField('First Name')
+    submitterlast = StringField('Last Name')
+    submitteremail = StringField('email')
 
-    # POPULATE FORM FIELDS.
+    # There should be only 2 taxa involved.
+    taxon = SelectField('taxon', choices=[('human','NCBI:9606'),('mouse','NCBI:10088')])
 
-    # Read the app.cfg file outside the Flask application context.
-    cfg = AppConfig()
 
-    # Existing Senotype submissions.
-
-    # Get the URL to the senlib repo.
-    github_url = cfg.getfield(key='GITHUB_URL')
-    senlib = SenLib(url=github_url)
-    choices = ['(new)'] + senlib.senlibjsonids
-    senotypeid = SelectField('Senotype ID', choices=choices)
 

@@ -17,8 +17,8 @@ class SenLib:
         """
         Obtains list of files in the senlib repo.
         """
-        api = RestAPI()
-        return api.getresponsejson(url=self.senliburl)
+        self.api = RestAPI()
+        return self.api.getresponsejson(url=self.senliburl)
 
     def _getsenlibjsonids(self) -> list:
         """
@@ -29,9 +29,19 @@ class SenLib:
         listfiles = self._getsenliblist()
         listids = []
         for f in listfiles:
-            listids.append(f.get('name'))
+            listids.append(f.get('name').split('.')[0])
 
         return listids
+
+    def getsenlibjson(self, id: str) -> dict:
+        """
+        Get a Senotype submission JSON.
+        :param id: id of the senotype, corresponding to the file name.
+        :return:
+        """
+
+        url = f'https://raw.githubusercontent.com/sennetconsortium/senlib/main/senotypes/{id}.json'
+        return self.api.getresponsejson(url=url)
 
     def __init__(self, url: str):
 

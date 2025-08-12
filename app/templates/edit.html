@@ -3,16 +3,70 @@
 
 {% block content %}
 {% from "_formhelpers.html" import render_field %}
+<img src="static/editor.png" width="141" height="135" alt="Senotype Editor">
 <h2 class="m-3">Senotype Editor</h2>
 <form id="edit_form" method="post" class="m-3 p-3">
-    <div class="row m-3">
-        <div class="col m-3">
-            <strong> {{ form.senotypeid.label }}</strong>
+    <div class="row">
+        <!-- Senotype section: left column with border -->
+        <div class="col-md-6" style="border: 1px solid #ccc; border-radius: 5px; padding: 16px;">
+            <h3 class="mb-3">Senotype</h3>
+            <div class="mb-3">
+                <strong>{{ form.senotypeid.label }}</strong>
+                {# Render as a Bootstrap select with dropdown arrow #}
+                <select name="{{ form.senotypeid.name }}" class="form-select" style="width: 20ch; display: inline-block;">
+                    {% for value, label in form.senotypeid.choices %}
+                        <option value="{{ value }}" {% if form.senotypeid.data == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+             </div>
+            <div class="mb-3">
+                <strong>{{ form.senotypename.label }}</strong>
+                {{ form.senotypename(class="form-control w-100", rows="2") }}
+            </div>
+            <div class="mb-3">
+                <strong>{{ form.senotypedescription.label }}</strong>
+                {{ form.senotypedescription(class="form-control w-100", rows="2") }}
+            </div>
         </div>
-        <div class="col m-3">
-            {{ form.senotypeid }}
+        <!-- Submitter section: right column with border -->
+        <div class="col-md-6" style="border: 1px solid #ccc; border-radius: 5px; padding: 16px;">
+            <h3 class="mb-3">Submitter</h3>
+            <div class="mb-3">
+                <strong>{{ form.submitterfirst.label }}</strong>
+                {{ form.submitterfirst(class="form-control d-inline-block", style="width: 20ch; display: inline-block;") }}
+                <strong class="ms-3">{{ form.submitterlast.label }}</strong>
+                {{ form.submitterlast(class="form-control d-inline-block", style="width: 20ch; display: inline-block;") }}
+            </div>
+            <div class="mb-3">
+                <strong>{{ form.submitteremail.label }}</strong>
+                {{ form.submitteremail(class="form-control") }}
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6" style="border: 1px solid #ccc; border-radius: 5px; padding: 16px;">
+            <h3 class="mb-3">Assertions</h3>
+            <div class="mb-3">
+                <strong>{{ form.taxon.label }}</strong>
+                {# Render as a Bootstrap select with dropdown arrow #}
+                <select name="{{ form.taxon.name }}" class="form-select" style="width: 20ch; display: inline-block;">
+                    {% for value, label in form.taxon.choices %}
+                        <option value="{{ value }}" {% if form.taxon.data == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+             </div>
         </div>
     </div>
 </form>
-
+<script>
+    // POST the Senotype ID to get Senotype information
+  document.addEventListener('DOMContentLoaded', function() {
+    const senotypeInput = document.querySelector('[name="{{ form.senotypeid.name }}"]');
+    if (senotypeInput) {
+      senotypeInput.addEventListener('change', function() {
+        document.getElementById('edit_form').submit();
+      });
+    }
+  });
+</script>
 {% endblock %}
