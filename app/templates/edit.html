@@ -2,6 +2,17 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<!--{% from "_formhelpers.html" import render_field %}-->
-Edit form!
+{% from "_formhelpers.html" import render_field %}
+<h2 class="m-3">Senotype Editor</h2>
+<form id="edit_form" method="post" class="m-3 p-3">
+    <div class="row m-3">
+        <div class="col m-3">
+            <strong> {{ form.senotypeid.label }}</strong>
+        </div>
+        <div class="col m-3">
+            {{ form.senotypeid }}
+        </div>
+    </div>
+</form>
+
 {% endblock %}

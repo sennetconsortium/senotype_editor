@@ -1,0 +1,8 @@
+# url for GitHub folder for Senotype JSON repository
+github_url=https://api.github.com/repos/sennetconsortium/senlib/contents/senotypes
+
+# Flask secret key
+KEY=x
+# Globus keys
+GLOBUS_SENNET_CLIENT='x'
+GLOBUS_SENNET_SECRET='x'

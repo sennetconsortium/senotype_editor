@@ -50,7 +50,7 @@ class AppConfig:
             # print(f'The app.cfg is not in the path  {self.path}. This is a bare-metal (non-containerized) '
                   # f'deployment. Trying path on host machine.')
             home = str(Path('~').expanduser())
-            self.path = home + '/donor-metadata'
+            self.path = home + '/senotype-editor'
             self.file = self.path + '/app.cfg'
 
         self.parser = self.getconfigparser()
@@ -104,7 +104,7 @@ class AppConfig:
         field = ''
         for t in self.parser:
             if key == t[0]:
-                # Trim quotes from tring fields in Flask config files.
+                # Trim quotes from string fields in Flask config files.
                 field = t[1].replace("'", "")
 
         if field == '':
