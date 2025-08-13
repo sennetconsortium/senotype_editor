@@ -18,7 +18,7 @@
                         <option value="{{ value }}" {% if form.senotypeid.data == value %}selected{% endif %}>{{ label }}</option>
                     {% endfor %}
                 </select>
-             </div>
+            </div>
             <div class="mb-3">
                 <strong>{{ form.senotypename.label }}</strong>
                 {{ form.senotypename(class="form-control w-100", rows="2") }}
@@ -44,77 +44,78 @@
         </div>
     </div>
     <div class="row">
-  <div class="col-md-6" style="background-color: #FEF2F2; border: 1px solid #ccc; border-radius: 5px; padding: 16px;">
-    <h3 class="mb-3">Assertions (other than markers)</h3>
-    <div class="container">
-      <div class="row mb-3">
-        <div class="col-2 d-flex align-items-center">
-          <strong>{{ form.taxon.label }}</strong>
-        </div>
-        <div class="col-4">
-          <select name="{{ form.taxon.name }}" class="form-select input-fixed-width">
-            {% for value, label in form.taxon.choices %}
-            <option value="{{ value }}" {% if form.taxon.data == value %}selected{% endif %}>{{ label }}</option>
-            {% endfor %}
-          </select>
-        </div>
-        <div class="col-2 d-flex align-items-center">
-          <strong>{{ form.location.label }}</strong>
-        </div>
-        <div class="col-4">
-          <select name="{{ form.location.name }}" class="form-select input-fixed-width">
-            {% for value, label in form.location.choices %}
-            <option value="{{ value }}" {% if form.location.data == value %}selected{% endif %}>{{ label }}</option>
-            {% endfor %}
-          </select>
-        </div>
-      </div>
-      <div class="row mb-3">
-        <div class="col-2 d-flex align-items-center">
-          <strong>{{ form.celltype.label }}</strong>
-        </div>
-        <div class="col-4">
-          <select name="{{ form.celltype.name }}" class="form-select input-fixed-width">
-            {% for value, label in form.celltype.choices %}
-            <option value="{{ value }}" {% if form.celltype.data == value %}selected{% endif %}>{{ label }}</option>
-            {% endfor %}
-          </select>
-        </div>
-        <div class="col-2 d-flex align-items-center">
-          <strong>{{ form.hallmark.label }}</strong>
-        </div>
-        <div class="col-4">
-          <select name="{{ form.hallmark.name }}" class="form-select input-fixed-width">
-            {% for value, label in form.hallmark.choices %}
-            <option value="{{ value }}" {% if form.hallmark.data == value %}selected{% endif %}>{{ label }}</option>
-            {% endfor %}
-          </select>
-        </div>
-      </div>
-    <div class="row mb-3">
-        <div class="col-2 d-flex align-items-center">
-          <strong>{{ form.observable.label }}</strong>
-        </div>
-        <div class="col-4">
-            <select name="{{ form.observable.name }}" class="form-select input-fixed-width">
-                {% for value, label in form.observable.choices %}
-                    <option value="{{ value }}" {% if form.observable.data == value %}selected{% endif %}>{{ label }}</option>
-                {% endfor %}
-            </select>
-        </div>
-        <div class="col-2 d-flex align-items-center">
-            <strong>{{ form.inducer.label }}</strong>
-        </div>
-        <div class="col-4">
-            <select name="{{ form.inducer.name }}" class="form-select input-fixed-width">
-                {% for value, label in form.inducer.choices %}
-                    <option value="{{ value }}" {% if form.inducer.data == value %}selected{% endif %}>{{ label }}</option>
-                {% endfor %}
-            </select>
+        <div class="col-md-6" style="background-color: #FEF2F2; border: 1px solid #ccc; border-radius: 5px; padding: 16px;">
+            <h3 class="mb-3">Simple Assertions</h3>
+            <div class="container">
+                <div class="row mb-3">
+                    <div class="col-2 d-flex align-items-center">
+                        <strong>{{ form.taxon.label }}</strong>
+                    </div>
+                    <div class="col-4">
+                        <select name="{{ form.taxon.name }}" class="form-select input-fixed-width">
+                            {% for value, label in form.taxon.choices %}
+                                <option value="{{ value }}" {% if form.taxon.data == value %}selected{% endif %}>{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-2 d-flex align-items-center">
+                        <strong>{{ form.location.label }}</strong>
+                    </div>
+                    <div class="col-4">
+                        <select name="{{ form.location.name }}" class="form-select input-fixed-width">
+                            {% for value, label in form.location.choices %}
+                                <option value="{{ value }}" {% if form.location.data == value %}selected{% endif %}>{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-2 d-flex align-items-center">
+                        <strong>{{ form.celltype.label }}</strong>
+                    </div>
+                    <div class="col-4">
+                        <select name="{{ form.celltype.name }}" class="form-select input-fixed-width">
+                            {% for value, label in form.celltype.choices %}
+                                <option value="{{ value }}" {% if form.celltype.data == value %}selected{% endif %}>{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-2 d-flex align-items-center">
+                        <strong>{{ form.hallmark.label }}</strong>
+                    </div>
+                    <div class="col-4">
+                        <select name="{{ form.hallmark.name }}" class="form-select input-fixed-width">
+                            {% for value, label in form.hallmark.choices %}
+                                <option value="{{ value }}" {% if form.hallmark.data == value %}selected{% endif %}>{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-2 d-flex align-items-center">
+                        <strong>{{ form.observable.label }}</strong>
+                    </div>
+                    <div class="col-4">
+                        <select name="{{ form.observable.name }}" class="form-select input-fixed-width">
+                            {% for value, label in form.observable.choices %}
+                                <option value="{{ value }}" {% if form.observable.data == value %}selected{% endif %}>{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-2 d-flex align-items-center">
+                        <strong>{{ form.inducer.label }}</strong>
+                    </div>
+                    <div class="col-4">
+                        <select name="{{ form.inducer.name }}" class="form-select input-fixed-width">
+                            {% for value, label in form.inducer.choices %}
+                                <option value="{{ value }}" {% if form.inducer.data == value %}selected{% endif %}>{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
-  </div>
-</div>
 </form>
 <script>
     // POST the Senotype ID to get Senotype information
