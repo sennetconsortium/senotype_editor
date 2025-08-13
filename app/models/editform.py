@@ -138,6 +138,12 @@ class EditForm(Form):
 
     # Assertions other than markers
     taxon = SelectField('taxon', choices=getchoices(sl=senlib, predicate='in_taxon'))
+    location = SelectField('location', choices=getchoices(sl=senlib, predicate='located_in'))
+    celltype = SelectField('cell type', choices=getchoices(sl=senlib, predicate='has_cell_type'))
+    hallmark = SelectField('hallmark', choices=getchoices(sl=senlib, predicate='has_hallmark'))
+    observable = SelectField('observable', choices=getchoices(sl=senlib, predicate='has_molecular_observable'))
+    inducer = SelectField('inducer', choices=getchoices(sl=senlib, predicate='has_inducer'))
+
 
 
 

@@ -27,17 +27,21 @@ def getassertiondata(assertions: list, predicate: str) -> list:
     """
 
     for assertion in assertions:
-        pred = ''
+
         assertion_predicate = assertion.get('predicate')
         IRI = assertion_predicate.get('IRI')
+        term = assertion_predicate.get('term')
+        pred = ''
         if IRI == predicate:
             pred = predicate
-        else:
-            term = assertion_predicate.get('term')
-            if term == predicate:
-                pred = predicate
+        elif term == predicate:
+            pred = predicate
+
+        objects = []
         if pred != '':
-            return assertion.get('objects', [])
+            objects = assertion.get('objects',[])
+            return objects
+    return []
 
 
 def setdefaults(form):
@@ -48,6 +52,10 @@ def setdefaults(form):
     form.submitterlast.data = ''
     form.submitteremail.data = ''
     form.taxon.data = 'select'
+    form.location.data = 'select'
+    form.celltype.data = 'select'
+    form.observable.data = 'select'
+    form.inducer.data = 'select'
 
 @edit_blueprint.route('', methods=['POST', 'GET'])
 def edit():
@@ -102,11 +110,48 @@ def edit():
             # Assertions other than markers
             assertions = dictsenlib.get('assertions')
 
+            # Taxon (one possible value)
             taxa = getassertiondata(assertions=assertions, predicate='in_taxon')
             if len(taxa) > 0:
                 form.taxon.data = taxa[0].get('code')
             else:
                 form.taxon.data = 'select'
+
+            # Location (one possible value)
+            locations = getassertiondata(assertions=assertions, predicate='located_in')
+            if len(locations) > 0:
+                form.location.data = locations[0].get('code')
+            else:
+                form.location.data = 'select'
+
+            # Cell type (one possible value)
+            celltypes = getassertiondata(assertions=assertions, predicate='has_cell_type')
+            if len(celltypes) > 0:
+                form.celltype.data = celltypes[0].get('code')
+            else:
+                form.celltype.data = 'select'
+
+            # Hallmark (one possible value)
+            hallmarks = getassertiondata(assertions=assertions, predicate='has_hallmark')
+            if len(hallmarks) > 0:
+                form.hallmark.data = hallmarks[0].get('code')
+            else:
+                form.hallmark.data = 'select'
+
+            # Molecular observable (one possible value)
+            observables = getassertiondata(assertions=assertions, predicate='has_molecular_observable')
+            if len(observables) > 0:
+                form.observable.data = observables[0].get('code')
+            else:
+                form.observable.data = 'select'
+
+            # Inducer (one possible value)
+            inducers = getassertiondata(assertions=assertions, predicate='has_inducer')
+            if len(inducers) > 0:
+                form.inducer.data = inducers[0].get('code')
+            else:
+                form.inducer.data = 'select'
+
 
     return render_template('edit.html', form=form)
 
