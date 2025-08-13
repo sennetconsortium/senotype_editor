@@ -44,6 +44,7 @@
         </div>
     </div>
     <div class="row">
+        <!-- Simple assertions section: left column with border-->
         <div class="col-md-6" style="background-color: #FEF2F2; border: 1px solid #ccc; border-radius: 5px; padding: 16px;">
             <h3 class="mb-3">Simple Assertions</h3>
             <div class="container">
@@ -115,7 +116,36 @@
                 </div>
             </div>
         </div>
-    </div>
+        <!-- Contexts section: right column with border -->
+        <div class="col-md-6" style="background-color: #FEF2F2; border: 1px solid #ccc; border-radius: 5px; padding: 16px;">
+            <h3 class="mb-3">Context Assertions</h3>
+            <div class="container">
+                <div class="row mb-3">
+                    <h4 class="mb-4">Age</h4>
+                    <!-- Value -->
+                    <div class="col-3 d-flex align-items-center">
+                        <strong>{{ form.agevalue.label }}</strong>
+                        {{ form.agevalue(class="form-control ms-2") }}
+                    </div>
+                    <!-- Lower Bound -->
+                    <div class="col-3 d-flex align-items-center">
+                        <strong>{{ form.agelowerbound.label }}</strong>
+                        {{ form.agelowerbound(class="form-control ms-2") }}
+                    </div>
+                    <!-- Upper Bound -->
+                    <div class="col-3 d-flex align-items-center">
+                        <strong>{{ form.ageupperbound.label }}</strong>
+                        {{ form.ageupperbound(class="form-control ms-2") }}
+                    </div>
+                    <!-- Unit -->
+                    <div class="col-3 d-flex align-items-center">
+                        <strong>{{ form.ageunit.label }}</strong>
+                        {{ form.ageunit(class="form-control ms-2") }}
+                    </div>
+                </div>
+            </div>
+        </div>
+     </div>
 </form>
 <script>
     // POST the Senotype ID to get Senotype information

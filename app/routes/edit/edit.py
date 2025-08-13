@@ -17,7 +17,7 @@ from models.senlib import SenLib
 edit_blueprint = Blueprint('edit', __name__, url_prefix='/edit')
 
 
-def getassertiondata(assertions: list, predicate: str) -> list:
+def getsimpleassertiondata(assertions: list, predicate: str) -> list:
     """
     Obtains information for the specified assertion from the Senotype submission
     JSON.
@@ -44,6 +44,36 @@ def getassertiondata(assertions: list, predicate: str) -> list:
     return []
 
 
+def getcontextassertiondata(assertions: list, predicate: str, context: str) -> dict:
+    """
+    Obtains information on a context assertion in a Senotype submission JSON.
+    :param assertions: list of assertions
+    :param predicate: assertion predicate
+    :param context: type of context assertion
+    """
+
+    for assertion in assertions:
+
+        assertion_predicate = assertion.get('predicate')
+        IRI = assertion_predicate.get('IRI')
+        term = assertion_predicate.get('term')
+        pred = ''
+        if IRI == predicate:
+            pred = predicate
+        elif term == predicate:
+            pred = predicate
+
+        if pred != '':
+            objects = assertion.get('objects',[])
+
+            for o in objects:
+                objcontext = o.get('term')
+                if objcontext == context:
+                    return o
+
+    return {}
+
+
 def setdefaults(form):
 
     form.senotypename.data = ''
@@ -56,6 +86,10 @@ def setdefaults(form):
     form.celltype.data = 'select'
     form.observable.data = 'select'
     form.inducer.data = 'select'
+    form.agevalue.data = ''
+    form.agelowerbound.data = ''
+    form.ageupperbound.data = ''
+    form.ageunit.data = ''
 
 @edit_blueprint.route('', methods=['POST', 'GET'])
 def edit():
@@ -111,46 +145,55 @@ def edit():
             assertions = dictsenlib.get('assertions')
 
             # Taxon (one possible value)
-            taxa = getassertiondata(assertions=assertions, predicate='in_taxon')
+            taxa = getsimpleassertiondata(assertions=assertions, predicate='in_taxon')
             if len(taxa) > 0:
                 form.taxon.data = taxa[0].get('code')
             else:
                 form.taxon.data = 'select'
 
             # Location (one possible value)
-            locations = getassertiondata(assertions=assertions, predicate='located_in')
+            locations = getsimpleassertiondata(assertions=assertions, predicate='located_in')
             if len(locations) > 0:
                 form.location.data = locations[0].get('code')
             else:
                 form.location.data = 'select'
 
             # Cell type (one possible value)
-            celltypes = getassertiondata(assertions=assertions, predicate='has_cell_type')
+            celltypes = getsimpleassertiondata(assertions=assertions, predicate='has_cell_type')
             if len(celltypes) > 0:
                 form.celltype.data = celltypes[0].get('code')
             else:
                 form.celltype.data = 'select'
 
             # Hallmark (one possible value)
-            hallmarks = getassertiondata(assertions=assertions, predicate='has_hallmark')
+            hallmarks = getsimpleassertiondata(assertions=assertions, predicate='has_hallmark')
             if len(hallmarks) > 0:
                 form.hallmark.data = hallmarks[0].get('code')
             else:
                 form.hallmark.data = 'select'
 
             # Molecular observable (one possible value)
-            observables = getassertiondata(assertions=assertions, predicate='has_molecular_observable')
+            observables = getsimpleassertiondata(assertions=assertions, predicate='has_molecular_observable')
             if len(observables) > 0:
                 form.observable.data = observables[0].get('code')
             else:
                 form.observable.data = 'select'
 
             # Inducer (one possible value)
-            inducers = getassertiondata(assertions=assertions, predicate='has_inducer')
+            inducers = getsimpleassertiondata(assertions=assertions, predicate='has_inducer')
             if len(inducers) > 0:
                 form.inducer.data = inducers[0].get('code')
             else:
                 form.inducer.data = 'select'
+
+            # Context assertions
+            # Age
+            age = getcontextassertiondata(assertions=assertions, predicate='has_context', context='age')
+            if age != {}:
+                form.agevalue.data = age.get('value', '')
+                form.agelowerbound.data = age.get('lowerbound', '')
+                form.ageupperbound.data = age.get('upperbound', '')
+                form.ageunit.data = age.get('unit', '')
 
 
     return render_template('edit.html', form=form)
