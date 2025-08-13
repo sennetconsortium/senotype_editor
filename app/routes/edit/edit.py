@@ -4,7 +4,7 @@ Works with editform.py.
 
 """
 
-from flask import Blueprint, request, render_template, flash, session, abort
+from flask import Blueprint, request, render_template
 from wtforms import SelectField, Field
 
 # WTForms
@@ -29,10 +29,10 @@ def getsimpleassertiondata(assertions: list, predicate: str) -> list:
     for assertion in assertions:
 
         assertion_predicate = assertion.get('predicate')
-        IRI = assertion_predicate.get('IRI')
+        iri = assertion_predicate.get('IRI')
         term = assertion_predicate.get('term')
         pred = ''
-        if IRI == predicate:
+        if iri == predicate:
             pred = predicate
         elif term == predicate:
             pred = predicate
@@ -86,10 +86,12 @@ def setdefaults(form):
     form.celltype.data = 'select'
     form.observable.data = 'select'
     form.inducer.data = 'select'
+    form.assay.data = 'select'
     form.agevalue.data = ''
     form.agelowerbound.data = ''
     form.ageupperbound.data = ''
     form.ageunit.data = ''
+
 
 @edit_blueprint.route('', methods=['POST', 'GET'])
 def edit():
@@ -117,7 +119,7 @@ def edit():
         # This is from the redirect from the login page.
         setdefaults(form=form)
 
-    if request.method == 'POST' and form.validate():
+    if request.method == 'POST': # and form.validate()
 
         # This is a result of the user selecting something other than 'new'
         # for a Senotype ID--i.e, an existing senotype. Load data.
@@ -186,6 +188,13 @@ def edit():
             else:
                 form.inducer.data = 'select'
 
+            # Assay (one possible value)
+            assays = getsimpleassertiondata(assertions=assertions, predicate='has_assay')
+            if len(assays) > 0:
+                form.assay.data = assays[0].get('code')
+            else:
+                form.assay.data = 'select'
+
             # Context assertions
             # Age
             age = getcontextassertiondata(assertions=assertions, predicate='has_context', context='age')
@@ -195,9 +204,7 @@ def edit():
                 form.ageupperbound.data = age.get('upperbound', '')
                 form.ageunit.data = age.get('unit', '')
 
-
     return render_template('edit.html', form=form)
-
 
 
 

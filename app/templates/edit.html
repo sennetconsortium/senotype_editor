@@ -114,6 +114,18 @@
                         </select>
                     </div>
                 </div>
+                <div class="row mb-3">
+                    <div class="col-2 d-flex align-items-center">
+                        <strong>{{ form.assay.label }}</strong>
+                    </div>
+                    <div class="col-10">
+                        <select name="{{ form.assay.name }}" class="form-select input-fixed-width">
+                            {% for value, label in form.assay.choices %}
+                                <option value="{{ value }}" {% if form.assay.data == value %}selected{% endif %}>{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
             </div>
         </div>
         <!-- Contexts section: right column with border -->
@@ -146,6 +158,20 @@
             </div>
         </div>
      </div>
+    <div class="row">
+        <!-- External links section: left column with border -->
+        <div class="col-md-6" style="background-color: #EEF2FF; border: 1px solid #ccc; border-radius: 5px; padding: 16px;">
+            <h3 class="mb-3">External links</h3>
+            <div class="container">
+                <div class="row mb-3">
+                    <div class="col-3 d-flex align-items-center">
+                        <strong>{{ form.citation.label }}</strong>
+                        {{ form.citation(class="form-control ms-2") }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </form>
 <script>
     // POST the Senotype ID to get Senotype information

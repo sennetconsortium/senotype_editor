@@ -6,37 +6,41 @@ Form used to manage Senotype submisstion JSONs.
 from wtforms import (Form, StringField, SelectField, DecimalField, validators, ValidationError,
                      TextAreaField, SubmitField)
 
-import pandas as pd
 
 # Helper classes
 from models.appconfig import AppConfig
 from models.senlib import SenLib
+from models.stringnumber import stringisintegerorfloat
+
 
 def validate_age(form, field):
     """
-    Custom validator. Checks that age is at least 1 month.
+    Custom validator for age.
 
-    :param form: the Edit form
+    Assumes that age unit is years.
+
     :param field: the age field
     :return: Nothing or raises ValidationError
     """
 
-    ageunit = form.ageunit.data
     age = field.data
-    if stringisintegerorfloat(age) == "not a number":
+    if age.strip() == '':
+        return
+
+    if stringisintegerorfloat(age) == 'not a number':
         raise ValidationError('Age must be a number.')
+
     agenum = float(age)
+
     if age is None:
         age = 0
-    if agenum > 89 and ageunit == 'C0001779':  # UMLS CUI for age in years
-        if agenum != 90:
-            raise ValidationError('All ages over 89 years must be set to 90 years.')
+    if agenum > 89:
+        raise ValidationError('All ages over 89 years must be set to 90 years.')
 
 
-def validate_number(form, field):
+def validate_number(field):
     """
     Custom validator for StringFields that collect numeric data.
-    :param form: the Edit form
     :param field: the field to check
     :return: Nothing or raises ValidationError
     """
@@ -48,10 +52,9 @@ def validate_number(form, field):
         raise ValidationError(f'{field.name} must be a number.')
 
 
-def validate_integer(form, field):
+def validate_integer(field):
     """
     Custom validator for StringFields that collect integer data.
-    :param form: the Edit form
     :param field: the field to check
     :return: Nothing or raises ValidationError
     """
@@ -62,7 +65,8 @@ def validate_integer(form, field):
     if test != "integer":
         raise ValidationError(f'{field.name} must be an integer.')
 
-def validate_selectfield_default(form, field):
+
+def validate_selectfield_default(field):
     """
     Custom validator that checks whether the value specified in a SelectField's data property is in
     the set of available values.
@@ -80,24 +84,24 @@ def validate_selectfield_default(form, field):
         raise ValidationError(msg)
 
 
-def validate_required_selectfield(form, field):
+def validate_required_selectfield(field):
     """
     Custom validator that verifies that the value specified in a SelectField deemed required (e.g., Source)
     is other than the prompt.
 
     """
-    if field.data == 'PROMPT':
+    if field.data == 'select':
         msg = f'Required'
         raise ValidationError(msg)
 
 
 # ----------------------
 # MAIN FORM
-def getchoices(sl:SenLib, predicate: str) -> list[tuple]:
+def getchoices(sl: SenLib, predicate: str) -> list[tuple]:
     """
     Return a list of tuples for a valueset.
     :param sl: the SenLib interface
-    :predicate: assertion predicate. Can be either an IRI or a term.
+    :param predicate: assertion predicate. Can be either an IRI or a term.
     """
     # Get the DataFrame of valueset information corresponding to an assetion predicate.
     dfchoices = sl.getsenlibvalueset(predicate=predicate)
@@ -143,14 +147,13 @@ class EditForm(Form):
     hallmark = SelectField('hallmark', choices=getchoices(sl=senlib, predicate='has_hallmark'))
     observable = SelectField('observable', choices=getchoices(sl=senlib, predicate='has_molecular_observable'))
     inducer = SelectField('inducer', choices=getchoices(sl=senlib, predicate='has_inducer'))
+    assay = SelectField('assay', choices=getchoices(sl=senlib, predicate='has_assay'))
 
     # Context assertions
-    agevalue = StringField('Age value')
-    agelowerbound = StringField('Age lowerbound')
-    ageupperbound = StringField('Age upperbound')
-    ageunit = StringField('Age unit')
+    agevalue = StringField('Value')
+    agelowerbound = StringField('Lowerbound')
+    ageupperbound = StringField('Upperbound')
+    ageunit = StringField('Unit')
 
-
-
-
-
+    # External assertions
+    # Each should load a table and a search feature (sub form with button)
