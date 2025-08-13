@@ -40,6 +40,15 @@ def getassertiondata(assertions: list, predicate: str) -> list:
             return assertion.get('objects', [])
 
 
+def setdefaults(form):
+
+    form.senotypename.data = ''
+    form.senotypedescription.data = ''
+    form.submitterfirst.data = ''
+    form.submitterlast.data = ''
+    form.submitteremail.data = ''
+    form.taxon.data = 'select'
+
 @edit_blueprint.route('', methods=['POST', 'GET'])
 def edit():
 
@@ -64,41 +73,40 @@ def edit():
 
     if request.method == 'GET':
         # This is from the redirect from the login page.
-        # Set defaults.
-        form.senotypename.data = ''
-        form.senotypedescription.data = ''
-        form.submitterfirst.data = ''
-        form.submitterlast.data = ''
-        form.submitteremail.data = ''
-        form.taxon.data = 'select'
+        setdefaults(form=form)
 
     if request.method == 'POST' and form.validate():
+
         # This is a result of the user selecting something other than 'new'
         # for a Senotype ID--i.e, an existing senotype. Load data.
 
         id = form.senotypeid.data
-        # Get senotype data
-        dictsenlib = senlib.getsenlibjson(id=id)
-
-        senotype = dictsenlib.get('senotype')
-        form.senotypename.data = senotype.get('term', '')
-        form.senotypedescription.data = senotype.get('definition')
-
-        # Submitter data
-        submitter = dictsenlib.get('submitter')
-        submitter_name = submitter.get('name')
-        form.submitterfirst.data = submitter_name.get('first','')
-        form.submitterlast.data = submitter_name.get('last','')
-        form.submitteremail.data = submitter.get('email','')
-
-        # Assertions other than markers
-        assertions = dictsenlib.get('assertions')
-
-        taxa = getassertiondata(assertions=assertions, predicate='in_taxon')
-        if len(taxa) > 0:
-            form.taxon.data = taxa[0].get('code')
+        if id == 'new':
+            setdefaults(form=form)
         else:
-            form.taxon.data = 'select'
+
+            # Get senotype data
+            dictsenlib = senlib.getsenlibjson(id=id)
+
+            senotype = dictsenlib.get('senotype')
+            form.senotypename.data = senotype.get('term', '')
+            form.senotypedescription.data = senotype.get('definition')
+
+            # Submitter data
+            submitter = dictsenlib.get('submitter')
+            submitter_name = submitter.get('name')
+            form.submitterfirst.data = submitter_name.get('first','')
+            form.submitterlast.data = submitter_name.get('last','')
+            form.submitteremail.data = submitter.get('email','')
+
+            # Assertions other than markers
+            assertions = dictsenlib.get('assertions')
+
+            taxa = getassertiondata(assertions=assertions, predicate='in_taxon')
+            if len(taxa) > 0:
+                form.taxon.data = taxa[0].get('code')
+            else:
+                form.taxon.data = 'select'
 
     return render_template('edit.html', form=form)
 
