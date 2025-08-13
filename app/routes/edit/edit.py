@@ -11,23 +11,33 @@ from wtforms import SelectField, Field
 from models.editform import EditForm
 
 # Helper classes
-# Represents the app.cfg file
 from models.appconfig import AppConfig
 from models.senlib import SenLib
 
 edit_blueprint = Blueprint('edit', __name__, url_prefix='/edit')
 
-def getassertiondata(assertions: list, predicate: str) -> str:
+
+def getassertiondata(assertions: list, predicate: str) -> list:
     """
     Obtains information for the specified assertion from the Senotype submission
     JSON.
     :param assertions: list of assertion objects
     :param predicate: corresponds to predicate key
+
     """
 
     for assertion in assertions:
+        pred = ''
         assertion_predicate = assertion.get('predicate')
-
+        IRI = assertion_predicate.get('IRI')
+        if IRI == predicate:
+            pred = predicate
+        else:
+            term = assertion_predicate.get('term')
+            if term == predicate:
+                pred = predicate
+        if pred != '':
+            return assertion.get('objects', [])
 
 
 @edit_blueprint.route('', methods=['POST', 'GET'])
@@ -60,6 +70,7 @@ def edit():
         form.submitterfirst.data = ''
         form.submitterlast.data = ''
         form.submitteremail.data = ''
+        form.taxon.data = 'select'
 
     if request.method == 'POST' and form.validate():
         # This is a result of the user selecting something other than 'new'
@@ -82,7 +93,12 @@ def edit():
 
         # Assertions other than markers
         assertions = dictsenlib.get('assertions')
-        form.taxon.data = 'test'
+
+        taxa = getassertiondata(assertions=assertions, predicate='in_taxon')
+        if len(taxa) > 0:
+            form.taxon.data = taxa[0].get('code')
+        else:
+            form.taxon.data = 'select'
 
     return render_template('edit.html', form=form)
 

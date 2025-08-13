@@ -6,6 +6,10 @@ Form used to manage Senotype submisstion JSONs.
 from wtforms import (Form, StringField, SelectField, DecimalField, validators, ValidationError,
                      TextAreaField, SubmitField)
 
+import pandas as pd
+
+# Helper classes
+from models.appconfig import AppConfig
 from models.senlib import SenLib
 
 def validate_age(form, field):
@@ -89,16 +93,52 @@ def validate_required_selectfield(form, field):
 
 # ----------------------
 # MAIN FORM
+def getchoices(sl:SenLib, predicate: str) -> list[tuple]:
+    """
+    Return a list of tuples for a valueset.
+    :param sl: the SenLib interface
+    :predicate: assertion predicate. Can be either an IRI or a term.
+    """
+    # Get the DataFrame of valueset information corresponding to an assetion predicate.
+    dfchoices = sl.getsenlibvalueset(predicate=predicate)
+
+    # Buiild a list of tuples from the relevant columns of the DataFrame.
+    choices = list(zip(dfchoices['valueset_code'], dfchoices['valueset_term']))
+
+    # Add 'select' as an option. Must be a tuple for correct display in the form.
+    choices = [("select", "select")] + choices
+    return choices
 
 
 class EditForm(Form):
+
+    # Set up the Senlib interface to obtain valueset information.
+
+    # Read the app.cfg file outside the Flask application context.
+    cfg = AppConfig()
+    # Get the URLs to the senlib repo.
+    senlib_url = cfg.getfield(key='SENOTYPE_URL')
+    valueset_url = cfg.getfield(key='VALUESET_URL')
+    json_url = cfg.getfield(key='JSON_URL')
+
+    # Senlib interface
+    senlib = SenLib(senlib_url, valueset_url, json_url)
+
+    # SET DEFAULTS
+
+    # Senotype
     senotypeid = SelectField('ID', choices=[])
-    senotypename = StringField('Name')
-    senotypedescription = TextAreaField('Description')
+    senotypename = StringField('Senotype Name')
+    senotypedescription = TextAreaField('Senotype Description')
+
+    # Submitter
     submitterfirst = StringField('First Name')
     submitterlast = StringField('Last Name')
     submitteremail = StringField('email')
 
-    taxon = SelectField('taxon', choices=[('test','test')])
+    # Assertions other than markers
+    taxon = SelectField('taxon', choices=getchoices(sl=senlib, predicate='in_taxon'))
+
+
 
 

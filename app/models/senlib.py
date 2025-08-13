@@ -56,9 +56,22 @@ class SenLib:
         # Read into Pandas.
         return pd.read_csv(csv_data)
 
-    def getsenlibvalueset(self, predicate:str) -> pd.DataFrame:
+    def __init__(self, senliburl: str, valueseturl: str, jsonurl: str):
+
+        self.request = RequestRetry()
+
+        # Obtain list of senlib JSONs.
+        self.senliburl = senliburl
+        self.valueseturl = valueseturl
+        self.jsonurl = jsonurl
+        self.senlibjsonids = self._getsenlibjsonids()
+        self.senlibvaluesets = self._getsenlibvaluesets()
+
+    def getsenlibvalueset(self, predicate: str) -> pd.DataFrame:
         """
+        Getter-like method.
         Obtain the valueset associated with an assertion predicate.
+        :param dfvaluesets: valueset dataframe
         :param predicate: assertion predicate. Can be either an IRI or a term.
         """
 
@@ -71,15 +84,3 @@ class SenLib:
             dfassertion = df[df['predicate_term'] == predicate]
 
         return dfassertion
-
-
-    def __init__(self, senliburl: str, valueseturl: str, jsonurl: str):
-
-        self.request = RequestRetry()
-
-        # Obtain list of senlib JSONs.
-        self.senliburl = senliburl
-        self.valueseturl = valueseturl
-        self.jsonurl = jsonurl
-        self.senlibjsonids = self._getsenlibjsonids()
-        self.senlibvaluesets = self._getsenlibvaluesets()
