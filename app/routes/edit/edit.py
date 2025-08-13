@@ -37,9 +37,14 @@ def edit():
     cfg = AppConfig()
 
     # Get IDs for existing Senotype submissions.
-    # Get the URL to the senlib repo.
-    github_url = cfg.getfield(key='GITHUB_URL')
-    senlib = SenLib(url=github_url)
+    # Get the URLs to the senlib repo.
+    senlib_url = cfg.getfield(key='SENOTYPE_URL')
+    valueset_url = cfg.getfield(key='VALUESET_URL')
+    json_url = cfg.getfield(key='JSON_URL')
+
+    # Senlib interface
+    senlib = SenLib(senlib_url, valueset_url, json_url)
+
     # Add 'new' as an option. Must be a tuple for correct display in the form.
     choices = [("new", "(new)")] + [(id, id) for id in senlib.senlibjsonids]
 
@@ -61,7 +66,6 @@ def edit():
         # for a Senotype ID--i.e, an existing senotype. Load data.
 
         id = form.senotypeid.data
-
         # Get senotype data
         dictsenlib = senlib.getsenlibjson(id=id)
 
@@ -78,7 +82,7 @@ def edit():
 
         # Assertions other than markers
         assertions = dictsenlib.get('assertions')
-
+        form.taxon.data = 'test'
 
     return render_template('edit.html', form=form)
 

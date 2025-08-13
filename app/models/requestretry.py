@@ -1,5 +1,5 @@
 """
-Class for generic REST API requests that uses an exponential retry loop.
+Class for generic requests that uses an exponential retry loop.
 
 """
 # For retry loop
@@ -7,19 +7,21 @@ from requests.adapters import HTTPAdapter
 from urllib3.util import Retry
 import requests
 
-class RestAPI:
+
+class RequestRetry:
 
     def __init__(self):
         self.responsejson = ''
         self.url = ''
         self.error = None
 
-    def getresponsejson(self, url: str) -> dict:
+    def getresponse(self, url: str, format: str) -> dict:
         """
         Obtains a response from a REST API.
         Employs a retry loop in case of timeout or other failures.
 
         :param url: the URL to the REST API
+        :param format: the format of the response--either 'json' or 'csv'
         :return: the response JSON
         """
 
@@ -45,10 +47,14 @@ class RestAPI:
             session.mount('https://', adapter)
             r = session.get(url=url, timeout=180)
 
-            self.responsejson = r.json()
-            self.error = None
-
-            return self.responsejson
+            if format == 'json':
+                self.responsejson = r.json()
+                self.error = None
+                return self.responsejson
+            elif format == 'csv':
+                return r.text
+            else:
+                raise ValueError(f'Invalid format {format}')
 
         except Exception as e:
             self.error = e

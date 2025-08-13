@@ -2,7 +2,9 @@
 Class for working with Senotype submission JSON files in the senlib repository.
 """
 import logging
-from models.restapi import RestAPI
+import pandas as pd
+from io import StringIO
+from models.requestretry import RequestRetry
 
 # Configure consistent logging. This is done at the beginning of each module instead of with a superclass of
 # logger to avoid the need to overload function calls to logger.
@@ -17,8 +19,7 @@ class SenLib:
         """
         Obtains list of files in the senlib repo.
         """
-        self.api = RestAPI()
-        return self.api.getresponsejson(url=self.senliburl)
+        return self.request.getresponse(url=self.senliburl, format='json')
 
     def _getsenlibjsonids(self) -> list:
         """
@@ -39,12 +40,46 @@ class SenLib:
         :param id: id of the senotype, corresponding to the file name.
         :return:
         """
+        url = f'{self.jsonurl}/{id}.json'
+        return self.request.getresponse(url=url, format='json')
 
-        url = f'https://raw.githubusercontent.com/sennetconsortium/senlib/main/senotypes/{id}.json'
-        return self.api.getresponsejson(url=url)
+    def _getsenlibvaluesets(self) -> pd.DataFrame:
+        """
+        Get the Senotype Editor valueset from the senlib repo as a Pandas DataFrame.
+        :return:
+        """
 
-    def __init__(self, url: str):
+        # Get the text stream from GitHub.
+        stream=self.request.getresponse(url=self.valueseturl, format='csv')
+        # Convert to a string.
+        csv_data = StringIO(stream)
+        # Read into Pandas.
+        return pd.read_csv(csv_data)
+
+    def getsenlibvalueset(self, predicate:str) -> pd.DataFrame:
+        """
+        Obtain the valueset associated with an assertion predicate.
+        :param predicate: assertion predicate. Can be either an IRI or a term.
+        """
+
+        df = self.senlibvaluesets
+
+        # Check whether the predicate corresponds to an IRI.
+        dfassertion = df[df['predicate_IRI'] == predicate]
+        if len(dfassertion) == 0:
+            # Check whether the predicate corresponds to a term.
+            dfassertion = df[df['predicate_term'] == predicate]
+
+        return dfassertion
+
+
+    def __init__(self, senliburl: str, valueseturl: str, jsonurl: str):
+
+        self.request = RequestRetry()
 
         # Obtain list of senlib JSONs.
-        self.senliburl = url
+        self.senliburl = senliburl
+        self.valueseturl = valueseturl
+        self.jsonurl = jsonurl
         self.senlibjsonids = self._getsenlibjsonids()
+        self.senlibvaluesets = self._getsenlibvaluesets()

@@ -6,6 +6,7 @@ Form used to manage Senotype submisstion JSONs.
 from wtforms import (Form, StringField, SelectField, DecimalField, validators, ValidationError,
                      TextAreaField, SubmitField)
 
+from models.senlib import SenLib
 
 def validate_age(form, field):
     """
@@ -98,8 +99,6 @@ class EditForm(Form):
     submitterlast = StringField('Last Name')
     submitteremail = StringField('email')
 
-    # There should be only 2 taxa involved.
-    taxon = SelectField('taxon', choices=[('human','NCBI:9606'),('mouse','NCBI:10088')])
-
+    taxon = SelectField('taxon', choices=[('test','test')])
 
 

@@ -1,5 +1,7 @@
-# url for GitHub folder for Senotype JSON repository
-github_url=https://api.github.com/repos/sennetconsortium/senlib/contents/senotypes
+#URLs for senlib
+SENOTYPE_URL='https://api.github.com/repos/sennetconsortium/senlib/contents/senotypes'
+VALUESET_URL='https://api.github.com/repos/sennetconsortium/senlib/contents/valuesets/'senotype_editor_valuesets.csv'
+JSON_URL='https://raw.githubusercontent.com/sennetconsortium/senlib/main/senotypes'
 
 # Flask secret key
 KEY=x
