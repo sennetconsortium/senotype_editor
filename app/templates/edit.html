@@ -1,4 +1,3 @@
-<!-- Data entry page for curation-->
 {% extends 'base.html' %}
 
 {% block content %}
@@ -8,19 +7,17 @@
     <h2 class="m-3">Senotype Editor</h2>
 </div>
 <form id="edit_form" method="post" class="mt-0 m-3 p-3">
+    <!-- Senotype / Submitter -->
     <div class="row">
-        <!-- Senotype section: left column with border -->
         <div class="col-md-6" style="background-color: #f5f5f5; border: 1px solid #ccc; border-radius: 5px; padding: 16px;">
-            <h4 class="mb-3">Senotype</h4>
             <div class="mb-3">
+                <h4>Senotype</h4>
                 <strong>{{ form.senotypeid.label }}</strong>
-                {# Render as a Bootstrap select with dropdown arrow #}
                 <select name="{{ form.senotypeid.name }}" class="form-select" style="width: 20ch; display: inline-block;">
                     {% for value, label in form.senotypeid.choices %}
                         <option value="{{ value }}" {% if form.senotypeid.data == value %}selected{% endif %}>{{ label }}</option>
                     {% endfor %}
                 </select>
-                <!--track id for comparison in /edit route-->
                 <input type="hidden" name="original_id" value="{{ form.senotypeid.data }}">
             </div>
             <div class="mb-3">
@@ -32,10 +29,9 @@
                 {{ form.senotypedescription(class="form-control w-100", rows="2") }}
             </div>
         </div>
-        <!-- Submitter section: right column with border -->
         <div class="col-md-6" style="background-color: #f5f5f5; border: 1px solid #ccc; border-radius: 5px; padding: 16px;">
-            <h3 class="mb-3">Submitter</h3>
             <div class="mb-3">
+                <h4>Submitter</h4>
                 <strong>{{ form.submitterfirst.label }}</strong>
                 {{ form.submitterfirst(class="form-control d-inline-block", style="width: 20ch; display: inline-block;") }}
                 <strong class="ms-3">{{ form.submitterlast.label }}</strong>
@@ -47,113 +43,89 @@
             </div>
         </div>
     </div>
+    <!-- Taxon / Location -->
     <div class="row">
-        <!-- Simple assertions section: left column with border-->
         <div class="col-md-6" style="background-color: #FEF2F2; border: 1px solid #ccc; border-radius: 5px; padding: 16px;">
-            <h4 class="mb-3">Simple Assertions</h4>
-            <div class="container">
-                <div class="row mb-3">
-                    <div class="col-2 d-flex align-items-center">
-                        <strong>{{ form.taxon.label }}</strong>
-                    </div>
-                    <div class="col-4">
-                        <select name="{{ form.taxon.name }}" class="form-select input-fixed-width">
-                            {% for value, label in form.taxon.choices %}
-                                <option value="{{ value }}" {% if form.taxon.data == value %}selected{% endif %}>{{ label }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    <div class="col-2 d-flex align-items-center">
-                        <strong>{{ form.location.label }}</strong>
-                    </div>
-                    <div class="col-4">
-                        <select name="{{ form.location.name }}" class="form-select input-fixed-width">
-                            {% for value, label in form.location.choices %}
-                                <option value="{{ value }}" {% if form.location.data == value %}selected{% endif %}>{{ label }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                </div>
-                <div class="row mb-3">
-                    <div class="col-2 d-flex align-items-center">
-                        <strong>{{ form.celltype.label }}</strong>
-                    </div>
-                    <div class="col-4">
-                        <select name="{{ form.celltype.name }}" class="form-select input-fixed-width">
-                            {% for value, label in form.celltype.choices %}
-                                <option value="{{ value }}" {% if form.celltype.data == value %}selected{% endif %}>{{ label }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    <div class="col-2 d-flex align-items-center">
-                        <strong>{{ form.hallmark.label }}</strong>
-                    </div>
-                    <div class="col-4">
-                        <select name="{{ form.hallmark.name }}" class="form-select input-fixed-width">
-                            {% for value, label in form.hallmark.choices %}
-                                <option value="{{ value }}" {% if form.hallmark.data == value %}selected{% endif %}>{{ label }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                </div>
-                <div class="row mb-3">
-                    <div class="col-2 d-flex align-items-center">
-                        <strong>{{ form.observable.label }}</strong>
-                    </div>
-                    <div class="col-4">
-                        <select name="{{ form.observable.name }}" class="form-select input-fixed-width">
-                            {% for value, label in form.observable.choices %}
-                                <option value="{{ value }}" {% if form.observable.data == value %}selected{% endif %}>{{ label }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    <div class="col-2 d-flex align-items-center">
-                        <strong>{{ form.inducer.label }}</strong>
-                    </div>
-                    <div class="col-4">
-                        <select name="{{ form.inducer.name }}" class="form-select input-fixed-width">
-                            {% for value, label in form.inducer.choices %}
-                                <option value="{{ value }}" {% if form.inducer.data == value %}selected{% endif %}>{{ label }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                </div>
-                <div class="row mb-3">
-                    <div class="col-2 d-flex align-items-center">
-                        <strong>{{ form.assay.label }}</strong>
-                    </div>
-                    <div class="col-10">
-                        <select name="{{ form.assay.name }}" class="form-select input-fixed-width">
-                            {% for value, label in form.assay.choices %}
-                                <option value="{{ value }}" {% if form.assay.data == value %}selected{% endif %}>{{ label }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                </div>
-            </div>
+            <strong>{{ form.taxon.label }}</strong>
+            <select name="{{ form.taxon.name }}" class="form-select input-fixed-width">
+                {% for value, label in form.taxon.choices %}
+                    <option value="{{ value }}" {% if form.taxon.data == value %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
         </div>
-        <!-- Contexts section: right column with border -->
         <div class="col-md-6" style="background-color: #FEF2F2; border: 1px solid #ccc; border-radius: 5px; padding: 16px;">
-            <h4 class="mb-3">Context Assertions</h4>
+            <strong>{{ form.location.label }}</strong>
+            <select name="{{ form.location.name }}" class="form-select input-fixed-width">
+                {% for value, label in form.location.choices %}
+                    <option value="{{ value }}" {% if form.location.data == value %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+    <!-- Cell Type / Hallmark -->
+    <div class="row">
+        <div class="col-md-6" style="background-color: #FEF2F2; border: 1px solid #ccc; border-radius: 5px; padding: 16px;">
+            <strong>{{ form.celltype.label }}</strong>
+            <select name="{{ form.celltype.name }}" class="form-select input-fixed-width">
+                {% for value, label in form.celltype.choices %}
+                    <option value="{{ value }}" {% if form.celltype.data == value %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-6" style="background-color: #FEF2F2; border: 1px solid #ccc; border-radius: 5px; padding: 16px;">
+            <strong>{{ form.hallmark.label }}</strong>
+            <select name="{{ form.hallmark.name }}" class="form-select input-fixed-width">
+                {% for value, label in form.hallmark.choices %}
+                    <option value="{{ value }}" {% if form.hallmark.data == value %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+    <!-- Observable / Inducer -->
+    <div class="row">
+        <div class="col-md-6" style="background-color: #FEF2F2; border: 1px solid #ccc; border-radius: 5px; padding: 16px;">
+            <strong>{{ form.observable.label }}</strong>
+            <select name="{{ form.observable.name }}" class="form-select input-fixed-width">
+                {% for value, label in form.observable.choices %}
+                    <option value="{{ value }}" {% if form.observable.data == value %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-6" style="background-color: #FEF2F2; border: 1px solid #ccc; border-radius: 5px; padding: 16px;">
+            <strong>{{ form.inducer.label }}</strong>
+            <select name="{{ form.inducer.name }}" class="form-select input-fixed-width">
+                {% for value, label in form.inducer.choices %}
+                    <option value="{{ value }}" {% if form.inducer.data == value %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+    <!-- Assay / Context Assertions -->
+    <div class="row">
+        <div class="col-md-6" style="background-color: #FEF2F2; border: 1px solid #ccc; border-radius: 5px; padding: 16px;">
+            <strong>{{ form.assay.label }}</strong>
+            <select name="{{ form.assay.name }}" class="form-select input-fixed-width">
+                {% for value, label in form.assay.choices %}
+                    <option value="{{ value }}" {% if form.assay.data == value %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-6" style="background-color: #FEF2F2; border: 1px solid #ccc; border-radius: 5px; padding: 16px;">
             <div class="container">
                 <div class="row mb-3">
                     <h5 class="mb-4">Age</h5>
-                    <!-- Value -->
                     <div class="col-3 d-flex align-items-center">
                         <strong>{{ form.agevalue.label }}</strong>
                         {{ form.agevalue(class="form-control ms-2") }}
                     </div>
-                    <!-- Lower Bound -->
                     <div class="col-3 d-flex align-items-center">
                         <strong>{{ form.agelowerbound.label }}</strong>
                         {{ form.agelowerbound(class="form-control ms-2") }}
                     </div>
-                    <!-- Upper Bound -->
                     <div class="col-3 d-flex align-items-center">
                         <strong>{{ form.ageupperbound.label }}</strong>
                         {{ form.ageupperbound(class="form-control ms-2") }}
                     </div>
-                    <!-- Unit -->
                     <div class="col-3 d-flex align-items-center">
                         <strong>{{ form.ageunit.label }}</strong>
                         {{ form.ageunit(class="form-control ms-2") }}
@@ -161,15 +133,14 @@
                 </div>
             </div>
         </div>
-     </div>
+    </div>
+    <!-- PubMed Citations -->
     <div class="row">
-        <!-- External links section: left column with border -->
         <div class="col-md-6" style="background-color: #EEF2FF; border: 1px solid #ccc; border-radius: 5px; padding: 16px;">
-            <h4 class="mb-3">Pubmed Citations</h4>
             <div class="container">
                 <div class="col-9">
+                    <strong>{{ form.citations.label }}</strong>
                     <ul id="citation-list" class="list-group mb-2">
-                        {# Loop through existing citations #}
                         {% for citation_field in form.citations %}
                             <li class="list-group-item d-flex justify-content-between align-items-center">
                                 {{ citation_field() }}

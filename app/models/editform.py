@@ -141,13 +141,13 @@ class EditForm(Form):
     submitteremail = StringField('email')
 
     # Simple assertions
-    taxon = SelectField('taxon', choices=getchoices(sl=senlib, predicate='in_taxon'))
-    location = SelectField('location', choices=getchoices(sl=senlib, predicate='located_in'))
-    celltype = SelectField('cell type', choices=getchoices(sl=senlib, predicate='has_cell_type'))
-    hallmark = SelectField('hallmark', choices=getchoices(sl=senlib, predicate='has_hallmark'))
-    observable = SelectField('observable', choices=getchoices(sl=senlib, predicate='has_molecular_observable'))
-    inducer = SelectField('inducer', choices=getchoices(sl=senlib, predicate='has_inducer'))
-    assay = SelectField('assay', choices=getchoices(sl=senlib, predicate='has_assay'))
+    taxon = SelectField('Taxa', choices=getchoices(sl=senlib, predicate='in_taxon'))
+    location = SelectField('Locations', choices=getchoices(sl=senlib, predicate='located_in'))
+    celltype = SelectField('Cell types', choices=getchoices(sl=senlib, predicate='has_cell_type'))
+    hallmark = SelectField('Hallmarks', choices=getchoices(sl=senlib, predicate='has_hallmark'))
+    observable = SelectField('Observables', choices=getchoices(sl=senlib, predicate='has_molecular_observable'))
+    inducer = SelectField('Inducers', choices=getchoices(sl=senlib, predicate='has_inducer'))
+    assay = SelectField('Assays', choices=getchoices(sl=senlib, predicate='has_assay'))
 
     # Context assertions
     agevalue = StringField('Value')
@@ -157,4 +157,4 @@ class EditForm(Form):
 
     # External assertions
     # Citations
-    citations = FieldList(StringField('citations'), min_entries=1)
+    citations = FieldList(StringField('Citations'), min_entries=1)
