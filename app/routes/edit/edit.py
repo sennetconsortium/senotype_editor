@@ -91,6 +91,7 @@ def setdefaults(form):
     form.agelowerbound.data = ''
     form.ageupperbound.data = ''
     form.ageunit.data = ''
+    form.citations.process([''])
 
 
 @edit_blueprint.route('', methods=['POST', 'GET'])
@@ -125,9 +126,12 @@ def edit():
         # for a Senotype ID--i.e, an existing senotype. Load data.
 
         id = form.senotypeid.data
+
         if id == 'new':
             setdefaults(form=form)
+
         else:
+            # User has selected another existing ID. Load from existing data.
 
             # Get senotype data
             dictsenlib = senlib.getsenlibjson(id=id)
@@ -203,6 +207,20 @@ def edit():
                 form.agelowerbound.data = age.get('lowerbound', '')
                 form.ageupperbound.data = age.get('upperbound', '')
                 form.ageunit.data = age.get('unit', '')
+
+            # Citation (multiple possible values)
+
+            if id != request.form.get('original_id', id):
+                # Load citation information from existing data.
+                citationlist = getsimpleassertiondata(assertions=assertions, predicate='has_citation')
+                if len(citationlist) > 0:
+                    form.citations.process(form.citations, [item['code'] for item in citationlist])
+                else:
+                    form.citations.process([''])
+            else:
+                # User triggered POST by managing the citation list (via Javascript).
+                # WTForms has the citation information in request.forms
+                pass
 
     return render_template('edit.html', form=form)
 

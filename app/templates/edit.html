@@ -20,6 +20,8 @@
                         <option value="{{ value }}" {% if form.senotypeid.data == value %}selected{% endif %}>{{ label }}</option>
                     {% endfor %}
                 </select>
+                <!--track id for comparison in /edit route-->
+                <input type="hidden" name="original_id" value="{{ form.senotypeid.data }}">
             </div>
             <div class="mb-3">
                 <strong>{{ form.senotypename.label }}</strong>
@@ -163,11 +165,37 @@
     <div class="row">
         <!-- External links section: left column with border -->
         <div class="col-md-6" style="background-color: #EEF2FF; border: 1px solid #ccc; border-radius: 5px; padding: 16px;">
-            <h4 class="mb-3">External links</h4>
+            <h4 class="mb-3">Pubmed Citations</h4>
             <div class="container">
-                <div class="row mb-3">
-                    <div class="col-3 d-flex align-items-center">
-                       citation
+                <div class="col-9">
+                    <ul id="citation-list" class="list-group mb-2">
+                        {# Loop through existing citations #}
+                        {% for citation_field in form.citations %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                {{ citation_field() }}
+                                <button type="button" class="btn btn-sm btn-danger ms-2" onclick="removeCitation(this)">Remove</button>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                    <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#citationSearchModal">
+                        Add Citation
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Modal for external API search -->
+    <div class="modal fade" id="citationSearchModal" tabindex="-1" aria-labelledby="citationSearchModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="citationSearchModalLabel">Search PubMed for PMID</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="text" id="citation-search-input" class="form-control" placeholder="Enter query...">
+                    <div id="citation-search-results" class="mt-3">
+                    <!-- Search results from API appear here -->
                     </div>
                 </div>
             </div>
@@ -175,8 +203,8 @@
     </div>
 </form>
 <script>
-    // POST the Senotype ID to get Senotype information
   document.addEventListener('DOMContentLoaded', function() {
+    // POST the Senotype ID to get Senotype information
     const senotypeInput = document.querySelector('[name="{{ form.senotypeid.name }}"]');
     if (senotypeInput) {
       senotypeInput.addEventListener('change', function() {
@@ -185,4 +213,5 @@
     }
   });
 </script>
+<script src="{{ url_for('static', filename='citation-modal.js') }}"></script>
 {% endblock %}

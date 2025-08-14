@@ -4,7 +4,7 @@ Form used to manage Senotype submisstion JSONs.
 
 
 from wtforms import (Form, StringField, SelectField, DecimalField, validators, ValidationError,
-                     TextAreaField, SubmitField)
+                     TextAreaField, SubmitField, FieldList, StringField)
 
 
 # Helper classes
@@ -156,4 +156,5 @@ class EditForm(Form):
     ageunit = StringField('Unit')
 
     # External assertions
-    # Each should load a table and a search feature (sub form with button)
+    # Citations
+    citations = FieldList(StringField('citations'), min_entries=1)
