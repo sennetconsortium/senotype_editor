@@ -157,7 +157,7 @@ def edit():
                 # Load citation information from existing data.
                 taxonlist = getsimpleassertiondata(assertions=assertions, predicate='in_taxon')
                 if len(taxonlist) > 0:
-                    form.taxa.process(form.taxa, [item['code'] for item in taxonlist])
+                    form.taxa.process(form.taxa, [item['term'] for item in taxonlist])
                 else:
                     form.taxa.process([''])
             else:

@@ -5,14 +5,14 @@ function removeTaxon(btn) {
 
 // Add taxon to list
 function addTaxonToList(taxonId, taxonLabel) {
-    var ul = document.getElementById('taxon-list');
+    var ul = document.getElementById('taxa-list');
     var li = document.createElement('li');
     li.className = 'list-group-item d-flex justify-content-between align-items-center';
     // Hidden input for WTForms submission
     var input = document.createElement('input');
     input.type = 'text';
-    input.name = 'taxon-' + ul.children.length;
-    input.value = taxonId;
+    input.name = 'taxa-' + ul.children.length;
+    input.value = taxonLabel;
     input.className = 'form-control d-none';
     li.appendChild(input);
     // Visible text: show the taxon label
@@ -34,7 +34,7 @@ document.addEventListener('DOMContentLoaded', function() {
     taxonModal.addEventListener('show.bs.modal', function () {
         var taxonListDiv = document.getElementById('taxon-modal-list');
         taxonListDiv.innerHTML = '<div class="text-muted">Loading taxon list...</div>';
-        fetch('/taxon-list') // This route should return JSON: [{id:..., label:...}, ...]
+        fetch('/valueset?predicate=in_taxon') // This route should return JSON: [{id:..., label:...}, ...]
             .then(response => response.json())
             .then(data => {
                 taxonListDiv.innerHTML = '';

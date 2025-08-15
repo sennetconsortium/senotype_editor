@@ -52,12 +52,12 @@
                 {% for taxa_field in form.taxa %}
                     <li class="list-group-item d-flex justify-content-between align-items-center">
                         {{ taxa_field() }}
-                        <button type="button" class="btn btn-sm btn-danger ms-2" onclick="removeTaxon(this)">Remove</button>
+                        <button type="button" class="btn btn-sm btn-danger ms-2" onclick="removeTaxon(this)">-</button>
                     </li>
                 {% endfor %}
             </ul>
             <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#taxonModal">
-                Add Taxon
+                +
             </button>
         </div>
         <!-- LOCATION section -->
@@ -144,7 +144,7 @@
     </div>
     <!-- PubMed Citations -->
     <div class="row">
-        <div class="col-md-6" style="background-color: #EEF2FF; border: 1px solid #ccc; border-radius: 5px; padding: 16px;">
+        <div class="col-md-6" style="background-color: #FEF2F2; border: 1px solid #ccc; border-radius: 5px; padding: 16px;">
             <div class="container">
                 <div class="col-9">
                     <strong>{{ form.citations.label }}</strong>
@@ -152,12 +152,12 @@
                         {% for citation_field in form.citations %}
                             <li class="list-group-item d-flex justify-content-between align-items-center">
                                 {{ citation_field() }}
-                                <button type="button" class="btn btn-sm btn-danger ms-2" onclick="removeCitation(this)">Remove</button>
+                                <button type="button" class="btn btn-sm btn-danger ms-2" onclick="removeCitation(this)">-</button>
                             </li>
                         {% endfor %}
                     </ul>
                     <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#citationSearchModal">
-                        Add Citation
+                        +
                     </button>
                 </div>
             </div>

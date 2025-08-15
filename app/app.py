@@ -11,6 +11,7 @@ from models.appconfig import AppConfig
 from routes.auth.auth import login_blueprint
 from routes.globus.globus import globus_blueprint
 from routes.edit.edit import edit_blueprint
+from routes.valueset.valueset import valueset_blueprint
 
 
 def to_pretty_json(value):
@@ -46,6 +47,7 @@ class SenotypeUI:
         self.app.register_blueprint(login_blueprint)
         self.app.register_blueprint(globus_blueprint)
         self.app.register_blueprint(edit_blueprint)
+        self.app.register_blueprint(valueset_blueprint)
 
         # Register the custom JSON pretty print filter.
         self.app.jinja_env.filters['tojson_pretty'] = to_pretty_json
