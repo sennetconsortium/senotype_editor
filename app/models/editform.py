@@ -141,7 +141,7 @@ class EditForm(Form):
     submitteremail = StringField('email')
 
     # Simple assertions
-    taxon = SelectField('Taxa', choices=getchoices(sl=senlib, predicate='in_taxon'))
+    taxa = FieldList(StringField('Taxa'), min_entries=0)
     location = SelectField('Locations', choices=getchoices(sl=senlib, predicate='located_in'))
     celltype = SelectField('Cell types', choices=getchoices(sl=senlib, predicate='has_cell_type'))
     hallmark = SelectField('Hallmarks', choices=getchoices(sl=senlib, predicate='has_hallmark'))
@@ -157,4 +157,4 @@ class EditForm(Form):
 
     # External assertions
     # Citations
-    citations = FieldList(StringField('Citations'), min_entries=1)
+    citations = FieldList(StringField('Citations'), min_entries=0)

@@ -5,7 +5,6 @@ Works with editform.py.
 """
 
 from flask import Blueprint, request, render_template
-from wtforms import SelectField, Field
 
 # WTForms
 from models.editform import EditForm
@@ -81,7 +80,7 @@ def setdefaults(form):
     form.submitterfirst.data = ''
     form.submitterlast.data = ''
     form.submitteremail.data = ''
-    form.taxon.data = 'select'
+    form.taxa.process([''])
     form.location.data = 'select'
     form.celltype.data = 'select'
     form.observable.data = 'select'
@@ -127,6 +126,9 @@ def edit():
 
         id = form.senotypeid.data
 
+        print('original:', request.form.get('original_id', id))
+        print('now:', form.senotypeid.data)
+
         if id == 'new':
             setdefaults(form=form)
 
@@ -150,12 +152,18 @@ def edit():
             # Assertions other than markers
             assertions = dictsenlib.get('assertions')
 
-            # Taxon (one possible value)
-            taxa = getsimpleassertiondata(assertions=assertions, predicate='in_taxon')
-            if len(taxa) > 0:
-                form.taxon.data = taxa[0].get('code')
+            # Taxon (multiple possible values)
+            if id != request.form.get('original_id', id):
+                # Load citation information from existing data.
+                taxonlist = getsimpleassertiondata(assertions=assertions, predicate='in_taxon')
+                if len(taxonlist) > 0:
+                    form.taxa.process(form.taxa, [item['code'] for item in taxonlist])
+                else:
+                    form.taxa.process([''])
             else:
-                form.taxon.data = 'select'
+                # User triggered POST by managing the citation list (via Javascript).
+                # WTForms has the citation information in request.forms
+                pass
 
             # Location (one possible value)
             locations = getsimpleassertiondata(assertions=assertions, predicate='located_in')

@@ -45,14 +45,22 @@
     </div>
     <!-- Taxon / Location -->
     <div class="row">
+        <!-- TAXON section with remove/add buttons and modal -->
         <div class="col-md-6" style="background-color: #FEF2F2; border: 1px solid #ccc; border-radius: 5px; padding: 16px;">
-            <strong>{{ form.taxon.label }}</strong>
-            <select name="{{ form.taxon.name }}" class="form-select input-fixed-width">
-                {% for value, label in form.taxon.choices %}
-                    <option value="{{ value }}" {% if form.taxon.data == value %}selected{% endif %}>{{ label }}</option>
+            <strong>{{ form.taxa.label }}</strong>
+            <ul id="taxa-list" class="list-group mb-2">
+                {% for taxa_field in form.taxa %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        {{ taxa_field() }}
+                        <button type="button" class="btn btn-sm btn-danger ms-2" onclick="removeTaxon(this)">Remove</button>
+                    </li>
                 {% endfor %}
-            </select>
+            </ul>
+            <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#taxonModal">
+                Add Taxon
+            </button>
         </div>
+        <!-- LOCATION section -->
         <div class="col-md-6" style="background-color: #FEF2F2; border: 1px solid #ccc; border-radius: 5px; padding: 16px;">
             <strong>{{ form.location.label }}</strong>
             <select name="{{ form.location.name }}" class="form-select input-fixed-width">
@@ -172,17 +180,22 @@
             </div>
         </div>
     </div>
+    <!-- Taxon Modal -->
+    <div class="modal fade" id="taxonModal" tabindex="-1" aria-labelledby="taxonModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="taxonModalLabel">Select Taxon</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="taxon-modal-list" class="list-group"></div>
+                </div>
+            </div>
+        </div>
+    </div>
 </form>
-<script>
-  document.addEventListener('DOMContentLoaded', function() {
-    // POST the Senotype ID to get Senotype information
-    const senotypeInput = document.querySelector('[name="{{ form.senotypeid.name }}"]');
-    if (senotypeInput) {
-      senotypeInput.addEventListener('change', function() {
-        document.getElementById('edit_form').submit();
-      });
-    }
-  });
-</script>
 <script src="{{ url_for('static', filename='citation-modal.js') }}"></script>
+<script src="{{ url_for('static', filename='taxon-modal.js') }}"></script>
+<script src="{{ url_for('static', filename='id-dropdown-post.js') }}"></script>
 {% endblock %}
