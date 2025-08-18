@@ -33,13 +33,13 @@ function addCitation(pmid) {
 }
 
 // Modal search logic (fetching PMIDs, then their titles)
-let lastSearch = '';
+let lastCitationSearch = '';
 document.getElementById('citation-search-input').addEventListener('input', function () {
     var query = this.value.trim();
     var resultsDiv = document.getElementById('citation-search-results');
     resultsDiv.innerHTML = '';
-    if (query.length > 2 && query !== lastSearch) {
-        lastSearch = query;
+    if (query.length > 2 && query !== lastCitationSearch) {
+        lastCitationSearch = query;
         resultsDiv.innerHTML = '<div class="text-muted">Searching PubMed...</div>';
         // NOTE: This will fail in browser due to CORS. Use backend proxy for production!
         fetch('https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&retmode=json&term=' + encodeURIComponent(query))

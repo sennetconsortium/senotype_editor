@@ -157,4 +157,6 @@ class EditForm(Form):
 
     # External assertions
     # Citations
-    citations = FieldList(StringField('Citations'), min_entries=0)
+    citations = FieldList(StringField('Citation'), min_entries=0)
+    # Origins
+    origin = FieldList(StringField('Origin'), min_entries=0)

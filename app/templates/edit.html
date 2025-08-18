@@ -178,25 +178,35 @@
             </div>
         </div>
     </div>
-    <!-- PubMed Citations -->
+    <!-- PubMed Citations/RRID origin -->
     <div class="row">
         <div class="col-md-6" style="background-color: #FEF2F2; border: 1px solid #ccc; border-radius: 5px; padding: 16px;">
-            <div class="container">
-                <div class="col-9">
-                    <strong>{{ form.citations.label }}</strong>
-                    <ul id="citation-list" class="list-group mb-2">
-                        {% for citation_field in form.citations %}
-                            <li class="list-group-item d-flex justify-content-between align-items-center">
-                                {{ citation_field() }}
-                                <button type="button" class="btn btn-sm btn-danger ms-2" onclick="removeCitation(this)">-</button>
-                            </li>
-                        {% endfor %}
-                    </ul>
-                    <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#citationSearchModal">
-                        +
-                    </button>
-                </div>
-            </div>
+            <strong>{{ form.citations.label }}</strong>
+            <ul id="citation-list" class="list-group mb-2">
+                {% for citation_field in form.citations %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    {{ citation_field() }}
+                    <button type="button" class="btn btn-sm btn-danger ms-2" onclick="removeCitation(this)">-</button>
+                </li>
+                {% endfor %}
+            </ul>
+            <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#citationSearchModal">
+                +
+            </button>
+        </div>
+        <div class="col-md-6" style="background-color: #FEF2F2; border: 1px solid #ccc; border-radius: 5px; padding: 16px;">
+            <strong>{{ form.origin.label }}</strong>
+            <ul id="origin-list" class="list-group mb-2">
+                {% for origin_field in form.origin %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    {{ origin_field() }}
+                    <button type="button" class="btn btn-sm btn-danger ms-2" onclick="removeOrigin(this)">-</button>
+                </li>
+                {% endfor %}
+            </ul>
+            <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#originSearchModal">
+                +
+            </button>
         </div>
     </div>
     <!-- Modal for external API search for PubMed citation-->
@@ -210,6 +220,23 @@
                 <div class="modal-body">
                     <input type="text" id="citation-search-input" class="form-control" placeholder="Enter query...">
                     <div id="citation-search-results" class="mt-3">
+                    <!-- Search results from API appear here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Modal for external API search for RRID origin-->
+    <div class="modal fade" id="originSearchModal" tabindex="-1" aria-labelledby="originSearchModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="originSearchModalLabel">Search SciCrunch for RRID</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="text" id="origin-search-input" class="form-control" placeholder="Enter query...">
+                    <div id="origin-search-results" class="mt-3">
                     <!-- Search results from API appear here -->
                     </div>
                 </div>
@@ -316,6 +343,7 @@
     </div>
 </form>
 <script src="{{ url_for('static', filename='citation-modal.js') }}"></script>
+<script src="{{ url_for('static', filename='origin-modal.js') }}"></script>
 <script src="{{ url_for('static', filename='valueset-modal.js') }}"></script>
 <script src="{{ url_for('static', filename='id-dropdown-post.js') }}"></script>
 {% endblock %}

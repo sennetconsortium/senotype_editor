@@ -99,6 +99,7 @@ def setdefaults(form):
 
     # External assertions
     form.citations.process([''])
+    form.origin.process([''])
 
 
 @edit_blueprint.route('', methods=['POST', 'GET'])
@@ -170,7 +171,7 @@ def edit():
                     form.taxa.process([''])
             else:
                 # User triggered POST by managing the list (via Javascript).
-                # WTForms has the citation information in request.forms
+                # WTForms has the information in request.forms
                 pass
 
             # Locations (multiple possible values)
@@ -183,7 +184,7 @@ def edit():
                     form.location.process([''])
             else:
                 # User triggered POST by managing the list (via Javascript).
-                # WTForms has the citation information in request.forms
+                # WTForms has the information in request.forms
                 pass
 
             # Cell type (one possible value)
@@ -196,7 +197,7 @@ def edit():
                     form.celltype.process([''])
             else:
                 # User triggered POST by managing the list (via Javascript).
-                # WTForms has the citation information in request.forms
+                # WTForms has the information in request.forms
                 pass
 
             # Hallmark (multiple possible values)
@@ -209,7 +210,7 @@ def edit():
                     form.hallmark.process([''])
             else:
                 # User triggered POST by managing the list (via Javascript).
-                # WTForms has the citation information in request.forms
+                # WTForms has the information in request.forms
                 pass
 
             # Molecular observable (multiple possible values)
@@ -222,7 +223,7 @@ def edit():
                     form.observable.process([''])
             else:
                 # User triggered POST by managing the list (via Javascript).
-                # WTForms has the citation information in request.forms
+                # WTForms has the information in request.forms
                 pass
 
             # Inducer (multiple possible values)
@@ -235,7 +236,7 @@ def edit():
                     form.inducer.process([''])
             else:
                 # User triggered POST by managing the list (via Javascript).
-                # WTForms has the citation information in request.forms
+                # WTForms has the information in request.forms
                 pass
 
             # Assay (multiple possible values)
@@ -248,7 +249,7 @@ def edit():
                     form.assay.process([''])
             else:
                 # User triggered POST by managing the list (via Javascript).
-                # WTForms has the citation information in request.forms
+                # WTForms has the  information in request.forms
                 pass
 
             # Context assertions
@@ -272,6 +273,19 @@ def edit():
             else:
                 # User triggered POST by managing the citation list (via Javascript).
                 # WTForms has the citation information in request.forms
+                pass
+
+            # Origin (multiple possible values)
+            if id != request.form.get('original_id', id):
+                # Load origin information from existing data.
+                originlist = getsimpleassertiondata(assertions=assertions, predicate='has_origin')
+                if len(originlist) > 0:
+                    form.origin.process(form.origin, [item['code'] for item in originlist])
+                else:
+                    form.origin.process([''])
+            else:
+                # User triggered POST by managing the list (via Javascript).
+                # WTForms has the information in request.forms
                 pass
 
     return render_template('edit.html', form=form)
