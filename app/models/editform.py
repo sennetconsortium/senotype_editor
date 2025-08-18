@@ -141,7 +141,7 @@ class EditForm(Form):
     submitteremail = StringField('email')
 
     # Simple assertions
-    taxa = FieldList(StringField('Taxa'), min_entries=0)
+    taxa = FieldList(StringField('Taxon'), min_entries=0)
     location = FieldList(StringField('Location'), min_entries=0)
     celltype = FieldList(StringField('Cell type'), min_entries=0)
     hallmark = FieldList(StringField('Hallmark'), min_entries=0)
@@ -157,7 +157,7 @@ class EditForm(Form):
 
     # External assertions
     # Citations
-    citations = FieldList(StringField('Citation'), min_entries=0)
+    citation = FieldList(StringField('Citation'), min_entries=0)
     # Origins
     origin = FieldList(StringField('Origin'), min_entries=0)
     # Datasets

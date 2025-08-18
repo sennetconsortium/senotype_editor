@@ -98,7 +98,7 @@ def setdefaults(form):
     form.ageunit.data = ''
 
     # External assertions
-    form.citations.process([''])
+    form.citation.process([''])
     form.origin.process([''])
     form.dataset.process([''])
 
@@ -135,9 +135,6 @@ def edit():
         # for a Senotype ID--i.e, an existing senotype. Load data.
 
         id = form.senotypeid.data
-
-        print('original:', request.form.get('original_id', id))
-        print('now:', form.senotypeid.data)
 
         if id == 'new':
             setdefaults(form=form)
@@ -268,9 +265,9 @@ def edit():
                 # Load citation information from existing data.
                 citationlist = getsimpleassertiondata(assertions=assertions, predicate='has_citation')
                 if len(citationlist) > 0:
-                    form.citations.process(form.citations, [item['code'] for item in citationlist])
+                    form.citation.process(form.citation, [item['code'] for item in citationlist])
                 else:
-                    form.citations.process([''])
+                    form.citation.process([''])
             else:
                 # User triggered POST by managing the citation list (via Javascript).
                 # WTForms has the citation information in request.forms

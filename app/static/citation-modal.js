@@ -15,7 +15,7 @@ function addCitation(pmid) {
     // Hidden input for WTForms submission
     var input = document.createElement('input');
     input.type = 'text';
-    input.name = 'citations-' + ul.children.length; // WTForms FieldList expects this pattern
+    input.name = 'citation-' + ul.children.length; // WTForms FieldList expects this pattern
     input.value = pmid;
     input.className = 'form-control d-none'; // Hidden but submitted
     li.appendChild(input);
