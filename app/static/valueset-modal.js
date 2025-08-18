@@ -1,4 +1,9 @@
+// Functions for management of field lists that are populated via the Senlib
+// valuesets.
+
 document.addEventListener('DOMContentLoaded', function() {
+    // Initialize the mappings between assertion predicates and fields in
+    // edit.html
     initValuesetModal('in_taxon', 'taxa');
 });
 
@@ -7,9 +12,22 @@ function removeValue(btn) {
     btn.parentNode.remove();
 }
 
-// Add valueset item to list (parameterized for both predicate and fieldname)
+// Add the specified valueset item, which corresponds to the specified
+// assertion predicate, to the specified list in edit.html.
 function addValuesetToList(fieldname, valuesetId, valuesetLabel) {
+    // The name of a list of field values in edit.html concatenates the name
+    // of the field and -list.
     var ul = document.getElementById(fieldname + '-list');
+
+    // Check if valuesetId is already present in any hidden input in the list
+    var alreadyPresent = false;
+    Array.from(ul.getElementsByTagName('input')).forEach(function(input) {
+        if (input.value === valuesetId || input.value === valuesetLabel) {
+            alreadyPresent = true;
+        }
+    });
+    if (alreadyPresent) return; // Do not add duplicate
+
     var li = document.createElement('li');
     li.className = 'list-group-item d-flex justify-content-between align-items-center';
     // Hidden input for WTForms submission
@@ -32,7 +50,7 @@ function addValuesetToList(fieldname, valuesetId, valuesetLabel) {
     ul.appendChild(li);
 }
 
-// Load valueset list in modal via AJAX, parameterized by predicate and field name
+// Load valueset list in modal via AJAX, parameterized by assertion predicate and field name
 function initValuesetModal(predicate, fieldname) {
     var modalId = fieldname + 'Modal';
     var listDivId = fieldname + '-modal-list';
