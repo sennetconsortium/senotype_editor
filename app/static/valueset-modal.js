@@ -5,6 +5,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize the mappings between assertion predicates and fields in
     // edit.html
     initValuesetModal('in_taxon', 'taxa');
+    initValuesetModal('located_in', 'location');
 });
 
 // Remove item from list

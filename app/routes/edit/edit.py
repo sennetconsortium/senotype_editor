@@ -81,7 +81,7 @@ def setdefaults(form):
     form.submitterlast.data = ''
     form.submitteremail.data = ''
     form.taxa.process([''])
-    form.location.data = 'select'
+    form.location.process([''])
     form.celltype.data = 'select'
     form.observable.data = 'select'
     form.inducer.data = 'select'
@@ -165,12 +165,18 @@ def edit():
                 # WTForms has the citation information in request.forms
                 pass
 
-            # Location (one possible value)
-            locations = getsimpleassertiondata(assertions=assertions, predicate='located_in')
-            if len(locations) > 0:
-                form.location.data = locations[0].get('code')
+            # Locations (multiple possible values)
+            if id != request.form.get('original_id', id):
+                # Load citation information from existing data.
+                locationlist = getsimpleassertiondata(assertions=assertions, predicate='located_in')
+                if len(locationlist) > 0:
+                    form.location.process(form.location, [item['term'] for item in locationlist])
+                else:
+                    form.location.process([''])
             else:
-                form.location.data = 'select'
+                # User triggered POST by managing the citation list (via Javascript).
+                # WTForms has the citation information in request.forms
+                pass
 
             # Cell type (one possible value)
             celltypes = getsimpleassertiondata(assertions=assertions, predicate='has_cell_type')

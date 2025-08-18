@@ -63,11 +63,17 @@
         <!-- LOCATION section -->
         <div class="col-md-6" style="background-color: #FEF2F2; border: 1px solid #ccc; border-radius: 5px; padding: 16px;">
             <strong>{{ form.location.label }}</strong>
-            <select name="{{ form.location.name }}" class="form-select input-fixed-width">
-                {% for value, label in form.location.choices %}
-                    <option value="{{ value }}" {% if form.location.data == value %}selected{% endif %}>{{ label }}</option>
+            <ul id="location-list" class="list-group mb-2">
+                {% for location_field in form.location %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        {{ location_field() }}
+                        <button type="button" class="btn btn-sm btn-danger ms-2" onclick="removeValue(this)">-</button>
+                    </li>
                 {% endfor %}
-            </select>
+            </ul>
+                <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#locationModal">
+                    +
+                </button>
         </div>
     </div>
     <!-- Cell Type / Hallmark -->
@@ -190,6 +196,20 @@
                 </div>
                 <div class="modal-body">
                     <div id="taxa-modal-list" class="list-group"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Location Modal for valueset-modal.js -->
+    <div class="modal fade" id="locationModal" tabindex="-1" aria-labelledby="locationModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="locationModalLabel">Select Location</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="location-modal-list" class="list-group"></div>
                 </div>
             </div>
         </div>
