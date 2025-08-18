@@ -52,13 +52,13 @@
                 {% for taxa_field in form.taxa %}
                     <li class="list-group-item d-flex justify-content-between align-items-center">
                         {{ taxa_field() }}
-                        <button type="button" class="btn btn-sm btn-danger ms-2" onclick="removeTaxon(this)">-</button>
+                        <button type="button" class="btn btn-sm btn-danger ms-2" onclick="removeValue(this)">-</button>
                     </li>
                 {% endfor %}
             </ul>
-            <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#taxonModal">
-                +
-            </button>
+                <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#taxaModal">
+                    +
+                </button>
         </div>
         <!-- LOCATION section -->
         <div class="col-md-6" style="background-color: #FEF2F2; border: 1px solid #ccc; border-radius: 5px; padding: 16px;">
@@ -163,7 +163,7 @@
             </div>
         </div>
     </div>
-    <!-- Modal for external API search -->
+    <!-- Modal for external API search for PubMed citation-->
     <div class="modal fade" id="citationSearchModal" tabindex="-1" aria-labelledby="citationSearchModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -180,22 +180,22 @@
             </div>
         </div>
     </div>
-    <!-- Taxon Modal -->
-    <div class="modal fade" id="taxonModal" tabindex="-1" aria-labelledby="taxonModalLabel" aria-hidden="true">
+    <!-- Taxa Modal for valueset-modal.js -->
+    <div class="modal fade" id="taxaModal" tabindex="-1" aria-labelledby="taxaModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="taxonModalLabel">Select Taxon</h5>
+                    <h5 class="modal-title" id="taxaModalLabel">Select Taxon</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <div id="taxon-modal-list" class="list-group"></div>
+                    <div id="taxa-modal-list" class="list-group"></div>
                 </div>
             </div>
         </div>
     </div>
 </form>
 <script src="{{ url_for('static', filename='citation-modal.js') }}"></script>
-<script src="{{ url_for('static', filename='taxon-modal.js') }}"></script>
+<script src="{{ url_for('static', filename='valueset-modal.js') }}"></script>
 <script src="{{ url_for('static', filename='id-dropdown-post.js') }}"></script>
 {% endblock %}
