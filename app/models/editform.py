@@ -160,3 +160,5 @@ class EditForm(Form):
     citations = FieldList(StringField('Citation'), min_entries=0)
     # Origins
     origin = FieldList(StringField('Origin'), min_entries=0)
+    # Datasets
+    dataset = FieldList(StringField('Dataset'), min_entries=0)

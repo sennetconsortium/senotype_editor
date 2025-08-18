@@ -209,6 +209,23 @@
             </button>
         </div>
     </div>
+    <!-- SenNet datasets -->
+    <div class="row">
+        <div class="col-md-6" style="background-color: #FEF2F2; border: 1px solid #ccc; border-radius: 5px; padding: 16px;">
+            <strong>{{ form.dataset.label }}</strong>
+            <ul id="dataset-list" class="list-group mb-2">
+                {% for dataset_field in form.dataset %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    {{ dataset_field() }}
+                    <button type="button" class="btn btn-sm btn-danger ms-2" onclick="removeDataset(this)">-</button>
+                </li>
+                {% endfor %}
+            </ul>
+            <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#datasetSearchModal">
+                +
+            </button>
+        </div>
+     </div>
     <!-- Modal for external API search for PubMed citation-->
     <div class="modal fade" id="citationSearchModal" tabindex="-1" aria-labelledby="citationSearchModalLabel" aria-hidden="true">
         <div class="modal-dialog">
@@ -237,6 +254,23 @@
                 <div class="modal-body">
                     <input type="text" id="origin-search-input" class="form-control" placeholder="Enter query...">
                     <div id="origin-search-results" class="mt-3">
+                    <!-- Search results from API appear here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Modal for external API search for dataset-->
+    <div class="modal fade" id="datasetSearchModal" tabindex="-1" aria-labelledby="datasetSearchModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="datasetSearchModalLabel">Search SenNet for dataset</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="text" id="dataset-search-input" class="form-control" placeholder="Enter query...">
+                    <div id="dataset-search-results" class="mt-3">
                     <!-- Search results from API appear here -->
                     </div>
                 </div>
@@ -344,6 +378,7 @@
 </form>
 <script src="{{ url_for('static', filename='citation-modal.js') }}"></script>
 <script src="{{ url_for('static', filename='origin-modal.js') }}"></script>
+<script src="{{ url_for('static', filename='dataset-modal.js') }}"></script>
 <script src="{{ url_for('static', filename='valueset-modal.js') }}"></script>
 <script src="{{ url_for('static', filename='id-dropdown-post.js') }}"></script>
 {% endblock %}

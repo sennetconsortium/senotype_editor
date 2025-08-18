@@ -100,6 +100,7 @@ def setdefaults(form):
     # External assertions
     form.citations.process([''])
     form.origin.process([''])
+    form.dataset.process([''])
 
 
 @edit_blueprint.route('', methods=['POST', 'GET'])
@@ -283,6 +284,19 @@ def edit():
                     form.origin.process(form.origin, [item['code'] for item in originlist])
                 else:
                     form.origin.process([''])
+            else:
+                # User triggered POST by managing the list (via Javascript).
+                # WTForms has the information in request.forms
+                pass
+
+            # Dataset (multiple possible values)
+            if id != request.form.get('original_id', id):
+                # Load dataset information from existing data.
+                datasetlist = getsimpleassertiondata(assertions=assertions, predicate='has_dataset')
+                if len(datasetlist) > 0:
+                    form.dataset.process(form.dataset, [item['code'] for item in datasetlist])
+                else:
+                    form.dataset.process([''])
             else:
                 # User triggered POST by managing the list (via Javascript).
                 # WTForms has the information in request.forms
