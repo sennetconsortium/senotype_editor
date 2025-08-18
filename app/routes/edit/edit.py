@@ -75,22 +75,29 @@ def getcontextassertiondata(assertions: list, predicate: str, context: str) -> d
 
 def setdefaults(form):
 
+    # Senotype and Submitter
     form.senotypename.data = ''
     form.senotypedescription.data = ''
     form.submitterfirst.data = ''
     form.submitterlast.data = ''
     form.submitteremail.data = ''
+
+    # Simple assertions
     form.taxa.process([''])
     form.location.process([''])
     form.celltype.process([''])
     form.hallmark.process([''])
     form.observable.process([''])
     form.inducer.process([''])
-    form.assay.data = 'select'
+    form.assay.process([''])
+
+    # Context assertions
     form.agevalue.data = ''
     form.agelowerbound.data = ''
     form.ageupperbound.data = ''
     form.ageunit.data = ''
+
+    # External assertions
     form.citations.process([''])
 
 
@@ -218,7 +225,7 @@ def edit():
                 # WTForms has the citation information in request.forms
                 pass
 
-            # Inducer(multiple possible values)
+            # Inducer (multiple possible values)
             if id != request.form.get('original_id', id):
                 # Load information from existing data.
                 inducerlist = getsimpleassertiondata(assertions=assertions, predicate='has_inducer')
@@ -231,12 +238,18 @@ def edit():
                 # WTForms has the citation information in request.forms
                 pass
 
-            # Assay (one possible value)
-            assays = getsimpleassertiondata(assertions=assertions, predicate='has_assay')
-            if len(assays) > 0:
-                form.assay.data = assays[0].get('code')
+            # Assay (multiple possible values)
+            if id != request.form.get('original_id', id):
+                # Load information from existing data.
+                assaylist = getsimpleassertiondata(assertions=assertions, predicate='has_assay')
+                if len(assaylist) > 0:
+                    form.assay.process(form.assay, [item['term'] for item in assaylist])
+                else:
+                    form.assay.process([''])
             else:
-                form.assay.data = 'select'
+                # User triggered POST by managing the list (via Javascript).
+                # WTForms has the citation information in request.forms
+                pass
 
             # Context assertions
             # Age

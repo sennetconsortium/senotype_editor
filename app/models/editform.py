@@ -147,7 +147,7 @@ class EditForm(Form):
     hallmark = FieldList(StringField('Hallmark'), min_entries=0)
     observable = FieldList(StringField('Molecular Observable'), min_entries=0)
     inducer = FieldList(StringField('Inducer'), min_entries=0)
-    assay = SelectField('Assays', choices=getchoices(sl=senlib, predicate='has_assay'))
+    assay = FieldList(StringField('Assay'), min_entries=0)
 
     # Context assertions
     agevalue = StringField('Value')

@@ -10,6 +10,7 @@ document.addEventListener('DOMContentLoaded', function() {
     initValuesetModal('has_hallmark', 'hallmark');
     initValuesetModal('has_molecular_observable', 'observable');
     initValuesetModal('has_inducer', 'inducer');
+    initValuesetModal('has_assay', 'assay');
 });
 
 // Remove item from list
