@@ -28,7 +28,6 @@ def valueset():
     predicate = request.args.get('predicate')
 
     # Convert to desired list of dicts
-    print(predicate)
     listret = [
         {'id': row['valueset_code'], 'label': row['valueset_term']}
         for _, row in senlib.getsenlibvalueset(predicate=predicate).iterrows()

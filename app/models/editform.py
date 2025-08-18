@@ -162,3 +162,6 @@ class EditForm(Form):
     origin = FieldList(StringField('Origin'), min_entries=0)
     # Datasets
     dataset = FieldList(StringField('Dataset'), min_entries=0)
+
+    # Specified markers
+    marker = dataset = FieldList(StringField('Specified Marker'), min_entries=0)

@@ -102,6 +102,8 @@ def setdefaults(form):
     form.origin.process([''])
     form.dataset.process([''])
 
+    # Markers
+    form.marker.process([''])
 
 @edit_blueprint.route('', methods=['POST', 'GET'])
 def edit():
@@ -298,6 +300,20 @@ def edit():
                 # User triggered POST by managing the list (via Javascript).
                 # WTForms has the information in request.forms
                 pass
+
+            # Markers (multiple possible values)
+            if id != request.form.get('original_id', id):
+                # Load dataset information from existing data.
+                markerlist = getsimpleassertiondata(assertions=assertions, predicate='has_characterizing_marker_set')
+                if len(markerlist) > 0:
+                    form.marker.process(form.marker, [item['code'] for item in markerlist])
+                else:
+                    form.marker.process([''])
+            else:
+                # User triggered POST by managing the list (via Javascript).
+                # WTForms has the information in request.forms
+                pass
+
 
     return render_template('edit.html', form=form)
 
