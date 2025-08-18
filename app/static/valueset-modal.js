@@ -6,6 +6,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // edit.html
     initValuesetModal('in_taxon', 'taxa');
     initValuesetModal('located_in', 'location');
+    initValuesetModal('has_cell_type','celltype')
 });
 
 // Remove item from list

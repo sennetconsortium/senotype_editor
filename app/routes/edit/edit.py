@@ -82,7 +82,7 @@ def setdefaults(form):
     form.submitteremail.data = ''
     form.taxa.process([''])
     form.location.process([''])
-    form.celltype.data = 'select'
+    form.celltype.process([''])
     form.observable.data = 'select'
     form.inducer.data = 'select'
     form.assay.data = 'select'
@@ -154,7 +154,7 @@ def edit():
 
             # Taxon (multiple possible values)
             if id != request.form.get('original_id', id):
-                # Load citation information from existing data.
+                # Load information from existing data.
                 taxonlist = getsimpleassertiondata(assertions=assertions, predicate='in_taxon')
                 if len(taxonlist) > 0:
                     form.taxa.process(form.taxa, [item['term'] for item in taxonlist])
@@ -167,7 +167,7 @@ def edit():
 
             # Locations (multiple possible values)
             if id != request.form.get('original_id', id):
-                # Load citation information from existing data.
+                # Load information from existing data.
                 locationlist = getsimpleassertiondata(assertions=assertions, predicate='located_in')
                 if len(locationlist) > 0:
                     form.location.process(form.location, [item['term'] for item in locationlist])
@@ -179,11 +179,17 @@ def edit():
                 pass
 
             # Cell type (one possible value)
-            celltypes = getsimpleassertiondata(assertions=assertions, predicate='has_cell_type')
-            if len(celltypes) > 0:
-                form.celltype.data = celltypes[0].get('code')
+            if id != request.form.get('original_id', id):
+                # Load information from existing data.
+                celltypelist = getsimpleassertiondata(assertions=assertions, predicate='has_cell_type')
+                if len(celltypelist) > 0:
+                    form.celltype.process(form.celltype, [item['term'] for item in celltypelist])
+                else:
+                    form.celltype.process([''])
             else:
-                form.celltype.data = 'select'
+                # User triggered POST by managing the citation list (via Javascript).
+                # WTForms has the citation information in request.forms
+                pass
 
             # Hallmark (one possible value)
             hallmarks = getsimpleassertiondata(assertions=assertions, predicate='has_hallmark')

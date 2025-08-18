@@ -143,7 +143,7 @@ class EditForm(Form):
     # Simple assertions
     taxa = FieldList(StringField('Taxa'), min_entries=0)
     location = FieldList(StringField('Location'), min_entries=0)
-    celltype = SelectField('Cell types', choices=getchoices(sl=senlib, predicate='has_cell_type'))
+    celltype = FieldList(StringField('Cell type'), min_entries=0)
     hallmark = SelectField('Hallmarks', choices=getchoices(sl=senlib, predicate='has_hallmark'))
     observable = SelectField('Observables', choices=getchoices(sl=senlib, predicate='has_molecular_observable'))
     inducer = SelectField('Inducers', choices=getchoices(sl=senlib, predicate='has_inducer'))

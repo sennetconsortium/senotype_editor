@@ -80,11 +80,17 @@
     <div class="row">
         <div class="col-md-6" style="background-color: #FEF2F2; border: 1px solid #ccc; border-radius: 5px; padding: 16px;">
             <strong>{{ form.celltype.label }}</strong>
-            <select name="{{ form.celltype.name }}" class="form-select input-fixed-width">
-                {% for value, label in form.celltype.choices %}
-                    <option value="{{ value }}" {% if form.celltype.data == value %}selected{% endif %}>{{ label }}</option>
+            <ul id="celltype-list" class="list-group mb-2">
+                {% for celltype_field in form.celltype %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        {{ celltype_field() }}
+                        <button type="button" class="btn btn-sm btn-danger ms-2" onclick="removeValue(this)">-</button>
+                    </li>
                 {% endfor %}
-            </select>
+            </ul>
+                <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#celltypeModal">
+                    +
+                </button>
         </div>
         <div class="col-md-6" style="background-color: #FEF2F2; border: 1px solid #ccc; border-radius: 5px; padding: 16px;">
             <strong>{{ form.hallmark.label }}</strong>
@@ -210,6 +216,20 @@
                 </div>
                 <div class="modal-body">
                     <div id="location-modal-list" class="list-group"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Celltype Modal for valueset-modal.js -->
+    <div class="modal fade" id="celltypeModal" tabindex="-1" aria-labelledby="celltypeModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="celltypeModalLabel">Select Cell type</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="celltype-modal-list" class="list-group"></div>
                 </div>
             </div>
         </div>
