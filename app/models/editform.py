@@ -144,9 +144,9 @@ class EditForm(Form):
     taxa = FieldList(StringField('Taxa'), min_entries=0)
     location = FieldList(StringField('Location'), min_entries=0)
     celltype = FieldList(StringField('Cell type'), min_entries=0)
-    hallmark = SelectField('Hallmarks', choices=getchoices(sl=senlib, predicate='has_hallmark'))
-    observable = SelectField('Observables', choices=getchoices(sl=senlib, predicate='has_molecular_observable'))
-    inducer = SelectField('Inducers', choices=getchoices(sl=senlib, predicate='has_inducer'))
+    hallmark = FieldList(StringField('Hallmark'), min_entries=0)
+    observable = FieldList(StringField('Molecular Observable'), min_entries=0)
+    inducer = FieldList(StringField('Inducer'), min_entries=0)
     assay = SelectField('Assays', choices=getchoices(sl=senlib, predicate='has_assay'))
 
     # Context assertions

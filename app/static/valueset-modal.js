@@ -6,7 +6,10 @@ document.addEventListener('DOMContentLoaded', function() {
     // edit.html
     initValuesetModal('in_taxon', 'taxa');
     initValuesetModal('located_in', 'location');
-    initValuesetModal('has_cell_type','celltype')
+    initValuesetModal('has_cell_type','celltype');
+    initValuesetModal('has_hallmark', 'hallmark');
+    initValuesetModal('has_molecular_observable', 'observable');
+    initValuesetModal('has_inducer', 'inducer');
 });
 
 // Remove item from list

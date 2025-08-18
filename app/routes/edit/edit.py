@@ -83,8 +83,9 @@ def setdefaults(form):
     form.taxa.process([''])
     form.location.process([''])
     form.celltype.process([''])
-    form.observable.data = 'select'
-    form.inducer.data = 'select'
+    form.hallmark.process([''])
+    form.observable.process([''])
+    form.inducer.process([''])
     form.assay.data = 'select'
     form.agevalue.data = ''
     form.agelowerbound.data = ''
@@ -161,7 +162,7 @@ def edit():
                 else:
                     form.taxa.process([''])
             else:
-                # User triggered POST by managing the citation list (via Javascript).
+                # User triggered POST by managing the list (via Javascript).
                 # WTForms has the citation information in request.forms
                 pass
 
@@ -174,7 +175,7 @@ def edit():
                 else:
                     form.location.process([''])
             else:
-                # User triggered POST by managing the citation list (via Javascript).
+                # User triggered POST by managing the list (via Javascript).
                 # WTForms has the citation information in request.forms
                 pass
 
@@ -187,30 +188,48 @@ def edit():
                 else:
                     form.celltype.process([''])
             else:
-                # User triggered POST by managing the citation list (via Javascript).
+                # User triggered POST by managing the list (via Javascript).
                 # WTForms has the citation information in request.forms
                 pass
 
-            # Hallmark (one possible value)
-            hallmarks = getsimpleassertiondata(assertions=assertions, predicate='has_hallmark')
-            if len(hallmarks) > 0:
-                form.hallmark.data = hallmarks[0].get('code')
+            # Hallmark (multiple possible values)
+            if id != request.form.get('original_id', id):
+                # Load information from existing data.
+                hallmarklist = getsimpleassertiondata(assertions=assertions, predicate='has_hallmark')
+                if len(hallmarklist) > 0:
+                    form.hallmark.process(form.hallmark, [item['term'] for item in hallmarklist])
+                else:
+                    form.hallmark.process([''])
             else:
-                form.hallmark.data = 'select'
+                # User triggered POST by managing the list (via Javascript).
+                # WTForms has the citation information in request.forms
+                pass
 
-            # Molecular observable (one possible value)
-            observables = getsimpleassertiondata(assertions=assertions, predicate='has_molecular_observable')
-            if len(observables) > 0:
-                form.observable.data = observables[0].get('code')
+            # Molecular observable (multiple possible values)
+            if id != request.form.get('original_id', id):
+                # Load information from existing data.
+                observablelist = getsimpleassertiondata(assertions=assertions, predicate='has_molecular_observable')
+                if len(observablelist) > 0:
+                    form.observable.process(form.observable, [item['term'] for item in observablelist])
+                else:
+                    form.observable.process([''])
             else:
-                form.observable.data = 'select'
+                # User triggered POST by managing the list (via Javascript).
+                # WTForms has the citation information in request.forms
+                pass
 
-            # Inducer (one possible value)
-            inducers = getsimpleassertiondata(assertions=assertions, predicate='has_inducer')
-            if len(inducers) > 0:
-                form.inducer.data = inducers[0].get('code')
+            # Inducer(multiple possible values)
+            if id != request.form.get('original_id', id):
+                # Load information from existing data.
+                inducerlist = getsimpleassertiondata(assertions=assertions, predicate='has_inducer')
+                if len(inducerlist) > 0:
+                    form.inducer.process(form.inducer, [item['term'] for item in inducerlist])
+                else:
+                    form.inducer.process([''])
             else:
-                form.inducer.data = 'select'
+                # User triggered POST by managing the list (via Javascript).
+                # WTForms has the citation information in request.forms
+                pass
 
             # Assay (one possible value)
             assays = getsimpleassertiondata(assertions=assertions, predicate='has_assay')

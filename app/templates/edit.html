@@ -48,76 +48,94 @@
         <!-- TAXON section with remove/add buttons and modal -->
         <div class="col-md-6" style="background-color: #FEF2F2; border: 1px solid #ccc; border-radius: 5px; padding: 16px;">
             <strong>{{ form.taxa.label }}</strong>
-            <ul id="taxa-list" class="list-group mb-2">
+            <ul id="taxa-list" class="list-group mb-2 w-100">
                 {% for taxa_field in form.taxa %}
-                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                        {{ taxa_field() }}
+                    <li class="list-group-item d-flex justify-content-between align-items-center w-100">
+                        {{ taxa_field(class="form-control w-100") }}
                         <button type="button" class="btn btn-sm btn-danger ms-2" onclick="removeValue(this)">-</button>
                     </li>
                 {% endfor %}
             </ul>
-                <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#taxaModal">
-                    +
-                </button>
+            <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#taxaModal">
+                +
+            </button>
         </div>
         <!-- LOCATION section -->
         <div class="col-md-6" style="background-color: #FEF2F2; border: 1px solid #ccc; border-radius: 5px; padding: 16px;">
             <strong>{{ form.location.label }}</strong>
-            <ul id="location-list" class="list-group mb-2">
+            <ul id="location-list" class="list-group mb-2 w-100">
                 {% for location_field in form.location %}
-                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                        {{ location_field() }}
+                    <li class="list-group-item d-flex justify-content-between align-items-center w-100">
+                        {{ location_field(class="form-control w-100") }}
                         <button type="button" class="btn btn-sm btn-danger ms-2" onclick="removeValue(this)">-</button>
                     </li>
                 {% endfor %}
             </ul>
-                <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#locationModal">
-                    +
-                </button>
+            <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#locationModal">
+                +
+            </button>
         </div>
     </div>
     <!-- Cell Type / Hallmark -->
     <div class="row">
         <div class="col-md-6" style="background-color: #FEF2F2; border: 1px solid #ccc; border-radius: 5px; padding: 16px;">
             <strong>{{ form.celltype.label }}</strong>
-            <ul id="celltype-list" class="list-group mb-2">
+            <ul id="celltype-list" class="list-group mb-2 w-100">
                 {% for celltype_field in form.celltype %}
-                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                        {{ celltype_field() }}
+                    <li class="list-group-item d-flex justify-content-between align-items-center w-100">
+                        {{ celltype_field(class="form-control w-100") }}
                         <button type="button" class="btn btn-sm btn-danger ms-2" onclick="removeValue(this)">-</button>
                     </li>
                 {% endfor %}
             </ul>
-                <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#celltypeModal">
-                    +
-                </button>
+            <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#celltypeModal">
+                +
+            </button>
         </div>
         <div class="col-md-6" style="background-color: #FEF2F2; border: 1px solid #ccc; border-radius: 5px; padding: 16px;">
             <strong>{{ form.hallmark.label }}</strong>
-            <select name="{{ form.hallmark.name }}" class="form-select input-fixed-width">
-                {% for value, label in form.hallmark.choices %}
-                    <option value="{{ value }}" {% if form.hallmark.data == value %}selected{% endif %}>{{ label }}</option>
+            <ul id="hallmark-list" class="list-group mb-2 w-100">
+                {% for hallmark_field in form.hallmark %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center w-100">
+                        {{ hallmark_field(class="form-control w-100") }}
+                        <button type="button" class="btn btn-sm btn-danger ms-2" onclick="removeValue(this)">-</button>
+                    </li>
                 {% endfor %}
-            </select>
+            </ul>
+            <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#hallmarkModal">
+                +
+            </button>
         </div>
     </div>
     <!-- Observable / Inducer -->
     <div class="row">
         <div class="col-md-6" style="background-color: #FEF2F2; border: 1px solid #ccc; border-radius: 5px; padding: 16px;">
             <strong>{{ form.observable.label }}</strong>
-            <select name="{{ form.observable.name }}" class="form-select input-fixed-width">
-                {% for value, label in form.observable.choices %}
-                    <option value="{{ value }}" {% if form.observable.data == value %}selected{% endif %}>{{ label }}</option>
+            <ul id="observable-list" class="list-group mb-2 w-100">
+                {% for observable_field in form.observable %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center w-100">
+                        {{ observable_field(class="form-control w-100") }}
+                        <button type="button" class="btn btn-sm btn-danger ms-2" onclick="removeValue(this)">-</button>
+                    </li>
                 {% endfor %}
-            </select>
+            </ul>
+            <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#observableModal">
+                +
+            </button>
         </div>
         <div class="col-md-6" style="background-color: #FEF2F2; border: 1px solid #ccc; border-radius: 5px; padding: 16px;">
             <strong>{{ form.inducer.label }}</strong>
-            <select name="{{ form.inducer.name }}" class="form-select input-fixed-width">
-                {% for value, label in form.inducer.choices %}
-                    <option value="{{ value }}" {% if form.inducer.data == value %}selected{% endif %}>{{ label }}</option>
+            <ul id="inducer-list" class="list-group mb-2 w-100">
+                {% for inducer_field in form.inducer %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center w-100">
+                        {{ inducer_field(class="form-control w-100") }}
+                        <button type="button" class="btn btn-sm btn-danger ms-2" onclick="removeValue(this)">-</button>
+                    </li>
                 {% endfor %}
-            </select>
+            </ul>
+            <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#inducerModal">
+                +
+            </button>
         </div>
     </div>
     <!-- Assay / Context Assertions -->
@@ -230,6 +248,48 @@
                 </div>
                 <div class="modal-body">
                     <div id="celltype-modal-list" class="list-group"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Hallmark Modal for valueset-modal.js -->
+    <div class="modal fade" id="hallmarkModal" tabindex="-1" aria-labelledby="hallmarkModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="hallmarkModalLabel">Select Hallmark</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="hallmark-modal-list" class="list-group"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Observable Modal for valueset-modal.js -->
+    <div class="modal fade" id="observableModal" tabindex="-1" aria-labelledby="observableModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="observableModalLabel">Select Observable</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="observable-modal-list" class="list-group"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Inducer Modal for valueset-modal.js -->
+    <div class="modal fade" id="inducerModal" tabindex="-1" aria-labelledby="inducerModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="inducerModalLabel">Select Inducer</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="inducer-modal-list" class="list-group"></div>
                 </div>
             </div>
         </div>
