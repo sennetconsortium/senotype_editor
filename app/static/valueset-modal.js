@@ -50,7 +50,7 @@ function addValuesetToList(fieldname, valuesetId, valuesetLabel) {
     // Remove button
     var btn = document.createElement('button');
     btn.className = 'btn btn-sm btn-danger ms-2';
-    btn.textContent = 'Remove';
+    btn.textContent = '-';
     btn.onclick = function () { li.remove(); };
     li.appendChild(btn);
     ul.appendChild(li);
