@@ -72,6 +72,31 @@ def getcontextassertiondata(assertions: list, predicate: str, context: str) -> d
 
     return {}
 
+def getregmarkerdata(assertions: list) -> list:
+    """
+    Obtains information related to the markers of Senotype submission.
+    :param assertions: list of assertions
+    """
+
+    listret = []
+    for assertion in assertions:
+        predicate = assertion.get('predicate')
+        predicate_term = predicate.get('term')
+
+        if predicate_term in ['up_regulates','down_regulates','inconclusively_regulates']:
+            objects = assertion.get('objects')
+            for o in objects:
+                symbol = o.get('symbol')
+                if predicate_term == 'up_regulates':
+                    icon = '\u2191'
+                elif predicate_term == 'down_regulates':
+                    icon = '\u2193'
+                else:
+                    icon = '?'
+                listret.append({'symbol': f'{symbol} \t {icon}'})
+
+    return listret
+
 
 def setdefaults(form):
 
@@ -104,6 +129,7 @@ def setdefaults(form):
 
     # Markers
     form.marker.process([''])
+    form.regmarker.process([''])
 
 @edit_blueprint.route('', methods=['POST', 'GET'])
 def edit():
@@ -123,11 +149,9 @@ def edit():
     # Add 'new' as an option. Must be a tuple for correct display in the form.
     choices = [("new", "(new)")] + [(id, id) for id in senlib.senlibjsonids]
 
-    # Load the edit form and the edit page.
-    form = EditForm(request.form)
-    form.senotypeid.choices = choices
-
     if request.method == 'GET':
+        form = EditForm()  # Empty form
+        form.senotypeid.choices = choices
         # This is from the redirect from the login page.
         setdefaults(form=form)
 
@@ -135,6 +159,10 @@ def edit():
 
         # This is a result of the user selecting something other than 'new'
         # for a Senotype ID--i.e, an existing senotype. Load data.
+
+        # Load the edit form and the edit page.
+        form = EditForm(request.form)
+        form.senotypeid.choices = choices
 
         id = form.senotypeid.data
 
@@ -301,7 +329,7 @@ def edit():
                 # WTForms has the information in request.forms
                 pass
 
-            # Markers (multiple possible values)
+            # Specified Markers (multiple possible values)
             if id != request.form.get('original_id', id):
                 # Load dataset information from existing data.
                 markerlist = getsimpleassertiondata(assertions=assertions, predicate='has_characterizing_marker_set')
@@ -314,14 +342,19 @@ def edit():
                 # WTForms has the information in request.forms
                 pass
 
+            # Regulating Markers (multiple possible values)
+            if id != request.form.get('original_id', id):
+                # Load dataset information from existing data.
+                regmarkerlist = getregmarkerdata(assertions=assertions)
+
+                print(regmarkerlist)
+                if len(markerlist) > 0:
+                    form.regmarker.process(form.regmarker, [item['symbol'] for item in regmarkerlist])
+                else:
+                    form.regmarker.process([''])
+            else:
+                # User triggered POST by managing the list (via Javascript).
+                # WTForms has the information in request.forms
+                pass
 
     return render_template('edit.html', form=form)
-
-
-
-
-
-
-
-
-

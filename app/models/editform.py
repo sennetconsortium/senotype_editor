@@ -4,8 +4,9 @@ Form used to manage Senotype submisstion JSONs.
 
 
 from wtforms import (Form, StringField, SelectField, DecimalField, validators, ValidationError,
-                     TextAreaField, SubmitField, FieldList, StringField)
+                     TextAreaField, SubmitField, FieldList, StringField, FormField)
 
+#from flask_wtf import FlaskForm
 
 # Helper classes
 from models.appconfig import AppConfig
@@ -141,7 +142,7 @@ class EditForm(Form):
     submitteremail = StringField('email')
 
     # Simple assertions
-    taxa = FieldList(StringField('Taxon'), min_entries=0)
+    taxa = FieldList(StringField('Taxon'), min_entries=0, label='Taxon')
     location = FieldList(StringField('Location'), min_entries=0)
     celltype = FieldList(StringField('Cell type'), min_entries=0)
     hallmark = FieldList(StringField('Hallmark'), min_entries=0)
@@ -165,3 +166,6 @@ class EditForm(Form):
 
     # Specified markers
     marker = FieldList(StringField('Specified Marker'), min_entries=0, label='Specified Marker')
+
+    # Regulating markers
+    regmarker = FieldList(StringField('Regulating Marker'), label='Regulating Marker', min_entries=0)
