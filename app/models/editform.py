@@ -164,4 +164,4 @@ class EditForm(Form):
     dataset = FieldList(StringField('Dataset'), min_entries=0)
 
     # Specified markers
-    marker = dataset = FieldList(StringField('Specified Marker'), min_entries=0)
+    marker = FieldList(StringField('Specified Marker'), min_entries=0, label='Specified Marker')

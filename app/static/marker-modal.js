@@ -101,7 +101,8 @@ document.addEventListener('DOMContentLoaded', function () {
                         btn.textContent = description;
                         btn.onclick = function () {
                             // Use proper prefix for marker ID
-                            var markerId = (type === "protein") ? ('UNIPROTKB:' + id) : ('HGNC:' + id);
+                            // var markerId = (type === "protein") ? ('UNIPROTKB:' + id) : ('HGNC:' + id);
+                            var markerId = (type === "gene") ? (approved_symbol) : (id);
                             addMarker(markerId, description);
                             // Hide modal with Bootstrap 5
                             var modalEl = document.getElementById('markerSearchModal');

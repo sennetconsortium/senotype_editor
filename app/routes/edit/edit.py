@@ -306,7 +306,7 @@ def edit():
                 # Load dataset information from existing data.
                 markerlist = getsimpleassertiondata(assertions=assertions, predicate='has_characterizing_marker_set')
                 if len(markerlist) > 0:
-                    form.marker.process(form.marker, [item['code'] for item in markerlist])
+                    form.marker.process(form.marker, [item['symbol'] for item in markerlist])
                 else:
                     form.marker.process([''])
             else:

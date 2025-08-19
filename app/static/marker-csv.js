@@ -113,13 +113,16 @@ document.addEventListener("DOMContentLoaded", function () {
                 // Use approved_symbol if present, else symbol, else id
                 let symbol = m.approved_symbol || m.symbol || m.id;
                 id = "HGNC:" + symbol;
-                description = id;
+                //description = id;
+                description = symbol;
             } else {
                 // Use uniprotkb_id if present, else id
                 let proteinId = m.uniprotkb_id || m.id;
                 id = "UNIPROTKB:" + proteinId;
-                description = id;
+                //description = id;
+                description = proteinId;
             }
+            console.log(description);
             // Prevent duplicates
             if (Array.from(ul.querySelectorAll('input')).some(input => input.value === id)) return;
             let li = document.createElement('li');
@@ -127,12 +130,13 @@ document.addEventListener("DOMContentLoaded", function () {
             let input = document.createElement('input');
             input.type = 'text';
             input.name = 'marker-' + ul.children.length;
-            input.value = id;
-            input.className = 'form-control d-none';
+            //input.value = id;
+            input.value = description;
+            input.className = 'form-control w-100';
             li.appendChild(input);
-            let span = document.createElement('span');
-            span.textContent = description || id;
-            li.appendChild(span);
+            //let span = document.createElement('span');
+            //span.textContent = description || id;
+            //li.appendChild(span);
             let btn = document.createElement('button');
             btn.className = 'btn btn-sm btn-danger ms-2';
             btn.textContent = '-';
