@@ -209,7 +209,7 @@
             </button>
         </div>
     </div>
-    <!-- SenNet datasets/Specified Markers -->
+    <!-- SenNet datasets -->
     <div class="row">
         <div class="col-md-6" style="background-color: #FEF2F2; border: 1px solid #ccc; border-radius: 5px; padding: 16px;">
             <strong>{{ form.dataset.label }}</strong>
@@ -226,6 +226,11 @@
             </button>
         </div>
         <div class="col-md-6" style="background-color: #FEF2F2; border: 1px solid #ccc; border-radius: 5px; padding: 16px;">
+        </div>
+    </div>
+    <!-- Regulating Markers -->
+    <div class="row">
+        <div class="col-md-6" style="background-color: #F0FDF4; border: 1px solid #ccc; border-radius: 5px; padding: 16px;">
             <strong>{{ form.marker.label }}</strong>
             <ul id="marker-list" class="list-group mb-2 w-100">
                 {% for marker_field in form.marker %}
@@ -242,10 +247,8 @@
             <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#markerCsvModal">
                 Add Markers from CSV
             </button>
-     </div>
-    <!-- Regulating Markers -->
-    <div class="row">
-        <div class="col-md-6" style="background-color: #FEF2F2; border: 1px solid #ccc; border-radius: 5px; padding: 16px;">
+        </div>
+        <div class="col-md-6" style="background-color: #F0FDF4; border: 1px solid #ccc; border-radius: 5px; padding: 16px;">
             <strong>{{ form.regmarker.label }}</strong>
             <ul id="regmarker-list" class="list-group mb-2 w-100">
                 {% for regmarker_field in form.regmarker %}
@@ -262,7 +265,8 @@
             <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#regmarkerCsvModal">
                 Add Markers from CSV
             </button>
-     </div>
+        </div>
+    </div>
     <!--MODAL DIVS -->
     <!-- Modal for external API search for PubMed citation-->
     <div class="modal fade" id="citationSearchModal" tabindex="-1" aria-labelledby="citationSearchModalLabel" aria-hidden="true">
@@ -315,7 +319,7 @@
             </div>
         </div>
     </div>
-   <!-- Modal for external API search for specified marker-->
+    <!-- Modal for external API search for specified marker-->
     <div class="modal fade" id="markerSearchModal" tabindex="-1" aria-labelledby="markerSearchModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -361,11 +365,11 @@
                         <div>
                             <div class="form-check form-check-inline">
                                 <input class="form-check-input" type="radio" name="marker-type" id="regmarker-type-gene" value="gene" checked>
-                                <label class="form-check-label" for="marker-type-gene">Gene</label>
+                                <label class="form-check-label" for="regmarker-type-gene">Gene</label>
                             </div>
                             <div class="form-check form-check-inline">
                                 <input class="form-check-input" type="radio" name="marker-type" id="regmarker-type-protein" value="protein">
-                                <label class="form-check-label" for="marker-type-protein">Protein</label>
+                                <label class="form-check-label" for="regmarker-type-protein">Protein</label>
                             </div>
                         </div>
                     </div>
@@ -395,7 +399,7 @@
             </div>
         </div>
     </div>
-     <!-- Taxa Modal for valueset-modal.js -->
+    <!-- Taxa Modal for valueset-modal.js -->
     <div class="modal fade" id="taxaModal" tabindex="-1" aria-labelledby="taxaModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
