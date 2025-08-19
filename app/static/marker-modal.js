@@ -31,7 +31,8 @@ function addMarker(id, description) {
     // Remove button
     var btn = document.createElement('button');
     btn.className = 'btn btn-sm btn-danger ms-2';
-    btn.textContent = 'Remove';
+    btn.textContent = '-';
+    btn.type = 'button';
     btn.onclick = function () { li.remove(); };
     li.appendChild(btn);
 
@@ -39,6 +40,7 @@ function addMarker(id, description) {
 }
 
 // Modal search logic (fetching marker IDs, then their descriptions)
+// Validates marker by calling /ontology/genes/{id} or /ontology/proteins/{id} before adding
 document.addEventListener('DOMContentLoaded', function () {
     let lastMarkerSearch = '';
     var searchInput = document.getElementById('marker-search-input');
@@ -46,6 +48,7 @@ document.addEventListener('DOMContentLoaded', function () {
         console.error('Element #marker-search-input not found in DOM!');
         return;
     }
+
     searchInput.addEventListener('input', function () {
         var query = this.value.trim();
         var resultsDiv = document.getElementById('marker-search-results');
@@ -69,6 +72,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
             fetch(apiUrl)
                 .then(response => {
+                console.log(response);
                     if (!response.ok) throw new Error("404 or API error");
                     return response.json();
                 })
@@ -80,16 +84,19 @@ document.addEventListener('DOMContentLoaded', function () {
                         return;
                     }
                     items.forEach(item => {
-                        var id, description;
+                        var id, description, validateId;
                         if (type === "protein") {
-                            // Use uniprotkb_id and recommended_name
                             id = item.uniprotkb_id || query;
+                            // If the API returns no valid ID, don't let user add it.
+                            if (!id) return;
+                            validateId = id;
                             var recNameArr = item.recommended_name || [];
                             var recName = Array.isArray(recNameArr) ? recNameArr[0] : recNameArr;
                             description = (id && recName) ? (id + ' (' + recName + ')') : (id || recName || query);
                         } else {
-                            // Use HGNC ID and approved_symbol/name
                             id = item.hgnc_id || query;
+                            if (!id) return;
+                            validateId = id;
                             var approved_symbol = item.approved_symbol;
                             var approved_name = item.approved_name;
                             description = (approved_symbol && approved_name)
@@ -99,15 +106,39 @@ document.addEventListener('DOMContentLoaded', function () {
                         var btn = document.createElement('button');
                         btn.className = 'btn btn-link text-start w-100 mb-1';
                         btn.textContent = description;
+                        btn.type = 'button'; // Prevent form submission!
                         btn.onclick = function () {
-                            // Use proper prefix for marker ID
-                            // var markerId = (type === "protein") ? ('UNIPROTKB:' + id) : ('HGNC:' + id);
-                            var markerId = (type === "gene") ? (approved_symbol) : (id);
-                            addMarker(markerId, description);
-                            // Hide modal with Bootstrap 5
-                            var modalEl = document.getElementById('markerSearchModal');
-                            var modal = bootstrap.Modal.getInstance(modalEl);
-                            modal.hide();
+                            // Remove previous error, if any
+                            var prevError = resultsDiv.querySelector('.text-danger');
+                            if (prevError) prevError.remove();
+
+                            // Validate by calling /ontology/genes/id or /ontology/proteins/id
+                            var validateUrl;
+                            if (type === "protein") {
+                                validateUrl = '/ontology/proteins/' + encodeURIComponent(validateId);
+                            } else {
+                                validateUrl = '/ontology/genes/' + encodeURIComponent(validateId);
+                            }
+                            fetch(validateUrl)
+                                .then(validateResponse => {
+                                    if (!validateResponse.ok) throw new Error("Not found");
+                                    return validateResponse.json();
+                                })
+                                .then(validateData => {
+                                    // Only add marker if validation succeeded (i.e., exists in ontology)
+                                    addMarker(id, description);
+                                    // Hide modal with Bootstrap 5
+                                    var modalEl = document.getElementById('markerSearchModal');
+                                    var modal = bootstrap.Modal.getInstance(modalEl);
+                                    modal.hide();
+                                })
+                                .catch(() => {
+                                    // Show error if not found, but keep search results and do NOT add marker
+                                    var errorDiv = document.createElement('div');
+                                    errorDiv.className = "text-danger mb-2";
+                                    errorDiv.textContent = "Marker not found in UBKG.";
+                                    resultsDiv.prepend(errorDiv);
+                                });
                         };
                         resultsDiv.appendChild(btn);
                     });
@@ -124,7 +155,6 @@ document.addEventListener('DOMContentLoaded', function () {
     var markerTypeRadios = document.querySelectorAll('input[name="marker-type"]');
     markerTypeRadios.forEach(function(radio) {
         radio.addEventListener('change', function () {
-            // Trigger search if input is not empty
             if (searchInput.value.trim().length > 0) {
                 searchInput.dispatchEvent(new Event('input'));
             }
