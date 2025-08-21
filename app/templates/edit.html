@@ -508,16 +508,29 @@
             </div>
             <div class="modal-body">
                 <p>Please upload a CSV file with <strong>type</strong> and <strong>id</strong> columns.
-                    <br>
-                    <small>Type must be <code>gene</code> or <code>protein</code>.</small></p>
-                    <small>A gene id must correspond to a HGNC symbol--e.g., <code>BRCA1</code>.</small>
-                    <small>A protein id must correspond to a UniProtKB ID--e.g., <code>Q13201</code>.</small>
+                    <ul>
+                        <li>
+                            <small>
+                                <strong>type</strong> must be <code>gene</code> or <code>protein</code>.
+                            </small>
+                        </li>
+                        <li>
+                            <small>
+                                A gene <strong>id</strong> must correspond to a HGNC symbol--e.g., <code>BRCA1</code>.
+                            </small>
+                        </li>
+                        <li>
+                            <small>
+                                A protein <strong>id</strong> must correspond to a UniProtKB ID--e.g., <code>Q13201</code>.
+                            </small>
+                        </li>
+                    </ul>
                     <input type="file" class="form-control mb-2" id="marker-csv-file" accept=".csv" required>
                     <div id="csv-validation-results" class="mt-2 small">
                     </div>
             </div>
             <div class="modal-footer">
-                <button type="submit" id="marker-csv-submit" class="btn btn-primary" disabled>Add Markers</button>
+                <button type="submit" id="marker-csv-submit" class="btn btn-primary" disabled>Add specified markers</button>
             </div>
         </form>
     </div>
@@ -533,18 +546,53 @@
             <div class="modal-body">
                 <p>Please upload a CSV file with <strong>type</strong>, <strong>id</strong>, and <strong>action</strong> columns.
                     <br>
-                    <small>Type must be <code>gene</code> or <code>protein</code>.</small>
+                    <ul>
+                        <li>
+                            <small>
+                                <strong>type</strong> must be <code>gene</code> or <code>protein</code>.
+                            </small>
+                        </li>
+                        <li>
+                            <small>
+                                A gene <strong>id</strong> must correspond to a HGNC symbol--e.g., <code>BRCA1</code>.
+                            </small>
+                        </li>
+                        <li>
+                            <small>
+                                A protein <strong>id</strong> must correspond to a UniProtKB ID--e.g., <code>Q13201</code>.
+                            </small>
+                        </li>
+                        <li>
+                            <small>
+                                The <strong>action</strong> must be one of the following:
+                            </small>
+                            <ul>
+                                <li>
+                                    <small>
+                                        <code>1</code> for <i>upregulation</i>
+                                    </small>
+                                </li>
+                                <li>
+                                    <small>
+                                        <code>-1</code> for <i>downregulation</i>
+                                    </small>
+                                </li>
+                                <li>
+                                    <small>
+                                        <code>0</code> for <i>inconclusive regulation</i>
+                                    </small>
+                                </li>
+                            </ul>
+                        </li>
+                    </ul>
+                     <br>
                     <br>
-                    <small>A gene id must correspond to a HGNC symbol--e.g., <code>BRCA1</code>.</small>
-                    <small>A protein id must correspond to a UniProtKB ID--e.g., <code>Q13201</code>.</small>
-                    <br>
-                    <small>The action must be one of the following: <code>1</code> for <i>upregulation</i>; <code>-1</code> for <i>downregulation</i>; or <code>0</code> for <i>inconclusive regulation</i>.</small>
-                    <input type="file" class="form-control mb-2" id="regmarker-csv-file" accept=".csv" required>
+                     <input type="file" class="form-control mb-2" id="regmarker-csv-file" accept=".csv" required>
                     <div id="regcsv-validation-results" class="mt-2 small">
                     </div>
             </div>
             <div class="modal-footer">
-                <button type="submit" id="regmarker-csv-submit" class="btn btn-primary" disabled>Add Markers</button>
+                <button type="submit" id="regmarker-csv-submit" class="btn btn-primary" disabled>Add regulating markers</button>
             </div>
         </form>
     </div>
