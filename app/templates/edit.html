@@ -6,6 +6,7 @@
     <img src="static/editor.png" width="106" height="101" alt="Senotype Editor" style="border: 1px solid #ccc;">
     <h2 class="m-3">Senotype Editor</h2>
 </div>
+<!--EDIT FORM -->
 <form id="edit_form" method="post" class="mt-0 m-3 p-3">
     <!-- Senotype / Submitter -->
     <div class="row">
@@ -78,6 +79,7 @@
     </div>
     <!-- Cell Type / Hallmark -->
     <div class="row">
+        <!-- CELL TYPE section -->
         <div class="col-md-6" style="background-color: #FEF2F2; border: 1px solid #ccc; border-radius: 5px; padding: 16px;">
             <strong>{{ form.celltype.label }}</strong>
             <ul id="celltype-list" class="list-group mb-2 w-100">
@@ -92,6 +94,7 @@
                 +
             </button>
         </div>
+        <!-- HALLMARK section -->
         <div class="col-md-6" style="background-color: #FEF2F2; border: 1px solid #ccc; border-radius: 5px; padding: 16px;">
             <strong>{{ form.hallmark.label }}</strong>
             <ul id="hallmark-list" class="list-group mb-2 w-100">
@@ -109,6 +112,7 @@
     </div>
     <!-- Observable / Inducer -->
     <div class="row">
+        <!-- OBSERVABLE section -->
         <div class="col-md-6" style="background-color: #FEF2F2; border: 1px solid #ccc; border-radius: 5px; padding: 16px;">
             <strong>{{ form.observable.label }}</strong>
             <ul id="observable-list" class="list-group mb-2 w-100">
@@ -123,6 +127,7 @@
                 +
             </button>
         </div>
+        <!-- INDUCER section -->
         <div class="col-md-6" style="background-color: #FEF2F2; border: 1px solid #ccc; border-radius: 5px; padding: 16px;">
             <strong>{{ form.inducer.label }}</strong>
             <ul id="inducer-list" class="list-group mb-2 w-100">
@@ -140,6 +145,7 @@
     </div>
     <!-- Assay / Context Assertions -->
     <div class="row">
+        <!-- ASSAY section -->
         <div class="col-md-6" style="background-color: #FEF2F2; border: 1px solid #ccc; border-radius: 5px; padding: 16px;">
             <strong>{{ form.assay.label }}</strong>
             <ul id="assay-list" class="list-group mb-2 w-100">
@@ -154,6 +160,7 @@
                 +
             </button>
         </div>
+        <!-- CONTEXT assertion section -->
         <div class="col-md-6" style="background-color: #FEF2F2; border: 1px solid #ccc; border-radius: 5px; padding: 16px;">
             <div class="container">
                 <div class="row mb-3">
@@ -180,6 +187,7 @@
     </div>
     <!-- PubMed Citations/RRID origin -->
     <div class="row">
+        <!-- CITATION section -->
         <div class="col-md-6" style="background-color: #FEF2F2; border: 1px solid #ccc; border-radius: 5px; padding: 16px;">
             <strong>{{ form.citation.label }}</strong>
             <ul id="citation-list" class="list-group mb-2 w-100">
@@ -194,6 +202,7 @@
                 +
             </button>
         </div>
+        <!-- ORIGIN sectno -->
         <div class="col-md-6" style="background-color: #FEF2F2; border: 1px solid #ccc; border-radius: 5px; padding: 16px;">
             <strong>{{ form.origin.label }}</strong>
             <ul id="origin-list" class="list-group mb-2 w-100">
@@ -230,6 +239,7 @@
     </div>
     <!-- Specified Markers/Regulating Markers -->
     <div class="row">
+        <!-- SPECIFIED MARKERS  section -->
         <div class="col-md-6" style="background-color: #F0FDF4; border: 1px solid #ccc; border-radius: 5px; padding: 16px;">
             <strong>{{ form.marker.label }}</strong>
             <ul id="marker-list" class="list-group mb-2 w-100">
@@ -248,6 +258,7 @@
                 Add Markers from CSV
             </button>
         </div>
+        <!-- REGULATING MARKERS section -->
         <div class="col-md-6" style="background-color: #F0FDF4; border: 1px solid #ccc; border-radius: 5px; padding: 16px;">
             <strong>{{ form.regmarker.label }}</strong>
             <ul id="regmarker-list" class="list-group mb-2 w-100">
@@ -302,7 +313,7 @@
             </div>
         </div>
     </div>
-    <!-- Modal for external API search for dataset-->
+    <!-- Modal for external SenNet entity-api search for dataset-->
     <div class="modal fade" id="datasetSearchModal" tabindex="-1" aria-labelledby="datasetSearchModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -319,7 +330,7 @@
             </div>
         </div>
     </div>
-    <!-- Modal for external API search for specified marker-->
+    <!-- Modal for external ubkg-api search for specified marker-->
     <div class="modal fade" id="markerSearchModal" tabindex="-1" aria-labelledby="markerSearchModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -350,7 +361,7 @@
             </div>
         </div>
     </div>
-    <!-- Modal for external API search for regulated marker-->
+    <!-- Modal for external ubkg-api search for regulated marker-->
     <div class="modal fade" id="regmarkerSearchModal" tabindex="-1" aria-labelledby="regmarkerSearchModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -399,7 +410,7 @@
             </div>
         </div>
     </div>
-    <!-- Taxa Modal for valueset-modal.js -->
+    <!-- Taxon Modal for valueset-modal.js -->
     <div class="modal fade" id="taxaModal" tabindex="-1" aria-labelledby="taxaModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -498,6 +509,13 @@
         </div>
     </div>
 </form>
+<!-- UPDATE FORM below edit_form -->
+<form id="update_form" method="post" action="/update" class="my-4">
+    <div class="d-flex justify-content-center">
+        <button id="update_btn" type="submit" class="btn btn-primary">Update</button>
+    </div>
+</form>
+<!-- CSV UPLOAD CSV MODAL FORMS -->
 <!-- Modal div with form to upload CSV of specified markers. Placed here so that form will not be transprent. -->
 <div class="modal fade" id="markerCsvModal" tabindex="-1" aria-labelledby="markerCsvModalLabel" aria-hidden="true">
     <div class="modal-dialog">
