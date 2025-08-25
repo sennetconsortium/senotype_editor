@@ -4,7 +4,7 @@ Works with editform.py.
 
 """
 
-from flask import Blueprint, request, render_template
+from flask import Blueprint, request, render_template, session
 
 # WTForms
 from models.editform import EditForm
@@ -12,6 +12,8 @@ from models.editform import EditForm
 # Helper classes
 from models.appconfig import AppConfig
 from models.senlib import SenLib
+
+from models.clearerrors import clearerrors
 
 edit_blueprint = Blueprint('edit', __name__, url_prefix='/edit')
 
@@ -108,7 +110,7 @@ def setdefaults(form):
     form.submitteremail.data = ''
 
     # Simple assertions
-    form.taxa.process([''])
+    form.taxon.process([''])
     form.location.process([''])
     form.celltype.process([''])
     form.hallmark.process([''])
@@ -150,27 +152,33 @@ def edit():
     choices = [("new", "(new)")] + [(id, id) for id in senlib.senlibjsonids]
 
     if request.method == 'GET':
+        # This is the result either of the redirect from Globus login or an
+        # input validation error.
+
         form = EditForm()  # Empty form
         form.senotypeid.choices = choices
-        # This is from the redirect from the login page.
         setdefaults(form=form)
 
-    if request.method == 'POST': # and form.validate()
-
+    if request.method == 'POST':
         # This is a result of the user selecting something other than 'new'
         # for a Senotype ID--i.e, an existing senotype. Load data.
 
-        # Load the edit form and the edit page.
         form = EditForm(request.form)
         form.senotypeid.choices = choices
 
         id = form.senotypeid.data
+        print('id=',id)
 
-        if id == 'new':
+        if id == 'new' or id is None:
             setdefaults(form=form)
 
         else:
             # User has selected another existing ID. Load from existing data.
+
+            # Clear messages.
+            if 'flashes' in session:
+                session['flashes'].clear()
+            clearerrors(form)
 
             # Get senotype data
             dictsenlib = senlib.getsenlibjson(id=id)
@@ -194,9 +202,9 @@ def edit():
                 # Load information from existing data.
                 taxonlist = getsimpleassertiondata(assertions=assertions, predicate='in_taxon')
                 if len(taxonlist) > 0:
-                    form.taxa.process(form.taxa, [item['term'] for item in taxonlist])
+                    form.taxon.process(form.taxon, [item['term'] for item in taxonlist])
                 else:
-                    form.taxa.process([''])
+                    form.taxon.process([''])
             else:
                 # User triggered POST by managing the list (via Javascript).
                 # WTForms has the information in request.forms
@@ -347,7 +355,6 @@ def edit():
                 # Load dataset information from existing data.
                 regmarkerlist = getregmarkerdata(assertions=assertions)
 
-                print(regmarkerlist)
                 if len(markerlist) > 0:
                     form.regmarker.process(form.regmarker, [item['symbol'] for item in regmarkerlist])
                 else:

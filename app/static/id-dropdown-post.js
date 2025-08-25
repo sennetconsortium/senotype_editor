@@ -1,10 +1,16 @@
-// Changing the ID list in the edit form triggers a post to the form so that the
-// form can populate from existing data.
 document.addEventListener('DOMContentLoaded', function() {
   const idSelect = document.querySelector('[name="senotypeid"]');
   if (idSelect) {
-    idSelect.addEventListener('change', function() {
-      document.getElementById('edit_form').submit();
+    idSelect.addEventListener('change', function(e) {
+      // Prevent any accidental update form submission
+      if (document.activeElement === idSelect) {
+        // Disable update button while submitting edit form
+        console.log('idselect changed');
+        const updateBtn = document.getElementById('update_btn');
+        if (updateBtn) updateBtn.disabled = true;
+        // Only submit the edit form
+        document.getElementById('edit_form').submit();
+      }
     });
   }
 });

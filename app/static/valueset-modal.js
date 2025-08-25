@@ -4,7 +4,7 @@
 document.addEventListener('DOMContentLoaded', function() {
     // Initialize the mappings between assertion predicates and fields in
     // edit.html
-    initValuesetModal('in_taxon', 'taxa');
+    initValuesetModal('in_taxon', 'taxon');
     initValuesetModal('located_in', 'location');
     initValuesetModal('has_cell_type','celltype');
     initValuesetModal('has_hallmark', 'hallmark');

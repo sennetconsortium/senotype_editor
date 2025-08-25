@@ -5,8 +5,7 @@ Form used to manage Senotype submisstion JSONs.
 
 from wtforms import (Form, StringField, SelectField, DecimalField, validators, ValidationError,
                      TextAreaField, SubmitField, FieldList, StringField, FormField)
-
-#from flask_wtf import FlaskForm
+from wtforms.validators import Email
 
 # Helper classes
 from models.appconfig import AppConfig
@@ -133,16 +132,16 @@ class EditForm(Form):
 
     # Senotype
     senotypeid = SelectField('ID', choices=[])
-    senotypename = StringField('Senotype Name')
-    senotypedescription = TextAreaField('Senotype Description')
+    senotypename = StringField('Senotype Name', validators=[validators.InputRequired()])
+    senotypedescription = TextAreaField('Senotype Description', validators=[validators.InputRequired()])
 
     # Submitter
-    submitterfirst = StringField('First Name')
-    submitterlast = StringField('Last Name')
-    submitteremail = StringField('email')
+    submitterfirst = StringField('First Name', validators=[validators.InputRequired()])
+    submitterlast = StringField('Last Name', validators=[validators.InputRequired()])
+    submitteremail = StringField('email', validators=[validators.InputRequired(), Email(message='Invalid email address.')])
 
     # Simple assertions
-    taxa = FieldList(StringField('Taxon'), min_entries=0, label='Taxon')
+    taxon = FieldList(StringField('Taxon'), min_entries=0, label='Taxon', validators=[validators.InputRequired()])
     location = FieldList(StringField('Location'), min_entries=0)
     celltype = FieldList(StringField('Cell type'), min_entries=0)
     hallmark = FieldList(StringField('Hallmark'), min_entries=0)

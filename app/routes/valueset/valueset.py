@@ -33,4 +33,5 @@ def valueset():
         for _, row in senlib.getsenlibvalueset(predicate=predicate).iterrows()
     ]
 
+
     return jsonify(listret)
