@@ -122,7 +122,13 @@ def validate_form(form, fieldlist_prefixes):
                     break
         # If not found, add error
         if not found:
-            errors[base_name] = ['This field is required.']
+            if base_name == 'marker':
+                errname = 'specified marker'
+            elif base_name == 'regmarker':
+                errname = 'regulating marker'
+            else:
+                errname = base_name
+            errors[base_name] = [f'At least one {errname} must be provided.']
     return errors
 
 
@@ -155,7 +161,13 @@ def update():
         'hallmark-',
         'observable-',
         'inducer-',
-        'assay-']
+        'assay-',
+        'citation-',
+        'origin-',
+        'dataset-',
+        'marker-',
+        'regmarker-'
+     ]
 
     deduped_form_data = remove_duplicates_from_multidict(request.form, fieldlist_prefixes)
 
@@ -179,7 +191,7 @@ def update():
         flash('Success!')
         return redirect('/edit')
     else:
-        # Inject custom errors into standard WTForms validation errors, avoiding duplicates
+        # Inject custom errors into standard WTForms validation errors, avoiding duplicates.
         for field_name, custom_field_errors in custom_errors.items():
             if hasattr(form, field_name):
                 form_field = getattr(form, field_name)

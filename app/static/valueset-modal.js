@@ -2,8 +2,7 @@
 // valuesets.
 
 document.addEventListener('DOMContentLoaded', function() {
-    // Initialize the mappings between assertion predicates and fields in
-    // edit.html
+    // Build the content of the modal sections associated with simple assertions.
     initValuesetModal('in_taxon', 'taxon');
     initValuesetModal('located_in', 'location');
     initValuesetModal('has_cell_type','celltype');
@@ -32,7 +31,7 @@ function addValuesetToList(fieldname, valuesetId, valuesetLabel) {
 
     var li = document.createElement('li');
     li.className = 'list-group-item d-flex justify-content-between align-items-center';
-    // Hidden input for WTForms submission
+    // Hidden input for the POST submission via the Update button.
     var input = document.createElement('input');
     input.type = 'text';
     input.className = 'form-control w-100 d-none';
@@ -42,6 +41,7 @@ function addValuesetToList(fieldname, valuesetId, valuesetLabel) {
     var span = document.createElement('span');
     span.textContent = valuesetLabel;
     li.appendChild(span);
+    // Remove button for the new item.
     var btn = document.createElement('button');
     btn.className = 'btn btn-sm btn-danger ms-2';
     btn.textContent = '-';
@@ -51,7 +51,6 @@ function addValuesetToList(fieldname, valuesetId, valuesetLabel) {
     ul.appendChild(li);
     reindexInputs(fieldname + '-list', fieldname);
 }
-
 
 // Load valueset list in modal via AJAX, parameterized by assertion predicate and field name
 function initValuesetModal(predicate, fieldname) {

@@ -233,6 +233,9 @@
                     <button type="button" class="btn btn-sm btn-danger ms-2" onclick="removeCitation(this)">-</button>
                 </li>
                 {% endfor %}
+                {% for error in form.citation.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                {% endfor %}
             </ul>
             <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#citationSearchModal">
                 +
@@ -247,6 +250,9 @@
                     {{ origin_field(class="form-control w-100") }}
                     <button type="button" class="btn btn-sm btn-danger ms-2" onclick="removeOrigin(this)">-</button>
                 </li>
+                {% endfor %}
+                {% for error in form.origin.errors %}
+                    <div class="text-danger">{{ error }}</div>
                 {% endfor %}
             </ul>
             <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#originSearchModal">
@@ -264,6 +270,9 @@
                     {{ dataset_field(class="form-control w-100") }}
                     <button type="button" class="btn btn-sm btn-danger ms-2" onclick="removeDataset(this)">-</button>
                 </li>
+                {% endfor %}
+                {% for error in form.dataset.errors %}
+                    <div class="text-danger">{{ error }}</div>
                 {% endfor %}
             </ul>
             <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#datasetSearchModal">
@@ -285,6 +294,9 @@
                     <button type="button" class="btn btn-sm btn-danger ms-2" onclick="removeMarker(this)">-</button>
                 </li>
                 {% endfor %}
+                {% for error in form.marker.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                {% endfor %}
             </ul>
             <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#markerSearchModal">
                 +
@@ -303,6 +315,9 @@
                     {{ regmarker_field(class="form-control w-100") }}
                     <button type="button" class="btn btn-sm btn-danger ms-2" onclick="removeregMarker(this)">-</button>
                 </li>
+                {% endfor %}
+                {% for error in form.regmarker.errors %}
+                    <div class="text-danger">{{ error }}</div>
                 {% endfor %}
             </ul>
             <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#regmarkerSearchModal">
