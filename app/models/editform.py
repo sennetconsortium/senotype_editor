@@ -140,8 +140,9 @@ class EditForm(Form):
     submitterlast = StringField('Last Name', validators=[validators.InputRequired()])
     submitteremail = StringField('email', validators=[validators.InputRequired(), Email(message='Invalid email address.')])
 
-    # Simple assertions
-    taxon = FieldList(StringField('Taxon'), min_entries=0, label='Taxon', validators=[validators.InputRequired()])
+    # Simple assertions.
+    # These lists require custom validators because they will be updated via Javascript.
+    taxon = FieldList(StringField('Taxon'), min_entries=0, label='Taxon')
     location = FieldList(StringField('Location'), min_entries=0)
     celltype = FieldList(StringField('Cell type'), min_entries=0)
     hallmark = FieldList(StringField('Hallmark'), min_entries=0)

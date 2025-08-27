@@ -21,17 +21,13 @@ function removeValue(btn) {
 // Add the specified valueset item, which corresponds to the specified
 // assertion predicate, to the specified list in edit.html.
 function addValuesetToList(fieldname, valuesetId, valuesetLabel) {
-    // The name of a list of field values in edit.html concatenates the name
-    // of the field and -list.
-    var ul = document.getElementById(fieldname + '-list');
 
-    // Check if valuesetId is already present in any hidden input in the list
-    var alreadyPresent = false;
-    Array.from(ul.getElementsByTagName('input')).forEach(function(input) {
-        if (input.value === valuesetId || input.value === valuesetLabel) {
-            alreadyPresent = true;
-        }
+    var ul = document.getElementById(fieldname + '-list');
+    // Check for duplicates by value
+    var alreadyPresent = Array.from(ul.querySelectorAll('input')).some(function(input) {
+        return input.value === valuesetId;
     });
+
     if (alreadyPresent) return; // Do not add duplicate
 
     var li = document.createElement('li');
@@ -39,22 +35,23 @@ function addValuesetToList(fieldname, valuesetId, valuesetLabel) {
     // Hidden input for WTForms submission
     var input = document.createElement('input');
     input.type = 'text';
-    input.name = fieldname + '-' + ul.children.length;
-    input.value = valuesetLabel;
-    input.className = 'form-control d-none';
+    input.className = 'form-control w-100 d-none';
+    input.value = valuesetId;
     li.appendChild(input);
-    // Visible text: show the label
+    // Show label in list.
     var span = document.createElement('span');
     span.textContent = valuesetLabel;
     li.appendChild(span);
-    // Remove button
     var btn = document.createElement('button');
     btn.className = 'btn btn-sm btn-danger ms-2';
     btn.textContent = '-';
-    btn.onclick = function () { li.remove(); };
+    btn.type = 'button';
+    btn.onclick = function () { li.remove(); reindexInputs(fieldname + '-list', fieldname); };
     li.appendChild(btn);
     ul.appendChild(li);
+    reindexInputs(fieldname + '-list', fieldname);
 }
+
 
 // Load valueset list in modal via AJAX, parameterized by assertion predicate and field name
 function initValuesetModal(predicate, fieldname) {
@@ -86,5 +83,14 @@ function initValuesetModal(predicate, fieldname) {
             .catch(() => {
                 valuesetListDiv.innerHTML = '<div class="text-danger">Error loading ' + predicate + ' list.</div>';
             });
+    });
+}
+
+// Reindex all inputs after add/remove
+function reindexInputs(listId, fieldname) {
+    var ul = document.getElementById(listId);
+    var inputs = ul.querySelectorAll('input[type="text"], input[type="hidden"]');
+    inputs.forEach(function(input, idx) {
+        input.name = fieldname + '-' + idx;
     });
 }

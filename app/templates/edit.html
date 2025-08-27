@@ -68,14 +68,11 @@
                 {% for taxon_field in form.taxon %}
                     <li class="list-group-item d-flex justify-content-between align-items-center w-100">
                         {{ taxon_field(class="form-control w-100") }}
-                        {% for error in taxon_field.errors %}
-                          <div class="text-danger">{{ error }}</div>
-                        {% endfor %}
                         <button type="button" class="btn btn-sm btn-danger ms-2" onclick="removeValue(this)">-</button>
                     </li>
                 {% endfor %}
                 {% for error in form.taxon.errors %}
-                  <div class="text-danger">{{ error }}</div>
+                    <div class="text-danger">{{ error }}</div>
                 {% endfor %}
             </ul>
             <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#taxonModal">
@@ -91,6 +88,9 @@
                         {{ location_field(class="form-control w-100") }}
                         <button type="button" class="btn btn-sm btn-danger ms-2" onclick="removeValue(this)">-</button>
                     </li>
+                {% endfor %}
+                {% for error in form.location.errors %}
+                    <div class="text-danger">{{ error }}</div>
                 {% endfor %}
             </ul>
             <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#locationModal">
@@ -110,6 +110,9 @@
                         <button type="button" class="btn btn-sm btn-danger ms-2" onclick="removeValue(this)">-</button>
                     </li>
                 {% endfor %}
+                {% for error in form.celltype.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                {% endfor %}
             </ul>
             <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#celltypeModal">
                 +
@@ -124,6 +127,9 @@
                         {{ hallmark_field(class="form-control w-100") }}
                         <button type="button" class="btn btn-sm btn-danger ms-2" onclick="removeValue(this)">-</button>
                     </li>
+                {% endfor %}
+                {% for error in form.hallmark.errors %}
+                    <div class="text-danger">{{ error }}</div>
                 {% endfor %}
             </ul>
             <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#hallmarkModal">
@@ -143,6 +149,9 @@
                         <button type="button" class="btn btn-sm btn-danger ms-2" onclick="removeValue(this)">-</button>
                     </li>
                 {% endfor %}
+                {% for error in form.observable.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                {% endfor %}
             </ul>
             <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#observableModal">
                 +
@@ -157,6 +166,9 @@
                         {{ inducer_field(class="form-control w-100") }}
                         <button type="button" class="btn btn-sm btn-danger ms-2" onclick="removeValue(this)">-</button>
                     </li>
+                {% endfor %}
+                {% for error in form.inducer.errors %}
+                    <div class="text-danger">{{ error }}</div>
                 {% endfor %}
             </ul>
             <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#inducerModal">
@@ -175,6 +187,9 @@
                         {{ assay_field(class="form-control w-100") }}
                         <button type="button" class="btn btn-sm btn-danger ms-2" onclick="removeValue(this)">-</button>
                     </li>
+                {% endfor %}
+                {% for error in form.assay.errors %}
+                    <div class="text-danger">{{ error }}</div>
                 {% endfor %}
             </ul>
             <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#assayModal">
@@ -299,237 +314,237 @@
             </button>
         </div>
     </div>
-    <!--MODAL DIVS -->
-    <!-- Modal for external API search for PubMed citation-->
-    <div class="modal fade" id="citationSearchModal" tabindex="-1" aria-labelledby="citationSearchModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="citationSearchModalLabel">Search PubMed for PMID</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <input type="text" id="citation-search-input" class="form-control" placeholder="Enter query...">
-                    <div id="citation-search-results" class="mt-3">
-                    <!-- Search results from API appear here -->
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <!-- Modal for external API search for RRID origin-->
-    <div class="modal fade" id="originSearchModal" tabindex="-1" aria-labelledby="originSearchModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="originSearchModalLabel">Search SciCrunch for RRID</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <input type="text" id="origin-search-input" class="form-control" placeholder="Enter query...">
-                    <div id="origin-search-results" class="mt-3">
-                    <!-- Search results from API appear here -->
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <!-- Modal for external SenNet entity-api search for dataset-->
-    <div class="modal fade" id="datasetSearchModal" tabindex="-1" aria-labelledby="datasetSearchModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="datasetSearchModalLabel">Search SenNet for dataset</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <input type="text" id="dataset-search-input" class="form-control" placeholder="Enter query...">
-                    <div id="dataset-search-results" class="mt-3">
-                    <!-- Search results from API appear here -->
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <!-- Modal for external ubkg-api search for specified marker-->
-    <div class="modal fade" id="markerSearchModal" tabindex="-1" aria-labelledby="markerSearchModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="markerSearchModalLabel">Search UBKG for marker</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <!-- Radio buttons for marker type -->
-                    <div class="mb-3">
-                        <label class="form-label">Marker type:</label>
-                        <div>
-                            <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="radio" name="marker-type" id="marker-type-gene" value="gene" checked>
-                                <label class="form-check-label" for="marker-type-gene">Gene</label>
-                            </div>
-                            <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="radio" name="marker-type" id="marker-type-protein" value="protein">
-                                <label class="form-check-label" for="marker-type-protein">Protein</label>
-                            </div>
-                        </div>
-                    </div>
-                    <input type="text" id="marker-search-input" class="form-control" placeholder="Enter query...">
-                    <div id="marker-search-results" class="mt-3">
-                    <!-- Search results from API appear here -->
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <!-- Modal for external ubkg-api search for regulated marker-->
-    <div class="modal fade" id="regmarkerSearchModal" tabindex="-1" aria-labelledby="regmarkerSearchModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="regmarkerSearchModalLabel">Search UBKG for marker</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <!-- Radio buttons for marker type -->
-                    <div class="mb-3">
-                        <label class="form-label">Marker type:</label>
-                        <div>
-                            <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="radio" name="marker-type" id="regmarker-type-gene" value="gene" checked>
-                                <label class="form-check-label" for="regmarker-type-gene">Gene</label>
-                            </div>
-                            <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="radio" name="marker-type" id="regmarker-type-protein" value="protein">
-                                <label class="form-check-label" for="regmarker-type-protein">Protein</label>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- Radio buttons for marker action -->
-                    <div class="mb-3">
-                        <label class="form-label">Action:</label>
-                        <div>
-                            <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="radio" name="regmarker-action" id="regmarker-action-up" value="up_regulates" checked>
-                                <label class="form-check-label" for="regmarker-action-up">up</label>
-                            </div>
-                            <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="radio" name="regmarker-action" id="regmarker-action-down" value="down_regulates">
-                                <label class="form-check-label" for="regmarker-action-down">down</label>
-                            </div>
-                            <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="radio" name="regmarker-action" id="regmarker-action-inc" value="inconclusively_regulates">
-                                <label class="form-check-label" for="regmarker-action-inc">inconclusively</label>
-                            </div>
-                        </div>
-                    </div>
-                    <input type="text" id="regmarker-search-input" class="form-control" placeholder="Enter query...">
-                    <div id="regmarker-search-results" class="mt-3">
-                        <!-- Search results from API appear here -->
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <!-- Taxon Modal for valueset-modal.js -->
-    <div class="modal fade" id="taxonModal" tabindex="-1" aria-labelledby="taxonModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="taxonModalLabel">Select Taxon</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <div id="taxon-modal-list" class="list-group"></div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <!-- Location Modal for valueset-modal.js -->
-    <div class="modal fade" id="locationModal" tabindex="-1" aria-labelledby="locationModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="locationModalLabel">Select Location</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <div id="location-modal-list" class="list-group"></div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <!-- Celltype Modal for valueset-modal.js -->
-    <div class="modal fade" id="celltypeModal" tabindex="-1" aria-labelledby="celltypeModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="celltypeModalLabel">Select Cell type</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <div id="celltype-modal-list" class="list-group"></div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <!-- Hallmark Modal for valueset-modal.js -->
-    <div class="modal fade" id="hallmarkModal" tabindex="-1" aria-labelledby="hallmarkModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="hallmarkModalLabel">Select Hallmark</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <div id="hallmark-modal-list" class="list-group"></div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <!-- Observable Modal for valueset-modal.js -->
-    <div class="modal fade" id="observableModal" tabindex="-1" aria-labelledby="observableModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="observableModalLabel">Select Observable</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <div id="observable-modal-list" class="list-group"></div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <!-- Inducer Modal for valueset-modal.js -->
-    <div class="modal fade" id="inducerModal" tabindex="-1" aria-labelledby="inducerModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="inducerModalLabel">Select Inducer</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <div id="inducer-modal-list" class="list-group"></div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <!-- Assay Modal for valueset-modal.js -->
-    <div class="modal fade" id="assayModal" tabindex="-1" aria-labelledby="assayModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="assayModalLabel">Select Assay</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <div id="assay-modal-list" class="list-group"></div>
-                </div>
-            </div>
-        </div>
-    </div>
 </form>
+<!--MODAL DIVS -->
+<!-- Modal for external API search for PubMed citation-->
+<div class="modal fade" id="citationSearchModal" tabindex="-1" aria-labelledby="citationSearchModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="citationSearchModalLabel">Search PubMed for PMID</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <input type="text" id="citation-search-input" class="form-control" placeholder="Enter query...">
+                <div id="citation-search-results" class="mt-3">
+                    <!-- Search results from API appear here -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Modal for external API search for RRID origin-->
+<div class="modal fade" id="originSearchModal" tabindex="-1" aria-labelledby="originSearchModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="originSearchModalLabel">Search SciCrunch for RRID</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <input type="text" id="origin-search-input" class="form-control" placeholder="Enter query...">
+                <div id="origin-search-results" class="mt-3">
+                    <!-- Search results from API appear here -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Modal for external SenNet entity-api search for dataset-->
+<div class="modal fade" id="datasetSearchModal" tabindex="-1" aria-labelledby="datasetSearchModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="datasetSearchModalLabel">Search SenNet for dataset</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <input type="text" id="dataset-search-input" class="form-control" placeholder="Enter query...">
+                <div id="dataset-search-results" class="mt-3">
+                    <!-- Search results from API appear here -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Modal for external ubkg-api search for specified marker-->
+<div class="modal fade" id="markerSearchModal" tabindex="-1" aria-labelledby="markerSearchModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="markerSearchModalLabel">Search UBKG for marker</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Radio buttons for marker type -->
+                <div class="mb-3">
+                    <label class="form-label">Marker type:</label>
+                    <div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="marker-type" id="marker-type-gene" value="gene" checked>
+                            <label class="form-check-label" for="marker-type-gene">Gene</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="marker-type" id="marker-type-protein" value="protein">
+                            <label class="form-check-label" for="marker-type-protein">Protein</label>
+                        </div>
+                    </div>
+                </div>
+                <input type="text" id="marker-search-input" class="form-control" placeholder="Enter query...">
+                <div id="marker-search-results" class="mt-3">
+                    <!-- Search results from API appear here -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Modal for external ubkg-api search for regulated marker-->
+<div class="modal fade" id="regmarkerSearchModal" tabindex="-1" aria-labelledby="regmarkerSearchModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="regmarkerSearchModalLabel">Search UBKG for marker</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Radio buttons for marker type -->
+                <div class="mb-3">
+                    <label class="form-label">Marker type:</label>
+                    <div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="marker-type" id="regmarker-type-gene" value="gene" checked>
+                            <label class="form-check-label" for="regmarker-type-gene">Gene</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="marker-type" id="regmarker-type-protein" value="protein">
+                            <label class="form-check-label" for="regmarker-type-protein">Protein</label>
+                        </div>
+                    </div>
+                </div>
+                <!-- Radio buttons for marker action -->
+                <div class="mb-3">
+                    <label class="form-label">Action:</label>
+                    <div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="regmarker-action" id="regmarker-action-up" value="up_regulates" checked>
+                            <label class="form-check-label" for="regmarker-action-up">up</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="regmarker-action" id="regmarker-action-down" value="down_regulates">
+                            <label class="form-check-label" for="regmarker-action-down">down</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="regmarker-action" id="regmarker-action-inc" value="inconclusively_regulates">
+                            <label class="form-check-label" for="regmarker-action-inc">inconclusively</label>
+                        </div>
+                    </div>
+                </div>
+                <input type="text" id="regmarker-search-input" class="form-control" placeholder="Enter query...">
+                <div id="regmarker-search-results" class="mt-3">
+                    <!-- Search results from API appear here -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Taxon Modal for valueset-modal.js -->
+<div class="modal fade" id="taxonModal" tabindex="-1" aria-labelledby="taxonModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="taxonModalLabel">Select Taxon</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="taxon-modal-list" class="list-group"></div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Location Modal for valueset-modal.js -->
+<div class="modal fade" id="locationModal" tabindex="-1" aria-labelledby="locationModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="locationModalLabel">Select Location</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="location-modal-list" class="list-group"></div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Celltype Modal for valueset-modal.js -->
+<div class="modal fade" id="celltypeModal" tabindex="-1" aria-labelledby="celltypeModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="celltypeModalLabel">Select Cell type</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="celltype-modal-list" class="list-group"></div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Hallmark Modal for valueset-modal.js -->
+<div class="modal fade" id="hallmarkModal" tabindex="-1" aria-labelledby="hallmarkModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="hallmarkModalLabel">Select Hallmark</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="hallmark-modal-list" class="list-group"></div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Observable Modal for valueset-modal.js -->
+<div class="modal fade" id="observableModal" tabindex="-1" aria-labelledby="observableModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="observableModalLabel">Select Observable</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="observable-modal-list" class="list-group"></div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Inducer Modal for valueset-modal.js -->
+<div class="modal fade" id="inducerModal" tabindex="-1" aria-labelledby="inducerModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="inducerModalLabel">Select Inducer</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="inducer-modal-list" class="list-group"></div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Assay Modal for valueset-modal.js -->
+<div class="modal fade" id="assayModal" tabindex="-1" aria-labelledby="assayModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="assayModalLabel">Select Assay</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="assay-modal-list" class="list-group"></div>
+            </div>
+        </div>
+    </div>
+</div>
 <!-- UPDATE FORM below edit_form -->
 <form id="update_form" method="post" action="/update" class="my-4">
     <div class="d-flex justify-content-center">
