@@ -24,16 +24,17 @@ function addOrigin(rrid, description) {
     input.className = 'form-control d-none'; // Hidden but submitted
     li.appendChild(input);
 
-    // Visible text: show the description instead of the RRID
+    // Visible text: RRID (description)
     var span = document.createElement('span');
-    span.textContent = description || rrid;
+    span.textContent = rrid.split(":")[1] + " (" + description.slice(0, 70) + "..." + ")";
     li.appendChild(span);
 
     // Remove button
     var btn = document.createElement('button');
     btn.className = 'btn btn-sm btn-danger ms-2';
-    btn.textContent = 'Remove';
+    btn.textContent = '-';
     btn.onclick = function () { li.remove(); };
+    btn.title = 'Remove ' + rrid + ' from origin list';
     li.appendChild(btn);
 
     ul.appendChild(li);

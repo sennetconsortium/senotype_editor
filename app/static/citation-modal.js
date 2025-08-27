@@ -7,8 +7,8 @@ function removeCitation(btn) {
     btn.parentNode.remove();
 }
 
-// Add citation from API result: Only add PMID
-function addCitation(pmid) {
+// Add citation from API result
+function addCitation(pmid, title) {
     var ul = document.getElementById('citation-list');
     var li = document.createElement('li');
     li.className = 'list-group-item d-flex justify-content-between align-items-center';
@@ -21,13 +21,14 @@ function addCitation(pmid) {
     li.appendChild(input);
     // Visible text: show the PMID
     var span = document.createElement('span');
-    span.textContent = pmid;
+    span.textContent = pmid.split(":")[1] + " (" + title.slice(0, 70) + "..." + ")";
     li.appendChild(span);
     // Remove button
     var btn = document.createElement('button');
     btn.className = 'btn btn-sm btn-danger ms-2';
-    btn.textContent = 'Remove';
+    btn.textContent = '-';
     btn.onclick = function () { li.remove(); };
+    btn.title = 'Remove ' + pmid + ' from citation list';
     li.appendChild(btn);
     ul.appendChild(li);
 }
@@ -59,7 +60,7 @@ document.getElementById('citation-search-input').addEventListener('input', funct
                                 btn.className = 'btn btn-link text-start w-100 mb-1';
                                 btn.textContent = title;
                                 btn.onclick = function () {
-                                    addCitation('PMID:'+pmid); // Only add PMID
+                                    addCitation('PMID:'+pmid, title);
                                     // Hide modal with Bootstrap 5
                                     var modalEl = document.getElementById('citationSearchModal');
                                     var modal = bootstrap.Modal.getInstance(modalEl);

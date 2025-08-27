@@ -120,7 +120,7 @@ def validate_form(form, fieldlist_prefixes):
                 if val not in [None, '', [], {}]:
                     found = True
                     break
-        # If not found, add error
+        # If not found, add error.
         if not found:
             if base_name == 'marker':
                 errname = 'specified marker'

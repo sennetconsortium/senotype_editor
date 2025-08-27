@@ -75,7 +75,7 @@
                     <div class="text-danger">{{ error }}</div>
                 {% endfor %}
             </ul>
-            <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#taxonModal">
+            <button type="button" title="Add taxon" aria-label="Add taxon" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#taxonModal">
                 +
             </button>
         </div>
@@ -93,7 +93,7 @@
                     <div class="text-danger">{{ error }}</div>
                 {% endfor %}
             </ul>
-            <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#locationModal">
+            <button type="button" title="Add location" aria-label="Add location" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#locationModal">
                 +
             </button>
         </div>
@@ -114,7 +114,7 @@
                     <div class="text-danger">{{ error }}</div>
                 {% endfor %}
             </ul>
-            <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#celltypeModal">
+            <button type="button" title="Add cell type" aria-label="Add cell type" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#celltypeModal">
                 +
             </button>
         </div>
@@ -132,7 +132,7 @@
                     <div class="text-danger">{{ error }}</div>
                 {% endfor %}
             </ul>
-            <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#hallmarkModal">
+            <button type="button" title="Add hallmark" aria-label="Add hallmark" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#hallmarkModal">
                 +
             </button>
         </div>
@@ -153,7 +153,7 @@
                     <div class="text-danger">{{ error }}</div>
                 {% endfor %}
             </ul>
-            <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#observableModal">
+            <button type="button" title="Add molecular observable" aria-label="Add molecular observable" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#observableModal">
                 +
             </button>
         </div>
@@ -171,7 +171,7 @@
                     <div class="text-danger">{{ error }}</div>
                 {% endfor %}
             </ul>
-            <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#inducerModal">
+            <button type="button" title="Add inducer" aria-label="Add inducer" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#inducerModal">
                 +
             </button>
         </div>
@@ -192,7 +192,7 @@
                     <div class="text-danger">{{ error }}</div>
                 {% endfor %}
             </ul>
-            <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#assayModal">
+            <button type="button" title="Add assay" aria-label="Add assay" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#assayModal">
                 +
             </button>
         </div>
@@ -237,7 +237,7 @@
                     <div class="text-danger">{{ error }}</div>
                 {% endfor %}
             </ul>
-            <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#citationSearchModal">
+            <button type="button" title="Add PubMed citation" aria-label="Add PubMed citation" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#citationSearchModal">
                 +
             </button>
         </div>
@@ -255,7 +255,7 @@
                     <div class="text-danger">{{ error }}</div>
                 {% endfor %}
             </ul>
-            <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#originSearchModal">
+            <button type="button" title="Add RRID origin" aria-label="Add RRID origin" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#originSearchModal">
                 +
             </button>
         </div>
@@ -275,7 +275,7 @@
                     <div class="text-danger">{{ error }}</div>
                 {% endfor %}
             </ul>
-            <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#datasetSearchModal">
+            <button type="button" title="Add SenNet dataset" aria-label="Add SenNet dataset" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#datasetSearchModal">
                 +
             </button>
         </div>
@@ -298,11 +298,11 @@
                     <div class="text-danger">{{ error }}</div>
                 {% endfor %}
             </ul>
-            <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#markerSearchModal">
+            <button type="button" title="Add single specified marker" aria-label="Add single specified marker" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#markerSearchModal">
                 +
             </button>
             <!-- Add CSV upload button below marker list -->
-            <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#markerCsvModal">
+            <button type="button" title="Add multiple specified markers" aria-label="Add multiple specified markers" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#markerCsvModal">
                 Add Markers from CSV
             </button>
         </div>
@@ -320,11 +320,11 @@
                     <div class="text-danger">{{ error }}</div>
                 {% endfor %}
             </ul>
-            <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#regmarkerSearchModal">
+            <button type="button" title="Add single regulating marker" aria-label="Add single regulating marker" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#regmarkerSearchModal">
                 +
             </button>
             <!-- Add CSV upload button below marker list -->
-            <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#regmarkerCsvModal">
+            <button type="button" title="Add multiple regulating markers" aria-label="Add multiple regulating markers" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#regmarkerCsvModal">
                 Add Markers from CSV
             </button>
         </div>

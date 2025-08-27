@@ -34,6 +34,7 @@ function addMarker(id, description) {
     btn.textContent = '-';
     btn.type = 'button';
     btn.onclick = function () { li.remove(); };
+    btn.title = 'Remove ' + description + ' from specified marker list';
     li.appendChild(btn);
 
     ul.appendChild(li);

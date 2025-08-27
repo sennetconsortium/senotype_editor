@@ -47,6 +47,7 @@ function addValuesetToList(fieldname, valuesetId, valuesetLabel) {
     btn.textContent = '-';
     btn.type = 'button';
     btn.onclick = function () { li.remove(); reindexInputs(fieldname + '-list', fieldname); };
+    btn.title = 'Remove ' + valuesetLabel + ' from ' + fieldname + ' list';
     li.appendChild(btn);
     ul.appendChild(li);
     reindexInputs(fieldname + '-list', fieldname);

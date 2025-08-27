@@ -26,14 +26,15 @@ function addDataset(id, description) {
 
     // Visible text: show the description instead of the ID
     var span = document.createElement('span');
-    span.textContent = description || id;
+    span.textContent = id + " (" + description.slice(0, 70) + "..." + ")";
     li.appendChild(span);
 
     // Remove button
     var btn = document.createElement('button');
     btn.className = 'btn btn-sm btn-danger ms-2';
-    btn.textContent = 'Remove';
+    btn.textContent = '-';
     btn.onclick = function () { li.remove(); };
+    btn.title = 'Remove ' + id + ' from dataset list'
     li.appendChild(btn);
 
     ul.appendChild(li);

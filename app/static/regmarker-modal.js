@@ -52,6 +52,7 @@ function addRegMarker(id, description, action) {
     btn.className = 'btn btn-sm btn-danger ms-2';
     btn.textContent = '-';
     btn.onclick = function () { removeRegMarker(btn); };
+    btn.title = 'Remove ' + description + ' from regulating marker list';
     li.appendChild(btn);
 
     ul.appendChild(li);
