@@ -12,11 +12,89 @@ from models.editform import EditForm
 # Helper classes
 from models.appconfig import AppConfig
 from models.senlib import SenLib
+from models.requestretry import RequestRetry
 
 from models.clearerrors import clearerrors
 
 edit_blueprint = Blueprint('edit', __name__, url_prefix='/edit')
 
+def truncateddisplaytext(id: str, description:str, trunclength: int) -> str:
+    """
+    Builds a truncated display string.
+    """
+    if trunclength < 0:
+        trunclength = len(description)
+
+    return f'{id} ({description[0:trunclength]}...)'
+
+def getcitationobjects(rawobjects: list) -> list:
+    """
+    Calls the NCBI EUtils API to obtain the title for the PMID.
+    :param: rawobjects - the list of PMID objects stored with the submission.
+    """
+    api = RequestRetry()
+    base_url = 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&retmode=json&id='
+
+    oret = []
+    for o in rawobjects:
+        code = o.get('code')
+        pmid = code.split(':')[1]
+        url = f'{base_url}{pmid}'
+        citation = api.getresponse(url=url, format='json')
+        result = citation.get('result')
+        title = ''
+        if result is not None:
+            entry = result.get(pmid)
+            if entry is not None:
+                title = entry.get('title', '')
+        oret.append({"code": code, "term": title})
+
+    return oret
+
+def getoriginobjects(rawobjects: list) -> list:
+    """
+    Calls the SciCrunch API to obtain the title for the RRID.
+    :param: rawobjects - the list of PMID objects stored with the submission.
+    """
+    api = RequestRetry()
+    base_url = 'https://scicrunch.org/resolver/'
+
+    oret = []
+    for o in rawobjects:
+        code = o.get('code')
+        rrid = code.split(':')[1]
+        url = f'{base_url}{rrid}.json'
+        origin = api.getresponse(url=url, format='json')
+        hits = origin.get('hits')
+        if hits is not None:
+            description = hits.get('hits')[0].get('_source').get('item').get('description', '')
+        oret.append({"code": code, "term": description})
+
+    return oret
+
+def getdatasetobjects(rawobjects: list) -> list:
+    """
+    Calls the entity API to obtain the description for the dataset.
+    :param: rawobjects - the list of SenNet dataset objects stored with the submission.
+    """
+    api = RequestRetry()
+    base_url = 'https://entity.api.sennetconsortium.org/entities/'
+    token = session['groups_token']
+    headers = {"Authorization": f'Bearer {token}'}
+    print(headers)
+
+    oret = []
+    for o in rawobjects:
+        code = o.get('code')
+        snid = code
+        url = f'{base_url}{snid}'
+        print(url)
+        dataset = api.getresponse(url=url, format='json', headers=headers)
+        title = dataset.get('title','')
+        print('title',title)
+        oret.append({"code": code, "term": title})
+
+    return oret
 
 def getsimpleassertiondata(assertions: list, predicate: str) -> list:
     """
@@ -38,9 +116,18 @@ def getsimpleassertiondata(assertions: list, predicate: str) -> list:
         elif term == predicate:
             pred = predicate
 
+        # Get descriptions for externally linked assertions (e.g., PMID) via API calls.
         objects = []
         if pred != '':
-            objects = assertion.get('objects',[])
+            rawobjects = assertion.get('objects', [])
+            if pred == 'has_citation':
+                objects = getcitationobjects(rawobjects)
+            elif pred == 'has_origin':
+                objects = getoriginobjects(rawobjects)
+            elif pred == 'has_dataset':
+                objects = getdatasetobjects(rawobjects)
+            else:
+                objects = rawobjects
             return objects
     return []
 
@@ -151,23 +238,25 @@ def edit():
     # Add 'new' as an option. Must be a tuple for correct display in the form.
     choices = [("new", "(new)")] + [(id, id) for id in senlib.senlibjsonids]
 
-    if request.method == 'GET':
-        # This is the result either of the redirect from Globus login or an
-        # input validation error.
+    if request.method == 'GET' and 'flashes' not in session:
+        # This is the result of the redirect from Globus login.
 
         form = EditForm()  # Empty form
         form.senotypeid.choices = choices
         setdefaults(form=form)
 
-    if request.method == 'POST':
-        # This is a result of the user selecting something other than 'new'
-        # for a Senotype ID--i.e, an existing senotype. Load data.
+    else:
+    # if request.method == 'POST':
+        # This is the result of one of the following scenarios:
+        # 1. A POST from the user selecting something other than 'new' for a Senotype ID
+        #    --i.e, an existing senotype.
+        # 2. A GET from an input validation error.
 
+        # Load existing data.
         form = EditForm(request.form)
         form.senotypeid.choices = choices
 
         id = form.senotypeid.data
-        print('id=',id)
 
         if id == 'new' or id is None:
             setdefaults(form=form)
@@ -301,9 +390,13 @@ def edit():
 
             if id != request.form.get('original_id', id):
                 # Load citation information from existing data.
+                #truncateddisplaytext(id: str, description:str, trunclength: int)
                 citationlist = getsimpleassertiondata(assertions=assertions, predicate='has_citation')
                 if len(citationlist) > 0:
-                    form.citation.process(form.citation, [item['code'] for item in citationlist])
+                    form.citation.process(form.citation, [truncateddisplaytext(id=item['code'],
+                                                                               description=item['term'],
+                                                                               trunclength=70)
+                                                          for item in citationlist])
                 else:
                     form.citation.process([''])
             else:
@@ -316,7 +409,10 @@ def edit():
                 # Load origin information from existing data.
                 originlist = getsimpleassertiondata(assertions=assertions, predicate='has_origin')
                 if len(originlist) > 0:
-                    form.origin.process(form.origin, [item['code'] for item in originlist])
+                    form.origin.process(form.origin, [truncateddisplaytext(id=item['code'],
+                                                                           description=item['term'],
+                                                                           trunclength=70)
+                                                      for item in originlist])
                 else:
                     form.origin.process([''])
             else:
@@ -329,7 +425,10 @@ def edit():
                 # Load dataset information from existing data.
                 datasetlist = getsimpleassertiondata(assertions=assertions, predicate='has_dataset')
                 if len(datasetlist) > 0:
-                    form.dataset.process(form.dataset, [item['code'] for item in datasetlist])
+                    form.dataset.process(form.dataset, [truncateddisplaytext(id=item['code'],
+                                                                               description=item['term'],
+                                                                               trunclength=70)
+                                                          for item in datasetlist])
                 else:
                     form.dataset.process([''])
             else:

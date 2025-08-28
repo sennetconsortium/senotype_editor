@@ -15,13 +15,14 @@ class RequestRetry:
         self.url = ''
         self.error = None
 
-    def getresponse(self, url: str, format: str) -> dict:
+    def getresponse(self, url: str, format: str, headers: dict = None) -> dict:
         """
         Obtains a response from a REST API.
         Employs a retry loop in case of timeout or other failures.
 
         :param url: the URL to the REST API
         :param format: the format of the response--either 'json' or 'csv'
+        :param headers: optional headers
         :return: the response JSON
         """
 
@@ -45,7 +46,7 @@ class RequestRetry:
 
             session = requests.Session()
             session.mount('https://', adapter)
-            r = session.get(url=url, timeout=180)
+            r = session.get(url=url, timeout=180, headers=headers)
 
             if format == 'json':
                 self.responsejson = r.json()

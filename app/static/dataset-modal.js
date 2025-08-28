@@ -26,6 +26,11 @@ function addDataset(id, description) {
 
     // Visible text: show the description instead of the ID
     var span = document.createElement('span');
+    span.className = 'form-control w-100'; // matches the input styling
+    span.style.border = '1px solid #d3d3d3';
+    span.style.marginLeft = '1px';
+    span.style.padding = '6px 12px';
+    span.style.background = '#fff'; // matches li background
     span.textContent = id + " (" + description.slice(0, 70) + "..." + ")";
     li.appendChild(span);
 

@@ -4,8 +4,7 @@ Updates the Senotype repository by writing/overwriting a submission JSON file.
 from flask import Blueprint, request, render_template, flash, redirect, get_flashed_messages, session
 import uuid
 from werkzeug.datastructures import MultiDict
-from wtforms import Form, ValidationError
-
+import requests
 
 # Helper classes
 from models.appconfig import AppConfig
@@ -17,25 +16,35 @@ from models.clearerrors import clearerrors
 update_blueprint = Blueprint('update', __name__, url_prefix='/update')
 
 
-def getnewsnid() -> str:
+def getnewsnid(uuid_base_url:str) -> str:
     """
-    Mint a new SenNet ID.
-    The uuid-api does not currently support Senotype.
-    For now, generate a generic uuid.
+    Obtain a new SenNet dataset ID from the uuid API.
+    :param uuid_base_url: base URL to the uuid API.
     """
+
+    data = {"entity_type":"REFERENCE"}
+
+    try:
+        response = requests.post(url=uuid_base_url, data=data)
+        response.raise_for_status()  # Raise an exception for bad status codes (4xx or 5xx)
+        print("Status Code:", response.status_code)
+        print("Response JSON:", response.json())
+    except requests.exceptions.RequestException as e:
+        print(f"An error occurred: {e}")
 
     return str(uuid.uuid4())
 
 
-def buildsubmission(form_data: dict[str, str]) -> dict:
+def buildsubmission(form_data: dict[str, str], uuid_base_url: str) -> dict:
     """
     Builds a Senotype submission JSON from the POSTed request form data.
-
+    :param form_data: inputs to write to the submission file.
+    :param uuid_base_url: base URL to the uuid API.
     """
 
     senotypeid = request.form.get('senotypeid')
     if senotypeid == 'new':
-        senotypeid = getnewsnid()
+        senotypeid = getnewsnid(uuid_base_url=uuid_base_url)
 
     dictsenotype = {
         'code': senotypeid,
@@ -144,6 +153,8 @@ def update():
     senlib_url = cfg.getfield(key='SENOTYPE_URL')
     valueset_url = cfg.getfield(key='VALUESET_URL')
     json_url = cfg.getfield(key='JSON_URL')
+    uuid_base_url = cfg.getfield(key='UUID_BASE_URL')
+
     senlib = SenLib(senlib_url, valueset_url, json_url)
     choices = [("new", "(new)")] + [(id, id) for id in senlib.senlibjsonids]
 
@@ -186,7 +197,7 @@ def update():
     custom_errors = validate_form(form=form, fieldlist_prefixes=fieldlist_prefixes)
     if len(custom_errors) == 0:
         # Handle successful update (save to database, etc.)
-        dictsenotype = buildsubmission(form_data=deduped_form_data)
+        dictsenotype = buildsubmission(form_data=deduped_form_data, uuid_base_url=uuid_base_url)
         writesubmission()
         flash('Success!')
         return redirect('/edit')
