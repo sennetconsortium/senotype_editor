@@ -5,6 +5,7 @@ Works with editform.py.
 """
 
 from flask import Blueprint, request, render_template, session
+import pandas as pd
 
 # WTForms
 from models.editform import EditForm
@@ -14,7 +15,6 @@ from models.appconfig import AppConfig
 from models.senlib import SenLib
 from models.requestretry import RequestRetry
 
-from models.clearerrors import clearerrors
 
 edit_blueprint = Blueprint('edit', __name__, url_prefix='/edit')
 
@@ -81,17 +81,14 @@ def getdatasetobjects(rawobjects: list) -> list:
     base_url = 'https://entity.api.sennetconsortium.org/entities/'
     token = session['groups_token']
     headers = {"Authorization": f'Bearer {token}'}
-    print(headers)
 
     oret = []
     for o in rawobjects:
         code = o.get('code')
         snid = code
         url = f'{base_url}{snid}'
-        print(url)
         dataset = api.getresponse(url=url, format='json', headers=headers)
         title = dataset.get('title','')
-        print('title',title)
         oret.append({"code": code, "term": title})
 
     return oret
@@ -220,247 +217,359 @@ def setdefaults(form):
     form.marker.process([''])
     form.regmarker.process([''])
 
+def loadexistingdata(id: str, senlib: SenLib, form: EditForm):
+    """
+    Loads and formats data from an existing Senotype submission.
+
+    """
+    # Get senotype data
+    dictsenlib = senlib.getsenlibjson(id=id)
+
+    senotype = dictsenlib.get('senotype')
+    form.senotypename.data = senotype.get('term', '')
+    form.senotypedescription.data = senotype.get('definition')
+
+    # Submitter data
+    submitter = dictsenlib.get('submitter')
+    submitter_name = submitter.get('name')
+    form.submitterfirst.data = submitter_name.get('first', '')
+    form.submitterlast.data = submitter_name.get('last', '')
+    form.submitteremail.data = submitter.get('email', '')
+
+    # Assertions other than markers
+    assertions = dictsenlib.get('assertions')
+
+    # Taxon (multiple possible values)
+    taxonlist = getsimpleassertiondata(assertions=assertions, predicate='in_taxon')
+    if len(taxonlist) > 0:
+        form.taxon.process(form.taxon, [item['term'] for item in taxonlist])
+    else:
+        form.taxon.process([''])
+
+    # Locations (multiple possible values)
+    locationlist = getsimpleassertiondata(assertions=assertions, predicate='located_in')
+    if len(locationlist) > 0:
+        form.location.process(form.location, [item['term'] for item in locationlist])
+    else:
+        form.location.process([''])
+
+    # Cell type (one possible value)
+    celltypelist = getsimpleassertiondata(assertions=assertions, predicate='has_cell_type')
+    if len(celltypelist) > 0:
+        form.celltype.process(form.celltype, [item['term'] for item in celltypelist])
+    else:
+        form.celltype.process([''])
+
+    # Hallmark (multiple possible values)
+    hallmarklist = getsimpleassertiondata(assertions=assertions, predicate='has_hallmark')
+    if len(hallmarklist) > 0:
+        form.hallmark.process(form.hallmark, [item['term'] for item in hallmarklist])
+    else:
+        form.hallmark.process([''])
+
+    # Molecular observable (multiple possible values)
+    observablelist = getsimpleassertiondata(assertions=assertions, predicate='has_molecular_observable')
+    if len(observablelist) > 0:
+        form.observable.process(form.observable, [item['term'] for item in observablelist])
+    else:
+        form.observable.process([''])
+
+    # Inducer (multiple possible values)
+    inducerlist = getsimpleassertiondata(assertions=assertions, predicate='has_inducer')
+    if len(inducerlist) > 0:
+        form.inducer.process(form.inducer, [item['term'] for item in inducerlist])
+    else:
+        form.inducer.process([''])
+
+    # Assay (multiple possible values)
+    assaylist = getsimpleassertiondata(assertions=assertions, predicate='has_assay')
+    if len(assaylist) > 0:
+        form.assay.process(form.assay, [item['term'] for item in assaylist])
+    else:
+        form.assay.process([''])
+
+    # Context assertions
+    # Age
+    age = getcontextassertiondata(assertions=assertions, predicate='has_context', context='age')
+    if age != {}:
+        form.agevalue.data = age.get('value', '')
+        form.agelowerbound.data = age.get('lowerbound', '')
+        form.ageupperbound.data = age.get('upperbound', '')
+        form.ageunit.data = age.get('unit', '')
+
+    # Citation (multiple possible values)
+    citationlist = getsimpleassertiondata(assertions=assertions, predicate='has_citation')
+    if len(citationlist) > 0:
+        form.citation.process(form.citation, [truncateddisplaytext(id=item['code'],
+                                                                   description=item['term'],
+                                                                   trunclength=70)
+                                              for item in citationlist])
+    else:
+        form.citation.process([''])
+
+    # Origin (multiple possible values)
+    originlist = getsimpleassertiondata(assertions=assertions, predicate='has_origin')
+    if len(originlist) > 0:
+        form.origin.process(form.origin, [truncateddisplaytext(id=item['code'],
+                                                               description=item['term'],
+                                                               trunclength=70)
+                                          for item in originlist])
+    else:
+        form.origin.process([''])
+
+    # Dataset (multiple possible values)
+    datasetlist = getsimpleassertiondata(assertions=assertions, predicate='has_dataset')
+    if len(datasetlist) > 0:
+        form.dataset.process(form.dataset, [truncateddisplaytext(id=item['code'],
+                                                                 description=item['term'],
+                                                                 trunclength=70)
+                                            for item in datasetlist])
+    else:
+        form.dataset.process([''])
+
+    # Specified Markers (multiple possible values)
+    markerlist = getsimpleassertiondata(assertions=assertions, predicate='has_characterizing_marker_set')
+    if len(markerlist) > 0:
+        form.marker.process(form.marker, [item['symbol'] for item in markerlist])
+    else:
+        form.marker.process([''])
+
+    # Regulating Markers (multiple possible values)
+    regmarkerlist = getregmarkerdata(assertions=assertions)
+    if len(markerlist) > 0:
+        form.regmarker.process(form.regmarker, [item['symbol'] for item in regmarkerlist])
+    else:
+        form.regmarker.process([''])
+
+def build_edited_list(senlib: SenLib, form_data: dict, listkey: str):
+    """
+    Builds content for lists of assertions other than markers (taxon, location, etc.)
+    on the Edit Form based on session data.
+    :param senlib: SenLib interface object from which to obtain valueset information.
+    :param form_data: dict of form state data.
+    :param listkey: asser
+    """
+
+    assertion_map = {
+        'taxon': 'in_taxon',
+        'location': 'located_in',
+        'celltype': 'has_cell_type',
+        'hallmark': 'has_hallmark',
+        'observable': 'has_molecular_observable',
+        'inducer': 'has_inducer',
+        'assay': 'has_assay',
+        'citation': 'has_citation',
+        'origin': 'has_origin',
+        'dataset': 'has_dataset'
+    }
+
+    codelist = form_data[listkey]
+    assertion = assertion_map[listkey]
+    valueset = senlib.getsenlibvalueset(predicate=assertion)
+    objects = {}
+    if len(codelist) > 0:
+        # Obtain the term for each code from the valueset for the associated assertion.
+        # Externally linked lists (e.g., citation) will not be in valuesets.
+        rawobjects = [
+            {
+                "code": item,
+                "term": (
+                    "" if assertion in ['has_citation', 'has_origin', 'has_dataset']
+                    else valueset[valueset['valueset_code'] == item]['valueset_term'].iloc[0]
+                )
+            }
+            for item in codelist
+        ]
+
+        # Obtain the appropriate term. Externally linked lists must obtain terms via API calls.
+        if assertion == 'has_citation':
+            objects = getcitationobjects(rawobjects)
+        elif assertion == 'has_origin':
+            objects = getoriginobjects(rawobjects)
+        elif assertion == 'has_dataset':
+            objects = getdatasetobjects(rawobjects)
+        else:
+            objects = rawobjects
+
+
+    return objects
+
+
+def loadeditedlistdata(senlib: SenLib, form:EditForm, form_data: dict):
+    """
+    Populates list inputs (categorical assertions; citations; origins; datasets; and markers)
+    in the edit form with session data, corresponding to a submission that is
+    in progress--i.e., not already stored in senlib.
+
+    Because the user can edit list content via modal forms, the session content will, in
+    general, be different from any existing data for the submission.
+
+    :param senlib: the SenLib interface
+    :param form: the Edit form
+    :param form_data: the session data for the form inputs
+    """
+
+    # Taxon
+    taxonlist = build_edited_list(senlib=senlib, form_data=form_data, listkey='taxon')
+    if len(taxonlist) > 0:
+        form.taxon.process(form.taxon, [item['term'] for item in taxonlist])
+    else:
+        form.taxon.process([''])
+
+    # Location
+    locationlist = build_edited_list(senlib=senlib, form_data=form_data, listkey='location')
+    if len(locationlist) > 0:
+        form.location.process(form.location, [item['term'] for item in locationlist])
+    else:
+        form.location.process([''])
+
+    # Cell type
+    celltypelist = build_edited_list(senlib=senlib, form_data=form_data, listkey='celltype')
+    if len(celltypelist) > 0:
+        form.celltype.process(form.celltype, [item['term'] for item in celltypelist])
+    else:
+        form.celltype.process([''])
+
+    # Hallmark
+    hallmarklist = build_edited_list(senlib=senlib, form_data=form_data, listkey='hallmark')
+    if len(hallmarklist) > 0:
+        form.hallmark.process(form.hallmark, [item['term'] for item in hallmarklist])
+    else:
+        form.hallmark.process([''])
+
+    # Molecular observable
+    observablelist = build_edited_list(senlib=senlib, form_data=form_data, listkey='observable')
+    if len(observablelist) > 0:
+        form.observable.process(form.hallmark, [item['term'] for item in observablelist])
+    else:
+        form.observable.process([''])
+
+    # Inducer
+    inducerlist = build_edited_list(senlib=senlib, form_data=form_data, listkey='inducer')
+    if len(inducerlist) > 0:
+        form.inducer.process(form.hallmark, [item['term'] for item in inducerlist])
+    else:
+        form.inducer.process([''])
+
+    # Assay
+    assaylist = build_edited_list(senlib=senlib, form_data=form_data, listkey='assay')
+    if len(assaylist) > 0:
+        form.assay.process(form.hallmark, [item['term'] for item in assaylist])
+    else:
+        form.assay.process([''])
+
+    # Citation
+    citationlist = build_edited_list(senlib=senlib, form_data=form_data, listkey='citation')
+    if len(citationlist) > 0:
+        form.citation.process(form.citation, [truncateddisplaytext(id=item['code'],
+                                                                   description=item['term'],
+                                                                   trunclength=70)
+                                              for item in citationlist])
+    else:
+        form.citation.process([''])
+
+    # Origin
+    originlist = build_edited_list(senlib=senlib, form_data=form_data, listkey='origin')
+    if len(originlist) > 0:
+        form.origin.process(form.origin, [truncateddisplaytext(id=item['code'],
+                                                                 description=item['term'],
+                                                                 trunclength=70)
+                                            for item in originlist])
+    else:
+        form.origin.process([''])
+
+    # Dataset
+    datasetlist = build_edited_list(senlib=senlib, form_data=form_data, listkey='dataset')
+    if len(datasetlist) > 0:
+        form.dataset.process(form.dataset, [truncateddisplaytext(id=item['code'],
+                                                                 description=item['term'],
+                                                                 trunclength=70)
+                                            for item in datasetlist])
+    else:
+        form.dataset.process([''])
+
+
 @edit_blueprint.route('', methods=['POST', 'GET'])
 def edit():
 
     # Read the app.cfg file outside the Flask application context.
+
     cfg = AppConfig()
 
     # Get IDs for existing Senotype submissions.
     # Get the URLs to the senlib repo.
+    # Base URL for the repo
     senlib_url = cfg.getfield(key='SENOTYPE_URL')
+    # URL to the Senotype Editor valueset CSV, stored in the senlib repo
     valueset_url = cfg.getfield(key='VALUESET_URL')
+    # URL to the folder for Senotype Submissions in the senlib repo
     json_url = cfg.getfield(key='JSON_URL')
 
     # Senlib interface
     senlib = SenLib(senlib_url, valueset_url, json_url)
 
-    # Add 'new' as an option. Must be a tuple for correct display in the form.
+    # Add 'new' as an option for the Senotype ID list.
+    # Must be a tuple for correct display in the form.
     choices = [("new", "(new)")] + [(id, id) for id in senlib.senlibjsonids]
 
-    if request.method == 'GET' and 'flashes' not in session:
-        # This is the result of the redirect from Globus login.
+    print('edit')
+    print('request.method', request.method)
+    print('session', session)
 
-        form = EditForm()  # Empty form
-        form.senotypeid.choices = choices
+    # Check if we have session data for the form.
+    # Session data will correspond to the state of the form at the time of
+    # validation errors resulting from an attempt at updating.
+    # This form data represents either a new submission or modifications to an
+    # existing submission.
+
+    form_data = session.pop('form_data', None)
+    form_errors = session.pop('form_errors', None)
+    print('edit')
+    print('form_data', form_data)
+    print('form_errors', form_errors)
+
+    if form_data:
+        # Populate the form with session data--i.e., the data for the submission that
+        # the user is attempting to add or update.
+        print('Loading edited form data')
+        form = EditForm(data=form_data)
+        form.senotypeid.choices = choices  # includes "new"
+        loadeditedlistdata(senlib=senlib, form=form, form_data=form_data)
+
+        # Re-inject validation errors from the failed update.
+        if form_errors:
+            for field_name, errs in form_errors.items():
+                if hasattr(form, field_name):
+                    form_field = getattr(form, field_name)
+                    form_field.errors = errs
+
+    elif request.method == 'GET':
+
+        # Initial load of the form as a result of the redirect from Globus login.
+        # Load an empty form.
+        form = EditForm()
+        form.senotypeid.choices = choices # includes "new"
         setdefaults(form=form)
 
-    else:
-    # if request.method == 'POST':
-        # This is the result of one of the following scenarios:
-        # 1. A POST from the user selecting something other than 'new' for a Senotype ID
-        #    --i.e, an existing senotype.
-        # 2. A GET from an input validation error.
+    elif request.method == 'POST':
 
-        # Load existing data.
+        # This is the result of a POST triggered by the change event in the senotype
+        # list. In other words, the user selected something other than
+        # 'new' in the list.
+        # Fetch submission data from the senlib repo and populate the form.
+
+        # Load existing data for the selected submission.
         form = EditForm(request.form)
-        form.senotypeid.choices = choices
+        form.senotypeid.choices = choices  # includes "new"
 
-        id = form.senotypeid.data
+        id = form.senotypeid.data # Senotype submission id
 
         if id == 'new' or id is None:
+            # The user selected 'new'. Load an empty form.
             setdefaults(form=form)
 
         else:
-            # User has selected another existing ID. Load from existing data.
-
-            # Clear messages.
-            if 'flashes' in session:
-                session['flashes'].clear()
-            clearerrors(form)
-
-            # Get senotype data
-            dictsenlib = senlib.getsenlibjson(id=id)
-
-            senotype = dictsenlib.get('senotype')
-            form.senotypename.data = senotype.get('term', '')
-            form.senotypedescription.data = senotype.get('definition')
-
-            # Submitter data
-            submitter = dictsenlib.get('submitter')
-            submitter_name = submitter.get('name')
-            form.submitterfirst.data = submitter_name.get('first','')
-            form.submitterlast.data = submitter_name.get('last','')
-            form.submitteremail.data = submitter.get('email','')
-
-            # Assertions other than markers
-            assertions = dictsenlib.get('assertions')
-
-            # Taxon (multiple possible values)
-            if id != request.form.get('original_id', id):
-                # Load information from existing data.
-                taxonlist = getsimpleassertiondata(assertions=assertions, predicate='in_taxon')
-                if len(taxonlist) > 0:
-                    form.taxon.process(form.taxon, [item['term'] for item in taxonlist])
-                else:
-                    form.taxon.process([''])
-            else:
-                # User triggered POST by managing the list (via Javascript).
-                # WTForms has the information in request.forms
-                pass
-
-            # Locations (multiple possible values)
-            if id != request.form.get('original_id', id):
-                # Load information from existing data.
-                locationlist = getsimpleassertiondata(assertions=assertions, predicate='located_in')
-                if len(locationlist) > 0:
-                    form.location.process(form.location, [item['term'] for item in locationlist])
-                else:
-                    form.location.process([''])
-            else:
-                # User triggered POST by managing the list (via Javascript).
-                # WTForms has the information in request.forms
-                pass
-
-            # Cell type (one possible value)
-            if id != request.form.get('original_id', id):
-                # Load information from existing data.
-                celltypelist = getsimpleassertiondata(assertions=assertions, predicate='has_cell_type')
-                if len(celltypelist) > 0:
-                    form.celltype.process(form.celltype, [item['term'] for item in celltypelist])
-                else:
-                    form.celltype.process([''])
-            else:
-                # User triggered POST by managing the list (via Javascript).
-                # WTForms has the information in request.forms
-                pass
-
-            # Hallmark (multiple possible values)
-            if id != request.form.get('original_id', id):
-                # Load information from existing data.
-                hallmarklist = getsimpleassertiondata(assertions=assertions, predicate='has_hallmark')
-                if len(hallmarklist) > 0:
-                    form.hallmark.process(form.hallmark, [item['term'] for item in hallmarklist])
-                else:
-                    form.hallmark.process([''])
-            else:
-                # User triggered POST by managing the list (via Javascript).
-                # WTForms has the information in request.forms
-                pass
-
-            # Molecular observable (multiple possible values)
-            if id != request.form.get('original_id', id):
-                # Load information from existing data.
-                observablelist = getsimpleassertiondata(assertions=assertions, predicate='has_molecular_observable')
-                if len(observablelist) > 0:
-                    form.observable.process(form.observable, [item['term'] for item in observablelist])
-                else:
-                    form.observable.process([''])
-            else:
-                # User triggered POST by managing the list (via Javascript).
-                # WTForms has the information in request.forms
-                pass
-
-            # Inducer (multiple possible values)
-            if id != request.form.get('original_id', id):
-                # Load information from existing data.
-                inducerlist = getsimpleassertiondata(assertions=assertions, predicate='has_inducer')
-                if len(inducerlist) > 0:
-                    form.inducer.process(form.inducer, [item['term'] for item in inducerlist])
-                else:
-                    form.inducer.process([''])
-            else:
-                # User triggered POST by managing the list (via Javascript).
-                # WTForms has the information in request.forms
-                pass
-
-            # Assay (multiple possible values)
-            if id != request.form.get('original_id', id):
-                # Load information from existing data.
-                assaylist = getsimpleassertiondata(assertions=assertions, predicate='has_assay')
-                if len(assaylist) > 0:
-                    form.assay.process(form.assay, [item['term'] for item in assaylist])
-                else:
-                    form.assay.process([''])
-            else:
-                # User triggered POST by managing the list (via Javascript).
-                # WTForms has the  information in request.forms
-                pass
-
-            # Context assertions
-            # Age
-            age = getcontextassertiondata(assertions=assertions, predicate='has_context', context='age')
-            if age != {}:
-                form.agevalue.data = age.get('value', '')
-                form.agelowerbound.data = age.get('lowerbound', '')
-                form.ageupperbound.data = age.get('upperbound', '')
-                form.ageunit.data = age.get('unit', '')
-
-            # Citation (multiple possible values)
-
-            if id != request.form.get('original_id', id):
-                # Load citation information from existing data.
-                #truncateddisplaytext(id: str, description:str, trunclength: int)
-                citationlist = getsimpleassertiondata(assertions=assertions, predicate='has_citation')
-                if len(citationlist) > 0:
-                    form.citation.process(form.citation, [truncateddisplaytext(id=item['code'],
-                                                                               description=item['term'],
-                                                                               trunclength=70)
-                                                          for item in citationlist])
-                else:
-                    form.citation.process([''])
-            else:
-                # User triggered POST by managing the citation list (via Javascript).
-                # WTForms has the citation information in request.forms
-                pass
-
-            # Origin (multiple possible values)
-            if id != request.form.get('original_id', id):
-                # Load origin information from existing data.
-                originlist = getsimpleassertiondata(assertions=assertions, predicate='has_origin')
-                if len(originlist) > 0:
-                    form.origin.process(form.origin, [truncateddisplaytext(id=item['code'],
-                                                                           description=item['term'],
-                                                                           trunclength=70)
-                                                      for item in originlist])
-                else:
-                    form.origin.process([''])
-            else:
-                # User triggered POST by managing the list (via Javascript).
-                # WTForms has the information in request.forms
-                pass
-
-            # Dataset (multiple possible values)
-            if id != request.form.get('original_id', id):
-                # Load dataset information from existing data.
-                datasetlist = getsimpleassertiondata(assertions=assertions, predicate='has_dataset')
-                if len(datasetlist) > 0:
-                    form.dataset.process(form.dataset, [truncateddisplaytext(id=item['code'],
-                                                                               description=item['term'],
-                                                                               trunclength=70)
-                                                          for item in datasetlist])
-                else:
-                    form.dataset.process([''])
-            else:
-                # User triggered POST by managing the list (via Javascript).
-                # WTForms has the information in request.forms
-                pass
-
-            # Specified Markers (multiple possible values)
-            if id != request.form.get('original_id', id):
-                # Load dataset information from existing data.
-                markerlist = getsimpleassertiondata(assertions=assertions, predicate='has_characterizing_marker_set')
-                if len(markerlist) > 0:
-                    form.marker.process(form.marker, [item['symbol'] for item in markerlist])
-                else:
-                    form.marker.process([''])
-            else:
-                # User triggered POST by managing the list (via Javascript).
-                # WTForms has the information in request.forms
-                pass
-
-            # Regulating Markers (multiple possible values)
-            if id != request.form.get('original_id', id):
-                # Load dataset information from existing data.
-                regmarkerlist = getregmarkerdata(assertions=assertions)
-
-                if len(markerlist) > 0:
-                    form.regmarker.process(form.regmarker, [item['symbol'] for item in regmarkerlist])
-                else:
-                    form.regmarker.process([''])
-            else:
-                # User triggered POST by managing the list (via Javascript).
-                # WTForms has the information in request.forms
-                pass
+            # Load from existing data.
+            loadexistingdata(id=id, senlib=senlib, form=form)
 
     return render_template('edit.html', form=form)

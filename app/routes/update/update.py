@@ -1,7 +1,7 @@
 """
 Updates the Senotype repository by writing/overwriting a submission JSON file.
 """
-from flask import Blueprint, request, render_template, flash, redirect, get_flashed_messages, session
+from flask import Blueprint, request, render_template, flash, redirect, session, url_for
 import uuid
 from werkzeug.datastructures import MultiDict
 import requests
@@ -210,4 +210,9 @@ def update():
                     if err not in form_field.errors:
                         form_field.errors.append(err)
         flash("Validation failed. Please check your inputs.", "danger")
-        return render_template('edit.html', form=form)
+        # Pass both the current form data (which, in general, will have been modified
+        # from the existing submission data) and the validation errors from the validated form
+        # to a reload of the form.
+        session['form_errors'] = form.errors
+        session['form_data'] = form.data
+        return redirect(url_for('edit.edit'))
