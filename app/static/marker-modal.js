@@ -20,11 +20,12 @@ function addMarker(id, description) {
     input.type = 'text';
     input.name = 'marker-' + ul.children.length; // WTForms FieldList expects this pattern
     input.value = id;
-    input.className = 'form-control d-none'; // Hidden but submitted
+    input.className = 'form-control';// d-none'; // Hidden but submitted
     li.appendChild(input);
 
     // Visible text: show the description instead of the ID
     var span = document.createElement('span');
+    span.className = 'list-field-display';
     span.textContent = description || id;
     li.appendChild(span);
 
@@ -64,6 +65,7 @@ document.addEventListener('DOMContentLoaded', function () {
             lastMarkerSearch = query;
             resultsDiv.innerHTML = '<div class="text-muted">Searching UBKG API...</div>';
 
+            // Call the API.
             var apiUrl;
             if (type === "protein") {
                 apiUrl = '/ontology/proteins/' + encodeURIComponent(query);
@@ -73,7 +75,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
             fetch(apiUrl)
                 .then(response => {
-                console.log(response);
                     if (!response.ok) throw new Error("404 or API error");
                     return response.json();
                 })
@@ -88,23 +89,24 @@ document.addEventListener('DOMContentLoaded', function () {
                         var id, description, validateId;
                         if (type === "protein") {
                             id = item.uniprotkb_id || query;
-                            // If the API returns no valid ID, don't let user add it.
+                            // If the id does not correspond to a UniProtKB ID, do not add it.
                             if (!id) return;
+
                             validateId = id;
+
+                            // UniProtKB recommended name
                             var recNameArr = item.recommended_name || [];
                             var recName = Array.isArray(recNameArr) ? recNameArr[0] : recNameArr;
+
                             //description = (id && recName) ? (id + ' (' + recName + ')') : (id || recName || query);
-                            description = id;
+                            description = "UNIPROTKB:" + id + " (" + recName.trim() + ")";
                         } else {
                             id = item.hgnc_id || query;
                             if (!id) return;
                             validateId = id;
                             var approved_symbol = item.approved_symbol;
                             var approved_name = item.approved_name;
-                            //description = (approved_symbol && approved_name)
-                                //? (approved_symbol + ' (' + approved_name + ')')
-                                //: (approved_symbol || id);
-                            description = approved_symbol;
+                            description = "HGNC:" + id + " (" + approved_symbol + ")" ;
                         }
                         var btn = document.createElement('button');
                         btn.className = 'btn btn-link text-start w-100 mb-1';
@@ -129,6 +131,11 @@ document.addEventListener('DOMContentLoaded', function () {
                                 })
                                 .then(validateData => {
                                     // Only add marker if validation succeeded (i.e., exists in ontology)
+                                    if (type === "protein") {
+                                        id = 'UNIPROTKB:' + id;
+                                    } else {
+                                        id = 'HGNC:' + id;
+                                    }
                                     addMarker(id, description);
                                     // Hide modal with Bootstrap 5
                                     var modalEl = document.getElementById('markerSearchModal');

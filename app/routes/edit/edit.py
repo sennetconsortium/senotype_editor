@@ -30,7 +30,7 @@ def truncateddisplaytext(id: str, description:str, trunclength: int) -> str:
 def getcitationobjects(rawobjects: list) -> list:
     """
     Calls the NCBI EUtils API to obtain the title for the PMID.
-    :param: rawobjects - the list of PMID objects stored with the submission.
+    :param: rawobjects - a list of PMID objects.
     """
     api = RequestRetry()
     base_url = 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&retmode=json&id='
@@ -52,9 +52,10 @@ def getcitationobjects(rawobjects: list) -> list:
     return oret
 
 def getoriginobjects(rawobjects: list) -> list:
+
     """
     Calls the SciCrunch API to obtain the title for the RRID.
-    :param: rawobjects - the list of PMID objects stored with the submission.
+    :param: rawobjects - the list of RRID objects.
     """
     api = RequestRetry()
     base_url = 'https://scicrunch.org/resolver/'
@@ -73,9 +74,10 @@ def getoriginobjects(rawobjects: list) -> list:
     return oret
 
 def getdatasetobjects(rawobjects: list) -> list:
+
     """
-    Calls the entity API to obtain the description for the dataset.
-    :param: rawobjects - the list of SenNet dataset objects stored with the submission.
+    Calls the entity API to obtain the description for the SenNet dataset.
+    :param: rawobjects - a list of SenNet dataset objects.
     """
     api = RequestRetry()
     base_url = 'https://entity.api.sennetconsortium.org/entities/'
@@ -93,12 +95,47 @@ def getdatasetobjects(rawobjects: list) -> list:
 
     return oret
 
-def getsimpleassertiondata(assertions: list, predicate: str) -> list:
+def getmarkerobjects(rawobjects: list) -> list:
+
     """
-    Obtains information for the specified assertion from the Senotype submission
+        Calls the entity API to obtain the description for specified markers.
+        :param: rawobjects - a list of specified marker objects.
+    """
+
+    api = RequestRetry()
+    base_url = 'https://ontology.api.hubmapconsortium.org/'
+
+    oret = []
+    for o in rawobjects:
+        code = o.get('code')
+        markerid = code.split(':')[1]
+        if 'HGNC' in code:
+            endpoint = 'genes'
+        else:
+            endpoint = 'proteins'
+
+        url = f'{base_url}{endpoint}/{markerid}'
+        print(url)
+        dataset = api.getresponse(url=url, format='json')
+
+        if 'HGNC' in code:
+            term = dataset[0].get('approved_symbol', code)
+        else:
+            term = dataset[0].get('recommended_name', code)
+            if term is not None:
+                term = term[0].strip()
+
+        oret.append({"code": code, "term": term})
+
+    return oret
+
+
+def getstoredsimpleassertiondata(assertions: list, predicate: str) -> list:
+    """
+    Obtains information for the specified assertion from a Senotype submission
     JSON.
     :param assertions: list of assertion objects
-    :param predicate: corresponds to predicate key
+    :param predicate: assertion predicate key
 
     """
 
@@ -123,13 +160,15 @@ def getsimpleassertiondata(assertions: list, predicate: str) -> list:
                 objects = getoriginobjects(rawobjects)
             elif pred == 'has_dataset':
                 objects = getdatasetobjects(rawobjects)
+            elif pred == 'has_characterizing_marker_set':
+                objects = getmarkerobjects(rawobjects)
             else:
                 objects = rawobjects
             return objects
     return []
 
 
-def getcontextassertiondata(assertions: list, predicate: str, context: str) -> dict:
+def getstoredcontextassertiondata(assertions: list, predicate: str, context: str) -> dict:
     """
     Obtains information on a context assertion in a Senotype submission JSON.
     :param assertions: list of assertions
@@ -240,49 +279,49 @@ def loadexistingdata(id: str, senlib: SenLib, form: EditForm):
     assertions = dictsenlib.get('assertions')
 
     # Taxon (multiple possible values)
-    taxonlist = getsimpleassertiondata(assertions=assertions, predicate='in_taxon')
+    taxonlist = getstoredsimpleassertiondata(assertions=assertions, predicate='in_taxon')
     if len(taxonlist) > 0:
         form.taxon.process(form.taxon, [item['term'] for item in taxonlist])
     else:
         form.taxon.process([''])
 
     # Locations (multiple possible values)
-    locationlist = getsimpleassertiondata(assertions=assertions, predicate='located_in')
+    locationlist = getstoredsimpleassertiondata(assertions=assertions, predicate='located_in')
     if len(locationlist) > 0:
         form.location.process(form.location, [item['term'] for item in locationlist])
     else:
         form.location.process([''])
 
     # Cell type (one possible value)
-    celltypelist = getsimpleassertiondata(assertions=assertions, predicate='has_cell_type')
+    celltypelist = getstoredsimpleassertiondata(assertions=assertions, predicate='has_cell_type')
     if len(celltypelist) > 0:
         form.celltype.process(form.celltype, [item['term'] for item in celltypelist])
     else:
         form.celltype.process([''])
 
     # Hallmark (multiple possible values)
-    hallmarklist = getsimpleassertiondata(assertions=assertions, predicate='has_hallmark')
+    hallmarklist = getstoredsimpleassertiondata(assertions=assertions, predicate='has_hallmark')
     if len(hallmarklist) > 0:
         form.hallmark.process(form.hallmark, [item['term'] for item in hallmarklist])
     else:
         form.hallmark.process([''])
 
     # Molecular observable (multiple possible values)
-    observablelist = getsimpleassertiondata(assertions=assertions, predicate='has_molecular_observable')
+    observablelist = getstoredsimpleassertiondata(assertions=assertions, predicate='has_molecular_observable')
     if len(observablelist) > 0:
         form.observable.process(form.observable, [item['term'] for item in observablelist])
     else:
         form.observable.process([''])
 
     # Inducer (multiple possible values)
-    inducerlist = getsimpleassertiondata(assertions=assertions, predicate='has_inducer')
+    inducerlist = getstoredsimpleassertiondata(assertions=assertions, predicate='has_inducer')
     if len(inducerlist) > 0:
         form.inducer.process(form.inducer, [item['term'] for item in inducerlist])
     else:
         form.inducer.process([''])
 
     # Assay (multiple possible values)
-    assaylist = getsimpleassertiondata(assertions=assertions, predicate='has_assay')
+    assaylist = getstoredsimpleassertiondata(assertions=assertions, predicate='has_assay')
     if len(assaylist) > 0:
         form.assay.process(form.assay, [item['term'] for item in assaylist])
     else:
@@ -290,7 +329,7 @@ def loadexistingdata(id: str, senlib: SenLib, form: EditForm):
 
     # Context assertions
     # Age
-    age = getcontextassertiondata(assertions=assertions, predicate='has_context', context='age')
+    age = getstoredcontextassertiondata(assertions=assertions, predicate='has_context', context='age')
     if age != {}:
         form.agevalue.data = age.get('value', '')
         form.agelowerbound.data = age.get('lowerbound', '')
@@ -298,7 +337,7 @@ def loadexistingdata(id: str, senlib: SenLib, form: EditForm):
         form.ageunit.data = age.get('unit', '')
 
     # Citation (multiple possible values)
-    citationlist = getsimpleassertiondata(assertions=assertions, predicate='has_citation')
+    citationlist = getstoredsimpleassertiondata(assertions=assertions, predicate='has_citation')
     if len(citationlist) > 0:
         form.citation.process(form.citation, [truncateddisplaytext(id=item['code'],
                                                                    description=item['term'],
@@ -308,7 +347,7 @@ def loadexistingdata(id: str, senlib: SenLib, form: EditForm):
         form.citation.process([''])
 
     # Origin (multiple possible values)
-    originlist = getsimpleassertiondata(assertions=assertions, predicate='has_origin')
+    originlist = getstoredsimpleassertiondata(assertions=assertions, predicate='has_origin')
     if len(originlist) > 0:
         form.origin.process(form.origin, [truncateddisplaytext(id=item['code'],
                                                                description=item['term'],
@@ -318,7 +357,7 @@ def loadexistingdata(id: str, senlib: SenLib, form: EditForm):
         form.origin.process([''])
 
     # Dataset (multiple possible values)
-    datasetlist = getsimpleassertiondata(assertions=assertions, predicate='has_dataset')
+    datasetlist = getstoredsimpleassertiondata(assertions=assertions, predicate='has_dataset')
     if len(datasetlist) > 0:
         form.dataset.process(form.dataset, [truncateddisplaytext(id=item['code'],
                                                                  description=item['term'],
@@ -328,9 +367,9 @@ def loadexistingdata(id: str, senlib: SenLib, form: EditForm):
         form.dataset.process([''])
 
     # Specified Markers (multiple possible values)
-    markerlist = getsimpleassertiondata(assertions=assertions, predicate='has_characterizing_marker_set')
+    markerlist = getstoredsimpleassertiondata(assertions=assertions, predicate='has_characterizing_marker_set')
     if len(markerlist) > 0:
-        form.marker.process(form.marker, [item['symbol'] for item in markerlist])
+        form.marker.process(form.marker, [f'{item["code"]} ({item["term"]})' for item in markerlist])
     else:
         form.marker.process([''])
 
@@ -341,7 +380,7 @@ def loadexistingdata(id: str, senlib: SenLib, form: EditForm):
     else:
         form.regmarker.process([''])
 
-def build_edited_list(senlib: SenLib, form_data: dict, listkey: str):
+def build_session_list(senlib: SenLib, form_data: dict, listkey: str):
     """
     Builds content for lists of assertions other than markers (taxon, location, etc.)
     on the Edit Form based on session data.
@@ -388,14 +427,25 @@ def build_edited_list(senlib: SenLib, form_data: dict, listkey: str):
             objects = getoriginobjects(rawobjects)
         elif assertion == 'has_dataset':
             objects = getdatasetobjects(rawobjects)
+        elif assertion == 'has_characterizing_marker_set':
+            objects = getmarkerobjects(rawobjects)
         else:
             objects = rawobjects
 
 
     return objects
 
+def build_session_markerlist(form_data: dict) -> list:
+    """
+    Builds content for the specified marker list on the Edit Form based on session data.
+    :param form_data: dict of form state data.
+    """
+    print(form_data)
+    codelist = form_data['marker']
 
-def loadeditedlistdata(senlib: SenLib, form:EditForm, form_data: dict):
+    return []
+
+def getsessiondata(senlib: SenLib, form:EditForm, form_data: dict):
     """
     Populates list inputs (categorical assertions; citations; origins; datasets; and markers)
     in the edit form with session data, corresponding to a submission that is
@@ -410,56 +460,56 @@ def loadeditedlistdata(senlib: SenLib, form:EditForm, form_data: dict):
     """
 
     # Taxon
-    taxonlist = build_edited_list(senlib=senlib, form_data=form_data, listkey='taxon')
+    taxonlist = build_session_list(senlib=senlib, form_data=form_data, listkey='taxon')
     if len(taxonlist) > 0:
         form.taxon.process(form.taxon, [item['term'] for item in taxonlist])
     else:
         form.taxon.process([''])
 
     # Location
-    locationlist = build_edited_list(senlib=senlib, form_data=form_data, listkey='location')
+    locationlist = build_session_list(senlib=senlib, form_data=form_data, listkey='location')
     if len(locationlist) > 0:
         form.location.process(form.location, [item['term'] for item in locationlist])
     else:
         form.location.process([''])
 
     # Cell type
-    celltypelist = build_edited_list(senlib=senlib, form_data=form_data, listkey='celltype')
+    celltypelist = build_session_list(senlib=senlib, form_data=form_data, listkey='celltype')
     if len(celltypelist) > 0:
         form.celltype.process(form.celltype, [item['term'] for item in celltypelist])
     else:
         form.celltype.process([''])
 
     # Hallmark
-    hallmarklist = build_edited_list(senlib=senlib, form_data=form_data, listkey='hallmark')
+    hallmarklist = build_session_list(senlib=senlib, form_data=form_data, listkey='hallmark')
     if len(hallmarklist) > 0:
         form.hallmark.process(form.hallmark, [item['term'] for item in hallmarklist])
     else:
         form.hallmark.process([''])
 
     # Molecular observable
-    observablelist = build_edited_list(senlib=senlib, form_data=form_data, listkey='observable')
+    observablelist = build_session_list(senlib=senlib, form_data=form_data, listkey='observable')
     if len(observablelist) > 0:
         form.observable.process(form.hallmark, [item['term'] for item in observablelist])
     else:
         form.observable.process([''])
 
     # Inducer
-    inducerlist = build_edited_list(senlib=senlib, form_data=form_data, listkey='inducer')
+    inducerlist = build_session_list(senlib=senlib, form_data=form_data, listkey='inducer')
     if len(inducerlist) > 0:
         form.inducer.process(form.hallmark, [item['term'] for item in inducerlist])
     else:
         form.inducer.process([''])
 
     # Assay
-    assaylist = build_edited_list(senlib=senlib, form_data=form_data, listkey='assay')
+    assaylist = build_session_list(senlib=senlib, form_data=form_data, listkey='assay')
     if len(assaylist) > 0:
         form.assay.process(form.hallmark, [item['term'] for item in assaylist])
     else:
         form.assay.process([''])
 
     # Citation
-    citationlist = build_edited_list(senlib=senlib, form_data=form_data, listkey='citation')
+    citationlist = build_session_list(senlib=senlib, form_data=form_data, listkey='citation')
     if len(citationlist) > 0:
         form.citation.process(form.citation, [truncateddisplaytext(id=item['code'],
                                                                    description=item['term'],
@@ -469,7 +519,7 @@ def loadeditedlistdata(senlib: SenLib, form:EditForm, form_data: dict):
         form.citation.process([''])
 
     # Origin
-    originlist = build_edited_list(senlib=senlib, form_data=form_data, listkey='origin')
+    originlist = build_session_list(senlib=senlib, form_data=form_data, listkey='origin')
     if len(originlist) > 0:
         form.origin.process(form.origin, [truncateddisplaytext(id=item['code'],
                                                                  description=item['term'],
@@ -479,7 +529,7 @@ def loadeditedlistdata(senlib: SenLib, form:EditForm, form_data: dict):
         form.origin.process([''])
 
     # Dataset
-    datasetlist = build_edited_list(senlib=senlib, form_data=form_data, listkey='dataset')
+    datasetlist = build_session_list(senlib=senlib, form_data=form_data, listkey='dataset')
     if len(datasetlist) > 0:
         form.dataset.process(form.dataset, [truncateddisplaytext(id=item['code'],
                                                                  description=item['term'],
@@ -487,6 +537,16 @@ def loadeditedlistdata(senlib: SenLib, form:EditForm, form_data: dict):
                                             for item in datasetlist])
     else:
         form.dataset.process([''])
+
+    # Specified markers
+    markerlist = build_session_markerlist(form_data=form_data)
+    if len(markerlist) > 0:
+        form.marker.process(form.marker, [truncateddisplaytext(id=item['code'],
+                                                               description=item['term'],
+                                                               trunclength=70)
+                                          for item in markerlist])
+    else:
+        form.marker.process([''])
 
 
 @edit_blueprint.route('', methods=['POST', 'GET'])
@@ -524,17 +584,13 @@ def edit():
 
     form_data = session.pop('form_data', None)
     form_errors = session.pop('form_errors', None)
-    print('edit')
-    print('form_data', form_data)
-    print('form_errors', form_errors)
 
     if form_data:
         # Populate the form with session data--i.e., the data for the submission that
         # the user is attempting to add or update.
-        print('Loading edited form data')
         form = EditForm(data=form_data)
         form.senotypeid.choices = choices  # includes "new"
-        loadeditedlistdata(senlib=senlib, form=form, form_data=form_data)
+        getsessiondata(senlib=senlib, form=form, form_data=form_data)
 
         # Re-inject validation errors from the failed update.
         if form_errors:

@@ -34,7 +34,7 @@ function addValuesetToList(fieldname, valuesetId, valuesetLabel) {
     // Hidden input for the POST submission via the Update button.
     var input = document.createElement('input');
     input.type = 'text';
-    input.className = 'form-control w-100 d-none';
+    input.className = 'form-control w-100';// d-none';
     input.value = valuesetId;
     li.appendChild(input);
     // Show label in list.

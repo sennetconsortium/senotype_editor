@@ -43,6 +43,7 @@ document.addEventListener("DOMContentLoaded", function () {
             for (let i = 1; i < rows.length; i++) {
                 const row = rows[i].map(cell => cell.trim());
                 const type = row[typeIdx].toLowerCase();
+                // id here is either a HGNC symbol (e.g., BRCA1) or a UniprotKB symbol.
                 const id = row[idIdx];
                 if (!(type === "gene" || type === "protein")) {
                     errors.push(`Row ${i + 1}: type must be 'gene' or 'protein'`);
@@ -52,13 +53,14 @@ document.addEventListener("DOMContentLoaded", function () {
                     errors.push(`Row ${i + 1}: id is missing`);
                     continue;
                 }
+                // Add the marker from the CSV to the list of markers to validate.
                 markers.push({ type, id });
             }
             if (errors.length) {
                 resultsDiv.innerHTML = errors.map(e => `<div class="text-danger">${e}</div>`).join("");
                 return;
             }
-            // Validate markers via API
+            // Validate markers via API.
             resultsDiv.innerHTML = "Validating markers, please wait...";
             let apiErrors = [];
             let validEntries = [];
@@ -66,25 +68,48 @@ document.addEventListener("DOMContentLoaded", function () {
                 const m = markers[i];
                 let apiUrl = `/ontology/${m.type === "gene" ? "genes" : "proteins"}/${encodeURIComponent(m.id)}`;
                 try {
+                    // Disable the ESLint no-await-in-loop checks and warnings--i.e.,
+                    // that there is an await in a loop.
                     /* eslint-disable no-await-in-loop */
+
+                    // Perform synchronous fetch.
                     let resp = await fetch(apiUrl);
                     if (!resp.ok) throw new Error();
+
+                    // Get response as JSON.
                     let data = await resp.json();
 
                     // Check for valid return value (array/object with proper id)
                     if (m.type === "gene") {
+                        // If response is an array, then find the element in the array
+                        // that corresponds to the marker from the CSV, searching by
+                        // the HGNC approved symbol; otherwise, check the symbol of the single object.
+                        // The search is case-insensitive.
+                        // (The search may need to be expanded to include aliases and previous symbols.)
                         let found = Array.isArray(data)
                             ? data.find(obj => obj.approved_symbol && obj.approved_symbol.toLowerCase() === m.id.toLowerCase())
                             : (data.approved_symbol && data.approved_symbol.toLowerCase() === m.id.toLowerCase() ? data : null);
-                        if (!found) throw new Error();
-                        validEntries.push({ type: "gene", id: m.id, symbol: found.approved_symbol, name: found.approved_name });
+
+                         if (!found) throw new Error();
+
+                        // If a gene in the CSV was in the response, get the hgnc ID, approved symbol, and approved name.
+                        validEntries.push({ type: "gene", id: found.hgnc_id, symbol: found.approved_symbol, name: found.approved_name });
+
                     } else {
+
+                        // If response is an array, then find the element in the array
+                        // that corresponds to the marker from the CSV, searching by
+                        // UniprotKB ID and recommended name; otherwise, check the ID and name of the single object.
+                        // The search is case-insensitive.
                         let found = Array.isArray(data)
                             ? data.find(obj => obj.uniprotkb_id == m.id)
                             : (data.uniprotkb_id == m.id ? data : null);
                         let recNameArr = found && found.recommended_name;
                         let recName = recNameArr && Array.isArray(recNameArr) ? recNameArr[0] : recNameArr;
+
                         if (!found) throw new Error();
+
+                        // If the protein in the CSV was in the response, get the UniPeotKB ID and recommended name.
                         validEntries.push({ type: "protein", id: m.id, recommended_name: recName });
                     }
                 } catch {
@@ -104,39 +129,48 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
     form.addEventListener("submit", function (e) {
+
         e.preventDefault();
-        // Add markers to marker-list
+        // Add markers from the CSV to the marker-list.
         const ul = document.getElementById("marker-list");
         parsedMarkers.forEach(m => {
             let id, description;
+            console.log(m);
             if (m.type === "gene") {
                 // Use approved_symbol if present, else symbol, else id
                 let symbol = m.approved_symbol || m.symbol || m.id;
-                id = "HGNC:" + symbol;
-                //description = id;
-                description = symbol;
+                id = "HGNC:" + m.id;
+                description = id + " (" + symbol + ")";
             } else {
                 // Use uniprotkb_id if present, else id
                 let proteinId = m.uniprotkb_id || m.id;
                 id = "UNIPROTKB:" + proteinId;
-                //description = id;
-                description = proteinId;
+                description = id + " (" + m.recommended_name + ")";
             }
-            console.log(description);
-            // Prevent duplicates
+
+            // Prevent duplicates in the marker list.
             if (Array.from(ul.querySelectorAll('input')).some(input => input.value === id)) return;
+
             let li = document.createElement('li');
             li.className = 'list-group-item d-flex justify-content-between align-items-center';
+
+            // Hidden input for WTForms submission
             let input = document.createElement('input');
             input.type = 'text';
             input.name = 'marker-' + ul.children.length;
-            //input.value = id;
-            input.value = description;
-            input.className = 'form-control w-100';
+
+            input.value = id;
+            input.className = 'form-control'; // d-none'; // Hidden but submitted
             li.appendChild(input);
-            //let span = document.createElement('span');
-            //span.textContent = description || id;
-            //li.appendChild(span);
+
+            // Visible text: show the description instead of the ID
+            var span = document.createElement('span');
+            span.className = 'list-field-display';
+            span.textContent = description || id;
+            li.appendChild(span);
+
+
+            // Add removal button.
             let btn = document.createElement('button');
             btn.className = 'btn btn-sm btn-danger ms-2';
             btn.textContent = '-';
@@ -144,7 +178,7 @@ document.addEventListener("DOMContentLoaded", function () {
             li.appendChild(btn);
             ul.appendChild(li);
         });
-        // Reset form and hide modal
+        // Reset form and hide modal.
         form.reset();
         resultsDiv.innerHTML = "";
         submitBtn.disabled = true;
