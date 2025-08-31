@@ -39,6 +39,7 @@ function addValuesetToList(fieldname, valuesetId, valuesetLabel) {
     li.appendChild(input);
     // Show label in list.
     var span = document.createElement('span');
+    span.className = 'list-field-display';
     span.textContent = valuesetLabel;
     li.appendChild(span);
     // Remove button for the new item.

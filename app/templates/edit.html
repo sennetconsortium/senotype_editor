@@ -65,9 +65,17 @@
         <div class="col-md-6" style="background-color: #FEF2F2; border: 1px solid #ccc; border-radius: 5px; padding: 16px;">
             <strong>{{ form.taxon.label }}</strong>
             <ul id="taxon-list" class="list-group mb-2 w-100">
+                <!-- taxon field in format SAB:code (term) -->
                 {% for taxon_field in form.taxon %}
+                    {% set taxon_full = taxon_field.data %}
+                    {% set taxon_display = taxon_full.split('(')[1][0:-1] %}
+                    {% set taxon_hidden = taxon_full.split(' ')[0] %}
                     <li class="list-group-item d-flex justify-content-between align-items-center w-100">
-                        {{ taxon_field(class="form-control w-100") }}
+                        <!-- Hidden input with code only -->
+                        <!--<input type="hidden" name="{{ taxon_field.name }}" value="{{ taxon_hidden }}">-->
+                        <input name="{{ taxon_field.name }}" value="{{ taxon_hidden }}">
+                        <!-- Display full string -->
+                        <span class="list-field-display" name="taxon_field_display">{{ taxon_display }}</span>
                         <button type="button" class="btn btn-sm btn-danger ms-2" onclick="removeValue(this)">-</button>
                     </li>
                 {% endfor %}
@@ -83,9 +91,17 @@
         <div class="col-md-6" style="background-color: #FEF2F2; border: 1px solid #ccc; border-radius: 5px; padding: 16px;">
             <strong>{{ form.location.label }}</strong>
             <ul id="location-list" class="list-group mb-2 w-100">
+                <!-- location field in format SAB:code (term) -->
                 {% for location_field in form.location %}
+                    {% set location_full = location_field.data %}
+                    {% set location_display = location_full.split('(')[1][0:-1] %}
+                    {% set location_hidden = location_full.split(' ')[0] %}
                     <li class="list-group-item d-flex justify-content-between align-items-center w-100">
-                        {{ location_field(class="form-control w-100") }}
+                        <!-- Hidden input with code only -->
+                        <!--<input type="hidden" name="{{ location_field.name }}" value="{{ location_hidden }}">-->
+                        <input name="{{ location_field.name }}" value="{{ location_hidden }}">
+                        <!-- Display full string -->
+                        <span class="list-field-display" name="location_field_display">{{ location_display }}</span>
                         <button type="button" class="btn btn-sm btn-danger ms-2" onclick="removeValue(this)">-</button>
                     </li>
                 {% endfor %}
@@ -104,9 +120,17 @@
         <div class="col-md-6" style="background-color: #FEF2F2; border: 1px solid #ccc; border-radius: 5px; padding: 16px;">
             <strong>{{ form.celltype.label }}</strong>
             <ul id="celltype-list" class="list-group mb-2 w-100">
+                <!-- celltype field in format SAB:code (term) -->
                 {% for celltype_field in form.celltype %}
+                    {% set celltype_full = celltype_field.data %}
+                    {% set celltype_display = celltype_full.split('(')[1][0:-1] %}
+                    {% set celltype_hidden = celltype_full.split(' ')[0] %}
                     <li class="list-group-item d-flex justify-content-between align-items-center w-100">
-                        {{ celltype_field(class="form-control w-100") }}
+                        <!-- Hidden input with code only -->
+                        <!--<input type="hidden" name="{{ celltype_field.name }}" value="{{ celltype_hidden }}">-->
+                        <input name="{{ celltype_field.name }}" value="{{ celltype_hidden }}">
+                        <!-- Display full string -->
+                        <span class="list-field-display" name="celltype_field_display">{{ celltype_display }}</span>
                         <button type="button" class="btn btn-sm btn-danger ms-2" onclick="removeValue(this)">-</button>
                     </li>
                 {% endfor %}

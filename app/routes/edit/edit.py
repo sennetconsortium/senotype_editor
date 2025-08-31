@@ -129,6 +129,23 @@ def getmarkerobjects(rawobjects: list) -> list:
 
     return oret
 
+def getassertionobjects(rawobjects: list) -> list:
+    """
+    Reformats the objects array from a Senotype submission file for corresponding
+    list in the edit form.
+    :param rawobjects: list of assertion objects from a submission file.
+    """
+
+    listret = []
+    for o in rawobjects:
+        code = o.get('code')
+        listret.append(
+            {
+                'code': code,
+                'term': f'{code} ({o.get("term","")})'
+            }
+        )
+        return listret
 
 def getstoredsimpleassertiondata(assertions: list, predicate: str) -> list:
     """
@@ -163,7 +180,7 @@ def getstoredsimpleassertiondata(assertions: list, predicate: str) -> list:
             elif pred == 'has_characterizing_marker_set':
                 objects = getmarkerobjects(rawobjects)
             else:
-                objects = rawobjects
+                objects = getassertionobjects(rawobjects)
             return objects
     return []
 
