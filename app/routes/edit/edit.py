@@ -518,21 +518,21 @@ def getsessiondata(senlib: SenLib, form:EditForm, form_data: dict):
     # Molecular observable
     observablelist = build_session_list(senlib=senlib, form_data=form_data, listkey='observable')
     if len(observablelist) > 0:
-        form.observable.process(form.hallmark, [item['term'] for item in observablelist])
+        form.observable.process(form.observable, [item['term'] for item in observablelist])
     else:
         form.observable.process([''])
 
     # Inducer
     inducerlist = build_session_list(senlib=senlib, form_data=form_data, listkey='inducer')
     if len(inducerlist) > 0:
-        form.inducer.process(form.hallmark, [item['term'] for item in inducerlist])
+        form.inducer.process(form.inducer, [item['term'] for item in inducerlist])
     else:
         form.inducer.process([''])
 
     # Assay
     assaylist = build_session_list(senlib=senlib, form_data=form_data, listkey='assay')
     if len(assaylist) > 0:
-        form.assay.process(form.hallmark, [item['term'] for item in assaylist])
+        form.assay.process(form.assay, [item['term'] for item in assaylist])
     else:
         form.assay.process([''])
 
