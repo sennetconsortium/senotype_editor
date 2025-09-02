@@ -1,7 +1,10 @@
 {% extends 'base.html' %}
 
 {% block content %}
+<!-- Jinja macros -->
 {% from "_formhelpers.html" import render_field %}
+{% from "_field_lists.html" import render_fieldlist_section %}
+{% from "_marker_lists.html" import render_marker_section %}
 <div class="d-flex align-items-end mb-1 p-3" style="background-color: #F0FDF4; border: 1px solid #ccc; border-radius: 5px;">
     <img src="static/editor.png" width="106" height="101" alt="Senotype Editor" style="border: 1px solid #ccc;">
     <h2 class="m-3">Senotype Editor</h2>
@@ -61,165 +64,29 @@
     </div>
     <!-- Taxon / Location -->
     <div class="row">
-        <!-- TAXON section with remove/add buttons and modal -->
-        <div class="col-md-6" style="background-color: #FEF2F2; border: 1px solid #ccc; border-radius: 5px; padding: 16px;">
-            <strong>{{ form.taxon.label }}</strong>
-            <ul id="taxon-list" class="list-group mb-2 w-100">
-                <!-- taxon field in format SAB:code (term) -->
-                {% for taxon_field in form.taxon %}
-                    {% set taxon_full = taxon_field.data %}
-                    {% set taxon_display = taxon_full.split('(')[1][0:-1] %}
-                    {% set taxon_hidden = taxon_full.split(' ')[0] %}
-                    <li class="list-group-item d-flex justify-content-between align-items-center w-100">
-                        <!-- Hidden input with code only -->
-                        <!--<input type="hidden" name="{{ taxon_field.name }}" value="{{ taxon_hidden }}">-->
-                        <input name="{{ taxon_field.name }}" value="{{ taxon_hidden }}">
-                        <!-- Display full string -->
-                        <span class="list-field-display" name="taxon_field_display">{{ taxon_display }}</span>
-                        <button type="button" class="btn btn-sm btn-danger ms-2" onclick="removeValue(this)">-</button>
-                    </li>
-                {% endfor %}
-                {% for error in form.taxon.errors %}
-                    <div class="text-danger">{{ error }}</div>
-                {% endfor %}
-            </ul>
-            <button type="button" title="Add taxon" aria-label="Add taxon" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#taxonModal">
-                +
-            </button>
-        </div>
+        <!-- TAXON section-->
+        {{ render_fieldlist_section(form, "taxon", "taxonModal") }}
         <!-- LOCATION section -->
-        <div class="col-md-6" style="background-color: #FEF2F2; border: 1px solid #ccc; border-radius: 5px; padding: 16px;">
-            <strong>{{ form.location.label }}</strong>
-            <ul id="location-list" class="list-group mb-2 w-100">
-                <!-- location field in format SAB:code (term) -->
-                {% for location_field in form.location %}
-                    {% set location_full = location_field.data %}
-                    {% set location_display = location_full.split('(')[1][0:-1] %}
-                    {% set location_hidden = location_full.split(' ')[0] %}
-                    <li class="list-group-item d-flex justify-content-between align-items-center w-100">
-                        <!-- Hidden input with code only -->
-                        <!--<input type="hidden" name="{{ location_field.name }}" value="{{ location_hidden }}">-->
-                        <input name="{{ location_field.name }}" value="{{ location_hidden }}">
-                        <!-- Display full string -->
-                        <span class="list-field-display" name="location_field_display">{{ location_display }}</span>
-                        <button type="button" class="btn btn-sm btn-danger ms-2" onclick="removeValue(this)">-</button>
-                    </li>
-                {% endfor %}
-                {% for error in form.location.errors %}
-                    <div class="text-danger">{{ error }}</div>
-                {% endfor %}
-            </ul>
-            <button type="button" title="Add location" aria-label="Add location" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#locationModal">
-                +
-            </button>
-        </div>
+        {{ render_fieldlist_section(form, "location", "locationModal") }}
     </div>
     <!-- Cell Type / Hallmark -->
     <div class="row">
         <!-- CELL TYPE section -->
-        <div class="col-md-6" style="background-color: #FEF2F2; border: 1px solid #ccc; border-radius: 5px; padding: 16px;">
-            <strong>{{ form.celltype.label }}</strong>
-            <ul id="celltype-list" class="list-group mb-2 w-100">
-                <!-- celltype field in format SAB:code (term) -->
-                {% for celltype_field in form.celltype %}
-                    {% set celltype_full = celltype_field.data %}
-                    {% set celltype_display = celltype_full.split('(')[1][0:-1] %}
-                    {% set celltype_hidden = celltype_full.split(' ')[0] %}
-                    <li class="list-group-item d-flex justify-content-between align-items-center w-100">
-                        <!-- Hidden input with code only -->
-                        <!--<input type="hidden" name="{{ celltype_field.name }}" value="{{ celltype_hidden }}">-->
-                        <input name="{{ celltype_field.name }}" value="{{ celltype_hidden }}">
-                        <!-- Display full string -->
-                        <span class="list-field-display" name="celltype_field_display">{{ celltype_display }}</span>
-                        <button type="button" class="btn btn-sm btn-danger ms-2" onclick="removeValue(this)">-</button>
-                    </li>
-                {% endfor %}
-                {% for error in form.celltype.errors %}
-                    <div class="text-danger">{{ error }}</div>
-                {% endfor %}
-            </ul>
-            <button type="button" title="Add cell type" aria-label="Add cell type" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#celltypeModal">
-                +
-            </button>
-        </div>
+        {{ render_fieldlist_section(form, "celltype", "celltypeModal") }}
         <!-- HALLMARK section -->
-        <div class="col-md-6" style="background-color: #FEF2F2; border: 1px solid #ccc; border-radius: 5px; padding: 16px;">
-            <strong>{{ form.hallmark.label }}</strong>
-            <ul id="hallmark-list" class="list-group mb-2 w-100">
-                {% for hallmark_field in form.hallmark %}
-                    <li class="list-group-item d-flex justify-content-between align-items-center w-100">
-                        {{ hallmark_field(class="form-control w-100") }}
-                        <button type="button" class="btn btn-sm btn-danger ms-2" onclick="removeValue(this)">-</button>
-                    </li>
-                {% endfor %}
-                {% for error in form.hallmark.errors %}
-                    <div class="text-danger">{{ error }}</div>
-                {% endfor %}
-            </ul>
-            <button type="button" title="Add hallmark" aria-label="Add hallmark" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#hallmarkModal">
-                +
-            </button>
-        </div>
+        {{ render_fieldlist_section(form, "hallmark", "hallmarkModal") }}
     </div>
     <!-- Observable / Inducer -->
     <div class="row">
         <!-- OBSERVABLE section -->
-        <div class="col-md-6" style="background-color: #FEF2F2; border: 1px solid #ccc; border-radius: 5px; padding: 16px;">
-            <strong>{{ form.observable.label }}</strong>
-            <ul id="observable-list" class="list-group mb-2 w-100">
-                {% for observable_field in form.observable %}
-                    <li class="list-group-item d-flex justify-content-between align-items-center w-100">
-                        {{ observable_field(class="form-control w-100") }}
-                        <button type="button" class="btn btn-sm btn-danger ms-2" onclick="removeValue(this)">-</button>
-                    </li>
-                {% endfor %}
-                {% for error in form.observable.errors %}
-                    <div class="text-danger">{{ error }}</div>
-                {% endfor %}
-            </ul>
-            <button type="button" title="Add molecular observable" aria-label="Add molecular observable" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#observableModal">
-                +
-            </button>
-        </div>
+        {{ render_fieldlist_section(form, "observable", "observableModal") }}
         <!-- INDUCER section -->
-        <div class="col-md-6" style="background-color: #FEF2F2; border: 1px solid #ccc; border-radius: 5px; padding: 16px;">
-            <strong>{{ form.inducer.label }}</strong>
-            <ul id="inducer-list" class="list-group mb-2 w-100">
-                {% for inducer_field in form.inducer %}
-                    <li class="list-group-item d-flex justify-content-between align-items-center w-100">
-                        {{ inducer_field(class="form-control w-100") }}
-                        <button type="button" class="btn btn-sm btn-danger ms-2" onclick="removeValue(this)">-</button>
-                    </li>
-                {% endfor %}
-                {% for error in form.inducer.errors %}
-                    <div class="text-danger">{{ error }}</div>
-                {% endfor %}
-            </ul>
-            <button type="button" title="Add inducer" aria-label="Add inducer" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#inducerModal">
-                +
-            </button>
-        </div>
+        {{ render_fieldlist_section(form, "inducer", "inducerModal") }}
     </div>
     <!-- Assay / Context Assertions -->
     <div class="row">
         <!-- ASSAY section -->
-        <div class="col-md-6" style="background-color: #FEF2F2; border: 1px solid #ccc; border-radius: 5px; padding: 16px;">
-            <strong>{{ form.assay.label }}</strong>
-            <ul id="assay-list" class="list-group mb-2 w-100">
-                {% for assay_field in form.assay %}
-                    <li class="list-group-item d-flex justify-content-between align-items-center w-100">
-                        {{ assay_field(class="form-control w-100") }}
-                        <button type="button" class="btn btn-sm btn-danger ms-2" onclick="removeValue(this)">-</button>
-                    </li>
-                {% endfor %}
-                {% for error in form.assay.errors %}
-                    <div class="text-danger">{{ error }}</div>
-                {% endfor %}
-            </ul>
-            <button type="button" title="Add assay" aria-label="Add assay" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#assayModal">
-                +
-            </button>
-        </div>
+        {{ render_fieldlist_section(form, "assay", "assayModal") }}
         <!-- CONTEXT assertion section -->
         <div class="col-md-6" style="background-color: #FEF2F2; border: 1px solid #ccc; border-radius: 5px; padding: 16px;">
             <div class="container">
@@ -248,116 +115,23 @@
     <!-- PubMed Citations/RRID origin -->
     <div class="row">
         <!-- CITATION section -->
-        <div class="col-md-6" style="background-color: #FEF2F2; border: 1px solid #ccc; border-radius: 5px; padding: 16px;">
-            <strong>{{ form.citation.label }}</strong>
-            <ul id="citation-list" class="list-group mb-2 w-100">
-                {% for citation_field in form.citation %}
-                <li class="list-group-item d-flex justify-content-between align-items-center">
-                    {{ citation_field(class="form-control w-100") }}
-                    <button type="button" class="btn btn-sm btn-danger ms-2" onclick="removeCitation(this)">-</button>
-                </li>
-                {% endfor %}
-                {% for error in form.citation.errors %}
-                    <div class="text-danger">{{ error }}</div>
-                {% endfor %}
-            </ul>
-            <button type="button" title="Add PubMed citation" aria-label="Add PubMed citation" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#citationSearchModal">
-                +
-            </button>
-        </div>
+        {{ render_fieldlist_section(form, "citation", "citationSearchModal", is_external=True) }}
         <!-- ORIGIN sectno -->
-        <div class="col-md-6" style="background-color: #FEF2F2; border: 1px solid #ccc; border-radius: 5px; padding: 16px;">
-            <strong>{{ form.origin.label }}</strong>
-            <ul id="origin-list" class="list-group mb-2 w-100">
-                {% for origin_field in form.origin %}
-                <li class="list-group-item d-flex justify-content-between align-items-center">
-                    {{ origin_field(class="form-control w-100") }}
-                    <button type="button" class="btn btn-sm btn-danger ms-2" onclick="removeOrigin(this)">-</button>
-                </li>
-                {% endfor %}
-                {% for error in form.origin.errors %}
-                    <div class="text-danger">{{ error }}</div>
-                {% endfor %}
-            </ul>
-            <button type="button" title="Add RRID origin" aria-label="Add RRID origin" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#originSearchModal">
-                +
-            </button>
-        </div>
+        {{ render_fieldlist_section(form, "origin", "originSearchModal", is_external=True) }}
     </div>
     <!-- SenNet datasets -->
     <div class="row">
+        {{ render_fieldlist_section(form, "dataset", "datasetSearchModal", is_external=True) }}
         <div class="col-md-6" style="background-color: #FEF2F2; border: 1px solid #ccc; border-radius: 5px; padding: 16px;">
-            <strong>{{ form.dataset.label }}</strong>
-            <ul id="dataset-list" class="list-group mb-2 w-100">
-                {% for dataset_field in form.dataset %}
-                <li class="list-group-item d-flex justify-content-between align-items-center">
-                    {{ dataset_field(class="form-control w-100") }}
-                    <button type="button" class="btn btn-sm btn-danger ms-2" onclick="removeDataset(this)">-</button>
-                </li>
-                {% endfor %}
-                {% for error in form.dataset.errors %}
-                    <div class="text-danger">{{ error }}</div>
-                {% endfor %}
-            </ul>
-            <button type="button" title="Add SenNet dataset" aria-label="Add SenNet dataset" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#datasetSearchModal">
-                +
-            </button>
-        </div>
-        <div class="col-md-6" style="background-color: #FEF2F2; border: 1px solid #ccc; border-radius: 5px; padding: 16px;">
+            <!-- spacer -->
         </div>
     </div>
-    <!-- Specified Markers/Regulating Markers -->
+     <!-- Specified Markers/Regulating Markers -->
     <div class="row">
         <!-- SPECIFIED MARKERS  section -->
-        <div class="col-md-6" style="background-color: #F0FDF4; border: 1px solid #ccc; border-radius: 5px; padding: 16px;">
-            <strong>{{ form.marker.label }}</strong>
-            <ul id="marker-list" class="list-group mb-2 w-100">
-                {% for marker_field in form.marker %}
-                    {% set marker_full = marker_field.data %}
-                    {% set marker_hidden = marker_full.split(' ')[0] %}
-                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                        <!-- Hidden input with ontology:number only -->
-                        <!--<input type="hidden" name="{{ marker_field.name }}" value="{{ marker_hidden }}">-->
-                        <input name="{{ marker_field.name }}" value="{{ marker_hidden }}">
-                        <!-- Display full string -->
-                        <span class="list-field-display" name="marker_field_display">{{ marker_full }}</span>
-                        <button type="button" class="btn btn-sm btn-danger ms-2" onclick="removeMarker(this)">-</button>
-                    </li>
-                {% endfor %}
-                {% for error in form.marker.errors %}
-                    <div class="text-danger">{{ error }}</div>
-                {% endfor %}
-            </ul>
-            <button type="button" title="Add single specified marker" aria-label="Add single specified marker" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#markerSearchModal">
-                +
-            </button>
-            <!-- Add CSV upload button below marker list -->
-            <button type="button" title="Add multiple specified markers" aria-label="Add multiple specified markers" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#markerCsvModal">
-                Add Markers from CSV
-            </button>
-        </div>
+        {{ render_marker_section(form, "marker", "markerSearchModal", "markerCsvModal") }}
         <!-- REGULATING MARKERS section -->
-        <div class="col-md-6" style="background-color: #F0FDF4; border: 1px solid #ccc; border-radius: 5px; padding: 16px;">
-            <strong>{{ form.regmarker.label }}</strong>
-            <ul id="regmarker-list" class="list-group mb-2 w-100">
-                {% for regmarker_field in form.regmarker %}
-                <li class="list-group-item d-flex justify-content-between align-items-center">
-                    {{ regmarker_field(class="form-control w-100") }}
-                    <button type="button" class="btn btn-sm btn-danger ms-2" onclick="removeregMarker(this)">-</button>
-                </li>
-                {% endfor %}
-                {% for error in form.regmarker.errors %}
-                    <div class="text-danger">{{ error }}</div>
-                {% endfor %}
-            </ul>
-            <button type="button" title="Add single regulating marker" aria-label="Add single regulating marker" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#regmarkerSearchModal">
-                +
-            </button>
-            <!-- Add CSV upload button below marker list -->
-            <button type="button" title="Add multiple regulating markers" aria-label="Add multiple regulating markers" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#regmarkerCsvModal">
-                Add Markers from CSV
-            </button>
-        </div>
+        {{ render_marker_section(form, "regmarker", "regmarkerSearchModal", "regmarkerCsvModal") }}
     </div>
 </form>
 <!--MODAL DIVS -->

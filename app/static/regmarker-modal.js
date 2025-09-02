@@ -6,23 +6,27 @@ function removeRegMarker(btn) {
     btn.parentNode.remove();
 }
 
-// Add regulating marker from API result: Only add ID/action if not already present, but display description in the list
+// Add regulating marker from API result.
 function addRegMarker(id, description, action) {
+
     var ul = document.getElementById('regmarker-list');
-    // Prevent duplicates: must match both id and action
-    var exists = Array.from(ul.querySelectorAll('input[name^="regmarker-code"]')).some(input => input.value === id);
-    var actionExists = Array.from(ul.querySelectorAll('input[name^="regmarker-action"]')).some(input => input.value === action);
-    if (exists && actionExists) return;
+   // Prevent adding duplicate marker-action pairs
+    var exists = Array.from(ul.children).some(li => {
+        var inputCode = li.querySelector('input[name^="regmarker-code"]');
+        var inputAction = li.querySelector('input[name^="regmarker-action"]');
+        return inputCode && inputAction && inputCode.value === id && inputAction.value === action;
+    });
+    if (exists) return;
 
     var li = document.createElement('li');
     li.className = 'list-group-item d-flex justify-content-between align-items-center';
 
-    // Hidden input for WTForms submission: code
+    // Hidden input for WTForms submission: code and action
     var inputCode = document.createElement('input');
     inputCode.type = 'text';
     inputCode.name = 'regmarker-code-' + ul.children.length; // WTForms FieldList expects this pattern
-    inputCode.value = id;
-    inputCode.className = 'form-control d-none'; // Hidden but submitted
+    inputCode.value = id ;
+    inputCode.className = 'form-control';//d-none'; // Hidden but submitted
     li.appendChild(inputCode);
 
     // Hidden input for WTForms submission: action
@@ -30,11 +34,12 @@ function addRegMarker(id, description, action) {
     inputAction.type = 'text';
     inputAction.name = 'regmarker-action-' + ul.children.length;
     inputAction.value = action;
-    inputAction.className = 'form-control d-none';
+    inputAction.className = 'form-control';//d-none';
     li.appendChild(inputAction);
 
     // Visible text: show the description (or id) and action as arrow or question mark
     var span = document.createElement('span');
+    span.className = 'list-field-display';
     let actionSymbol;
     if (action === "up_regulates") {
         actionSymbol = '\u2191'; // up arrow
@@ -43,7 +48,9 @@ function addRegMarker(id, description, action) {
     } else {
         actionSymbol = '?'; // question mark
     }
-    span.textContent = (description || id) + ' ' + actionSymbol;
+    //span.textContent = (description || id) + ' ' + actionSymbol;
+    span.textContent = id + ' (' + description + ') ' + actionSymbol;
+    span.className = 'list-field-display';
     li.appendChild(span);
 
     // Remove button
@@ -107,15 +114,12 @@ document.addEventListener('DOMContentLoaded', function () {
                             id = item.uniprotkb_id || query;
                             var recNameArr = item.recommended_name || [];
                             var recName = Array.isArray(recNameArr) ? recNameArr[0] : recNameArr;
-                            //description = (id && recName) ? (id + ' (' + recName + ')') : (id || recName || query);
                             description = id;
                         } else {
                             id = item.hgnc_id || query;
                             var approved_symbol = item.approved_symbol;
                             var approved_name = item.approved_name;
-                            //description = (approved_symbol && approved_name)
-                                //? (approved_symbol + ' (' + approved_name + ')')
-                                //: (approved_symbol || id);
+
                             description = approved_symbol;
                         }
                         var btn = document.createElement('button');
@@ -124,8 +128,9 @@ document.addEventListener('DOMContentLoaded', function () {
                         btn.textContent = description;
                         btn.onclick = function () {
                             // Use proper prefix for marker ID
-                            var markerId = (type === "gene") ? (approved_symbol) : (id);
+                            var markerId = (type === "gene") ? ("HGNC:" + id) : ("UNIPROTKB:" + id);
                             addRegMarker(markerId, description, action);
+
                             // Hide modal with Bootstrap 5
                             var modalEl = document.getElementById('regmarkerSearchModal');
                             var modal = bootstrap.Modal.getInstance(modalEl);

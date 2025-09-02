@@ -24,8 +24,12 @@ def truncateddisplaytext(id: str, description:str, trunclength: int) -> str:
     """
     if trunclength < 0:
         trunclength = len(description)
+    if trunclength < len(description):
+        ellipsis = '...'
+    else:
+        ellipsis = ''
 
-    return f'{id} ({description[0:trunclength]}...)'
+    return f'{id} ({description[0:trunclength]}{ellipsis})'
 
 def getcitationobjects(rawobjects: list) -> list:
     """
@@ -129,6 +133,29 @@ def getmarkerobjects(rawobjects: list) -> list:
 
     return oret
 
+
+def getregmarkerobjects(assertions: list) -> list:
+    """
+    Obtains information related to the regulated markers of Senotype submission.
+    :param assertions: list of assertions
+    """
+
+    listret = []
+    for assertion in assertions:
+        predicate = assertion.get('predicate')
+        predicate_term = predicate.get('term')
+
+        if predicate_term in ['up_regulates','down_regulates','inconclusively_regulates']:
+            rawobjects = assertion.get('objects')
+            listret = getmarkerobjects(rawobjects=rawobjects)
+
+            for o in listret:
+                o['type'] = predicate_term
+
+
+    return listret
+
+
 def getassertionobjects(rawobjects: list) -> list:
     """
     Reformats the objects array from a Senotype submission file for corresponding
@@ -213,31 +240,6 @@ def getstoredcontextassertiondata(assertions: list, predicate: str, context: str
                     return o
 
     return {}
-
-def getregmarkerdata(assertions: list) -> list:
-    """
-    Obtains information related to the markers of Senotype submission.
-    :param assertions: list of assertions
-    """
-
-    listret = []
-    for assertion in assertions:
-        predicate = assertion.get('predicate')
-        predicate_term = predicate.get('term')
-
-        if predicate_term in ['up_regulates','down_regulates','inconclusively_regulates']:
-            objects = assertion.get('objects')
-            for o in objects:
-                symbol = o.get('symbol')
-                if predicate_term == 'up_regulates':
-                    icon = '\u2191'
-                elif predicate_term == 'down_regulates':
-                    icon = '\u2193'
-                else:
-                    icon = '?'
-                listret.append({'symbol': f'{symbol} \t {icon}'})
-
-    return listret
 
 
 def setdefaults(form):
@@ -358,7 +360,7 @@ def loadexistingdata(id: str, senlib: SenLib, form: EditForm):
     if len(citationlist) > 0:
         form.citation.process(form.citation, [truncateddisplaytext(id=item['code'],
                                                                    description=item['term'],
-                                                                   trunclength=70)
+                                                                   trunclength=60)
                                               for item in citationlist])
     else:
         form.citation.process([''])
@@ -368,7 +370,7 @@ def loadexistingdata(id: str, senlib: SenLib, form: EditForm):
     if len(originlist) > 0:
         form.origin.process(form.origin, [truncateddisplaytext(id=item['code'],
                                                                description=item['term'],
-                                                               trunclength=70)
+                                                               trunclength=60)
                                           for item in originlist])
     else:
         form.origin.process([''])
@@ -378,7 +380,7 @@ def loadexistingdata(id: str, senlib: SenLib, form: EditForm):
     if len(datasetlist) > 0:
         form.dataset.process(form.dataset, [truncateddisplaytext(id=item['code'],
                                                                  description=item['term'],
-                                                                 trunclength=70)
+                                                                 trunclength=100)
                                             for item in datasetlist])
     else:
         form.dataset.process([''])
@@ -386,14 +388,23 @@ def loadexistingdata(id: str, senlib: SenLib, form: EditForm):
     # Specified Markers (multiple possible values)
     markerlist = getstoredsimpleassertiondata(assertions=assertions, predicate='has_characterizing_marker_set')
     if len(markerlist) > 0:
-        form.marker.process(form.marker, [f'{item["code"]} ({item["term"]})' for item in markerlist])
+        form.marker.process(form.marker, [truncateddisplaytext(id=item['code'],
+                                                                description=item['term'],
+                                                                trunclength=100)
+                                           for item in markerlist])
     else:
         form.marker.process([''])
 
     # Regulating Markers (multiple possible values)
-    regmarkerlist = getregmarkerdata(assertions=assertions)
-    if len(markerlist) > 0:
-        form.regmarker.process(form.regmarker, [item['symbol'] for item in regmarkerlist])
+    regmarkerlist = getregmarkerobjects(assertions=assertions)
+    if len(regmarkerlist) > 0:
+        form.regmarker.process(
+            form.regmarker,
+            [
+                f"{truncateddisplaytext(id=item['code'], description=item['term'], trunclength=50)}|{item['type']}"
+                for item in regmarkerlist
+            ]
+        )
     else:
         form.regmarker.process([''])
 
@@ -530,7 +541,7 @@ def getsessiondata(senlib: SenLib, form:EditForm, form_data: dict):
     if len(citationlist) > 0:
         form.citation.process(form.citation, [truncateddisplaytext(id=item['code'],
                                                                    description=item['term'],
-                                                                   trunclength=70)
+                                                                   trunclength=40)
                                               for item in citationlist])
     else:
         form.citation.process([''])
@@ -540,7 +551,7 @@ def getsessiondata(senlib: SenLib, form:EditForm, form_data: dict):
     if len(originlist) > 0:
         form.origin.process(form.origin, [truncateddisplaytext(id=item['code'],
                                                                  description=item['term'],
-                                                                 trunclength=70)
+                                                                 trunclength=50)
                                             for item in originlist])
     else:
         form.origin.process([''])
@@ -550,7 +561,7 @@ def getsessiondata(senlib: SenLib, form:EditForm, form_data: dict):
     if len(datasetlist) > 0:
         form.dataset.process(form.dataset, [truncateddisplaytext(id=item['code'],
                                                                  description=item['term'],
-                                                                 trunclength=70)
+                                                                 trunclength=50)
                                             for item in datasetlist])
     else:
         form.dataset.process([''])
@@ -560,7 +571,7 @@ def getsessiondata(senlib: SenLib, form:EditForm, form_data: dict):
     if len(markerlist) > 0:
         form.marker.process(form.marker, [truncateddisplaytext(id=item['code'],
                                                                description=item['term'],
-                                                               trunclength=70)
+                                                               trunclength=50)
                                           for item in markerlist])
     else:
         form.marker.process([''])

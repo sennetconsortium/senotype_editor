@@ -92,21 +92,21 @@ document.addEventListener('DOMContentLoaded', function () {
                             // If the id does not correspond to a UniProtKB ID, do not add it.
                             if (!id) return;
 
-                            validateId = id;
+                            validateId =  id;
 
                             // UniProtKB recommended name
                             var recNameArr = item.recommended_name || [];
                             var recName = Array.isArray(recNameArr) ? recNameArr[0] : recNameArr;
 
                             //description = (id && recName) ? (id + ' (' + recName + ')') : (id || recName || query);
-                            description = "UNIPROTKB:" + id + " (" + recName.trim() + ")";
+                            description = validateId + " (" + recName.trim() + ")";
                         } else {
                             id = item.hgnc_id || query;
                             if (!id) return;
                             validateId = id;
                             var approved_symbol = item.approved_symbol;
                             var approved_name = item.approved_name;
-                            description = "HGNC:" + id + " (" + approved_symbol + ")" ;
+                            description = validateId + " (" + approved_symbol + ")" ;
                         }
                         var btn = document.createElement('button');
                         btn.className = 'btn btn-link text-start w-100 mb-1';

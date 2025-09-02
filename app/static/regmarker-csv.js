@@ -40,11 +40,14 @@ document.addEventListener("DOMContentLoaded", function () {
             const actionIdx = header.indexOf("action");
             let errors = [];
             let markers = [];
+
             // Validate rows
             for (let i = 1; i < rows.length; i++) {
                 const row = rows[i].map(cell => cell.trim());
                 const type = row[typeIdx].toLowerCase();
                 const id = row[idIdx];
+
+                // Translate action from CSV into corresponding assertion.
                 const actionRaw = row[actionIdx];
                 let action;
                 if (actionRaw === "1" || actionRaw.toLowerCase() === "up" || actionRaw.toLowerCase() === "up_regulates") {
@@ -71,6 +74,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 resultsDiv.innerHTML = errors.map(e => `<div class="text-danger">${e}</div>`).join("");
                 return;
             }
+
             // Validate markers via API
             resultsDiv.innerHTML = "Validating markers, please wait...";
             let apiErrors = [];
@@ -79,6 +83,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 const m = markers[i];
                 let apiUrl = `/ontology/${m.type === "gene" ? "genes" : "proteins"}/${encodeURIComponent(m.id)}`;
                 try {
+
                     /* eslint-disable no-await-in-loop */
                     let resp = await fetch(apiUrl);
                     if (!resp.ok) throw new Error();
@@ -90,7 +95,8 @@ document.addEventListener("DOMContentLoaded", function () {
                             ? data.find(obj => obj.approved_symbol && obj.approved_symbol.toLowerCase() === m.id.toLowerCase())
                             : (data.approved_symbol && data.approved_symbol.toLowerCase() === m.id.toLowerCase() ? data : null);
                         if (!found) throw new Error();
-                        validEntries.push({ type: "gene", id: m.id, symbol: found.approved_symbol, name: found.approved_name, action: m.action });
+                        // HGNC code; approved symbol; action
+                        validEntries.push({ type: "gene", code: found.hgnc_id, symbol: found.approved_symbol, action: m.action });
                     } else {
                         let found = Array.isArray(data)
                             ? data.find(obj => obj.uniprotkb_id == m.id)
@@ -98,7 +104,8 @@ document.addEventListener("DOMContentLoaded", function () {
                         let recNameArr = found && found.recommended_name;
                         let recName = recNameArr && Array.isArray(recNameArr) ? recNameArr[0] : recNameArr;
                         if (!found) throw new Error();
-                        validEntries.push({ type: "protein", id: m.id, recommended_name: recName, action: m.action });
+                        // UniprotKB code; recommended name; action
+                        validEntries.push({ type: "protein", code: m.id, recommended_name: recName, action: m.action });
                     }
                 } catch {
                     apiErrors.push(`Row ${i + 2}: ${m.type} ID '${m.id}' not found in ontology.`);
@@ -116,12 +123,14 @@ document.addEventListener("DOMContentLoaded", function () {
         reader.readAsText(file);
     });
 
+    // Add markers to regmarker-list.
     form.addEventListener("submit", function (e) {
         e.preventDefault();
-        // Add markers to regmarker-list
         const ul = document.getElementById("regmarker-list");
+
         parsedMarkers.forEach(m => {
             let id, description, action;
+            // Translate the action into an icon for display.
             let actionSymbol;
             if (m.action === "up_regulates") {
                 actionSymbol = "\u2191";
@@ -130,40 +139,47 @@ document.addEventListener("DOMContentLoaded", function () {
             } else {
                 actionSymbol = "?";
             }
+
             if (m.type === "gene") {
-                let symbol = m.symbol || m.id;
-                id = symbol;
-                description = symbol + " " + actionSymbol;
+                // visible: HGNC:code (approved symbol) action symbol
+                // hidden: HGNC:code action
+                id = m.code;
+                marker= "HGNC:" + id ;
+                description = m.symbol;
             } else {
-                let proteinId = m.id;
-                id = proteinId;
-                description = proteinId + " " + actionSymbol;
+                // visible: UNIPROTKB:code (recommended name) action symbol
+                let id = m.code;
+                marker = "UNIPROTKB:" + id;
+                description = m.recommended_name;
             }
-            // Prevent duplicates (ID + action)
+            // Prevent duplicates (ID only)
             let exists = Array.from(ul.querySelectorAll('input.form-control.w-100')).some(input => input.value === id);
             if (exists) return;
 
             let li = document.createElement('li');
             li.className = 'list-group-item d-flex justify-content-between align-items-center w-100';
 
+            // hidden input for marker ID submitted by Update button in Edit form
             let input = document.createElement('input');
             input.type = 'text';
-            input.name = 'regmarker-' + ul.children.length;
-            input.value = description; // symbol + action arrow, e.g., "BRCA1 ↑"
+            input.name = 'regmarker-code-' + ul.children.length;
+            input.value = marker;
             input.className = 'form-control w-100';
             li.appendChild(input);
 
+            // hidden input for action submitted by Update button in Edit form
             let inputAction = document.createElement('input');
             inputAction.type = 'text';
             inputAction.name = 'regmarker-action-' + ul.children.length;
             inputAction.value = m.action;
-            inputAction.className = 'form-control d-none';
+            inputAction.className = 'form-control';// d-none';
             li.appendChild(inputAction);
 
             // Visible description
-            //let span = document.createElement('span');
-            //span.textContent = description;
-            //li.appendChild(span);
+            let span = document.createElement('span');
+            span.className = 'list-field-display';
+            span.textContent = marker + " (" + description + ") " + actionSymbol;
+            li.appendChild(span);
 
             // Remove button
             let btn = document.createElement('button');

@@ -1,0 +1,43 @@
+<!--Categorical lists in edit.html represent encoded values. #}
+The WTForm for edit.html provides list values in format
+SAB:code (description)
+
+Build lists with:
+- A hidden list element with value=SAB:code. The Update button will POST the hidden list values.
+- A span with value=
+  - description for simple assertions
+  - SAB:code (description) for "external" assertions--i.e., those that require calls to
+    external APIs to obtain terms
+  The span corresponds to the display value of the list element.
+- Add and remove buttons that modify the lists (via Javascript).
+-->
+
+{% macro render_fieldlist_section(form, field_name, modal_id, label_bg="#FEF2F2", is_external=False) %}
+<div class="col-md-6" style="background-color: {{ label_bg }}; border: 1px solid #ccc; border-radius: 5px; padding: 16px;">
+    <strong>{{ form[field_name].label }}</strong>
+    <ul id="{{ field_name }}-list" class="list-group mb-2 w-100">
+        {% for field in form[field_name] %}
+            {% set full_value = field.data %}
+            {# If is_external, display full_value; otherwise, display parsed value #}
+            {% if is_external %}
+                {% set display_value = full_value %}
+            {% else %}
+                {% set display_value = full_value.split('(')[1][0:-1] if '(' in full_value else full_value %}
+            {% endif %}
+            {% set hidden_value = full_value.split(' ')[0] %}
+            <li class="list-group-item d-flex justify-content-between align-items-center w-100">
+                <input name="{{ field.name }}" value="{{ hidden_value }}">
+                <span class="list-field-display" name="{{ field_name }}_field_display">{{ display_value }}</span>
+                <button type="button" class="btn btn-sm btn-danger ms-2" onclick="removeValue(this)">-</button>
+            </li>
+        {% endfor %}
+        {% for error in form[field_name].errors %}
+            <div class="text-danger">{{ error }}</div>
+        {% endfor %}
+    </ul>
+    <button type="button" title="Add {{ field_name }}" aria-label="Add {{ field_name }}" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#{{ modal_id }}">
+        +
+    </button>
+</div>
+{% endmacro %}
+
