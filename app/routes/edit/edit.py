@@ -487,52 +487,56 @@ def getsessiondata(senlib: SenLib, form:EditForm, form_data: dict):
     :param form_data: the session data for the form inputs
     """
 
+    # build_session_list returns a list of objects in format {"code":code, "term": term}.
+    # Pass to WTForms process a string in format code (term), which matches what is obtained
+    # from the load from existing data, and will be parsed properly by the _field_lists
+    # Jinja macro.
     # Taxon
     taxonlist = build_session_list(senlib=senlib, form_data=form_data, listkey='taxon')
     if len(taxonlist) > 0:
-        form.taxon.process(form.taxon, [item['term'] for item in taxonlist])
+        form.taxon.process(form.taxon, [f"{item['code']} ({item['term']})" for item in taxonlist])
     else:
         form.taxon.process([''])
 
     # Location
     locationlist = build_session_list(senlib=senlib, form_data=form_data, listkey='location')
     if len(locationlist) > 0:
-        form.location.process(form.location, [item['term'] for item in locationlist])
+        form.location.process(form.location, [f"{item['code']} ({item['term']})" for item in locationlist])
     else:
         form.location.process([''])
 
     # Cell type
     celltypelist = build_session_list(senlib=senlib, form_data=form_data, listkey='celltype')
     if len(celltypelist) > 0:
-        form.celltype.process(form.celltype, [item['term'] for item in celltypelist])
+        form.celltype.process(form.celltype, [f"{item['code']} ({item['term']})" for item in celltypelist])
     else:
         form.celltype.process([''])
 
     # Hallmark
     hallmarklist = build_session_list(senlib=senlib, form_data=form_data, listkey='hallmark')
     if len(hallmarklist) > 0:
-        form.hallmark.process(form.hallmark, [item['term'] for item in hallmarklist])
+        form.hallmark.process(form.hallmark, [f"{item['code']} ({item['term']})" for item in hallmarklist])
     else:
         form.hallmark.process([''])
 
     # Molecular observable
     observablelist = build_session_list(senlib=senlib, form_data=form_data, listkey='observable')
     if len(observablelist) > 0:
-        form.observable.process(form.observable, [item['term'] for item in observablelist])
+        form.observable.process(form.observable, [f"{item['code']} ({item['term']})" for item in observablelist])
     else:
         form.observable.process([''])
 
     # Inducer
     inducerlist = build_session_list(senlib=senlib, form_data=form_data, listkey='inducer')
     if len(inducerlist) > 0:
-        form.inducer.process(form.inducer, [item['term'] for item in inducerlist])
+        form.inducer.process(form.inducer, [f"{item['code']} ({item['term']})" for item in inducerlist])
     else:
         form.inducer.process([''])
 
     # Assay
     assaylist = build_session_list(senlib=senlib, form_data=form_data, listkey='assay')
     if len(assaylist) > 0:
-        form.assay.process(form.assay, [item['term'] for item in assaylist])
+        form.assay.process(form.assay, [f"{item['code']} ({item['term']})" for item in assaylist])
     else:
         form.assay.process([''])
 
@@ -550,9 +554,9 @@ def getsessiondata(senlib: SenLib, form:EditForm, form_data: dict):
     originlist = build_session_list(senlib=senlib, form_data=form_data, listkey='origin')
     if len(originlist) > 0:
         form.origin.process(form.origin, [truncateddisplaytext(id=item['code'],
-                                                                 description=item['term'],
-                                                                 trunclength=50)
-                                            for item in originlist])
+                                                               description=item['term'],
+                                                               trunclength=50)
+                                          for item in originlist])
     else:
         form.origin.process([''])
 
