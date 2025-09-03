@@ -5,7 +5,6 @@ Works with editform.py.
 """
 
 from flask import Blueprint, request, render_template, session
-import pandas as pd
 
 # WTForms
 from models.editform import EditForm
@@ -14,6 +13,7 @@ from models.editform import EditForm
 from models.appconfig import AppConfig
 from models.senlib import SenLib
 from models.requestretry import RequestRetry
+from models.setinputdisabled import setinputdisabled
 
 
 edit_blueprint = Blueprint('edit', __name__, url_prefix='/edit')
@@ -615,8 +615,6 @@ def getsessiondata(senlib: SenLib, form:EditForm, form_data: dict):
 
     # Specified markers
     markerlist = build_session_markerlist(form_data=form_data)
-    print('session - marker:', markerlist)
-    print([truncateddisplaytext(id=item['code'], description=item['term'], trunclength=100) for item in markerlist])
     if len(markerlist) > 0:
         form.marker.process(None, [truncateddisplaytext(id=item['code'],
                                                         description=item['term'],
@@ -641,9 +639,6 @@ def getsessiondata(senlib: SenLib, form:EditForm, form_data: dict):
         )
     else:
         form.regmarker.process(None, [''])
-    print('session - regmarkerlist:', regmarkerlist)
-    print([truncateddisplaytext(id=item['code'], description=item['term'], trunclength=50) for item in regmarkerlist])
-    print('form.regmarker.data', form.regmarker.data)
 
 
 @edit_blueprint.route('', methods=['POST', 'GET'])
@@ -723,5 +718,6 @@ def edit():
         else:
             # Load from existing data.
             loadexistingdata(id=id, senlib=senlib, form=form)
+    setinputdisabled(form.ageunit, disabled=True)
 
     return render_template('edit.html', form=form)

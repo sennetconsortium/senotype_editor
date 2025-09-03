@@ -103,14 +103,23 @@
                         <strong>{{ form.agevalue.label }}</strong>
                         {{ form.agevalue(class="form-control ms-2") }}
                     </div>
+                    {% for error in form.agevalue.errors %}
+                        <div class="text-danger">{{ error }}</div>
+                    {% endfor %}
                     <div class="col-3 d-flex align-items-center">
                         <strong>{{ form.agelowerbound.label }}</strong>
                         {{ form.agelowerbound(class="form-control ms-2") }}
                     </div>
+                    {% for error in form.agelowerbound.errors %}
+                        <div class="text-danger">{{ error }}</div>
+                    {% endfor %}
                     <div class="col-3 d-flex align-items-center">
                         <strong>{{ form.ageupperbound.label }}</strong>
                         {{ form.ageupperbound(class="form-control ms-2") }}
                     </div>
+                    {% for error in form.ageupperbound.errors %}
+                        <div class="text-danger">{{ error }}</div>
+                    {% endfor %}
                     <div class="col-3 d-flex align-items-center">
                         <strong>{{ form.ageunit.label }}</strong>
                         {{ form.ageunit(class="form-control ms-2") }}

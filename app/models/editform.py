@@ -13,6 +13,7 @@ from models.senlib import SenLib
 from models.stringnumber import stringisintegerorfloat
 
 
+
 def validate_age(form, field):
     """
     Custom validator for age.
@@ -34,8 +35,10 @@ def validate_age(form, field):
 
     if age is None:
         age = 0
+    if agenum < 0:
+        raise ValidationError('Age must be positive.')
     if agenum > 89:
-        raise ValidationError('All ages over 89 years must be set to 90 years.')
+        raise ValidationError('Ages over 89 years must be set to 90 years.')
 
 
 def validate_number(field):
@@ -66,35 +69,6 @@ def validate_integer(field):
         raise ValidationError(f'{field.name} must be an integer.')
 
 
-def validate_selectfield_default(field):
-    """
-    Custom validator that checks whether the value specified in a SelectField's data property is in
-    the set of available values.
-    Handles the case of where there is a mismatch between an existing metadata value for a donor and the
-    corresponding SelectField in the Edit form.
-
-    :return: nothing or ValidationError
-    """
-    found = False
-    for c in field.choices:
-        if field.data == c[0]:
-            found = True
-    if not found:
-        msg = f"Selected concept '{field.data}` not in valueset."
-        raise ValidationError(msg)
-
-
-def validate_required_selectfield(field):
-    """
-    Custom validator that verifies that the value specified in a SelectField deemed required (e.g., Source)
-    is other than the prompt.
-
-    """
-    if field.data == 'select':
-        msg = f'Required'
-        raise ValidationError(msg)
-
-
 # ----------------------
 # MAIN FORM
 def getchoices(sl: SenLib, predicate: str) -> list[tuple]:
@@ -115,6 +89,11 @@ def getchoices(sl: SenLib, predicate: str) -> list[tuple]:
 
 
 class RegMarkerEntryForm(Form):
+
+    # The regulating marker data is stored in lists in two hidden inputs:
+    # - the marker code
+    # - regulating action
+
     marker = StringField('Regulating Marker')
     action = StringField('Regulating Action')
 
@@ -156,10 +135,11 @@ class EditForm(Form):
     assay = FieldList(StringField('Assay'), min_entries=0)
 
     # Context assertions
-    agevalue = StringField('Value')
-    agelowerbound = StringField('Lowerbound')
-    ageupperbound = StringField('Upperbound')
+    agevalue = StringField('Value', validators=[validate_age])
+    agelowerbound = StringField('Lowerbound', validators=[validate_age])
+    ageupperbound = StringField('Upperbound', validators=[validate_age])
     ageunit = StringField('Unit')
+
 
     # External assertions
     # Citations
@@ -173,5 +153,4 @@ class EditForm(Form):
     marker = FieldList(StringField('Specified Marker'), min_entries=0, label='Specified Marker')
 
     # Regulating markers
-    #regmarker = FieldList(StringField('Regulating Marker'), label='Regulating Marker', min_entries=0)
-    regmarker = FieldList(FormField(RegMarkerEntryForm), min_entries=0)
+    regmarker = FieldList(FormField(RegMarkerEntryForm), min_entries=0, label='Regulating Marker')
