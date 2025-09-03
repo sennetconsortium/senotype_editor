@@ -112,6 +112,9 @@ def getmarkerobjects(rawobjects: list) -> list:
     oret = []
     for o in rawobjects:
         code = o.get('code')
+        if not code or ':' not in code:
+            oret.append({"code": code, "term": None})
+            continue
         markerid = code.split(':')[1]
         if 'HGNC' in code:
             endpoint = 'genes'
@@ -120,15 +123,22 @@ def getmarkerobjects(rawobjects: list) -> list:
 
         url = f'{base_url}{endpoint}/{markerid}'
         print(url)
-        dataset = api.getresponse(url=url, format='json')
-
-        if 'HGNC' in code:
-            term = dataset[0].get('approved_symbol', code)
+        resp = api.getresponse(url=url, format='json')
+        # Defensive: check if resp is a list and not empty
+        if not resp or not isinstance(resp, list) or not resp[0]:
+            term = code
         else:
-            term = dataset[0].get('recommended_name', code)
-            if term is not None:
-                term = term[0].strip()
-
+            data = resp[0]
+            if 'HGNC' in code:
+                # For genes
+                term = data.get('approved_symbol', code)
+            else:
+                # For proteins
+                recommended_names = data.get('recommended_name')
+                if isinstance(recommended_names, list) and recommended_names:
+                    term = recommended_names[0].strip()
+                else:
+                    term = code
         oret.append({"code": code, "term": term})
 
     return oret
@@ -205,6 +215,7 @@ def getstoredsimpleassertiondata(assertions: list, predicate: str) -> list:
             elif pred == 'has_dataset':
                 objects = getdatasetobjects(rawobjects)
             elif pred == 'has_characterizing_marker_set':
+                print('RAWOBJECTS: ', rawobjects)
                 objects = getmarkerobjects(rawobjects)
             else:
                 objects = getassertionobjects(rawobjects)
@@ -395,18 +406,24 @@ def loadexistingdata(id: str, senlib: SenLib, form: EditForm):
     else:
         form.marker.process([''])
 
-    # Regulating Markers (multiple possible values)
+    # Regulating Markers (multiple possible values).
+    # The format of the process call is different because the regmarker
+    # control is a FieldList(FormField) instead of just a Fieldlist.
     regmarkerlist = getregmarkerobjects(assertions=assertions)
+    print(regmarkerlist)
     if len(regmarkerlist) > 0:
         form.regmarker.process(
-            form.regmarker,
+            None,
             [
-                f"{truncateddisplaytext(id=item['code'], description=item['term'], trunclength=50)}|{item['type']}"
+                {
+                    "marker": truncateddisplaytext(id=item['code'], description=item['term'], trunclength=50),
+                    "action": item['type']
+                }
                 for item in regmarkerlist
             ]
         )
     else:
-        form.regmarker.process([''])
+        form.regmarker.process(None, [])
 
 def build_session_list(senlib: SenLib, form_data: dict, listkey: str):
     """
@@ -468,10 +485,12 @@ def build_session_markerlist(form_data: dict) -> list:
     Builds content for the specified marker list on the Edit Form based on session data.
     :param form_data: dict of form state data.
     """
-    print(form_data)
     codelist = form_data['marker']
+    rawobjects = []
+    for code in codelist:
+        rawobjects.append({'code': code})
 
-    return []
+    return getmarkerobjects(rawobjects=rawobjects)
 
 def getsessiondata(senlib: SenLib, form:EditForm, form_data: dict):
     """
@@ -581,6 +600,7 @@ def getsessiondata(senlib: SenLib, form:EditForm, form_data: dict):
         form.marker.process([''])
 
 
+
 @edit_blueprint.route('', methods=['POST', 'GET'])
 def edit():
 
@@ -606,7 +626,6 @@ def edit():
 
     print('edit')
     print('request.method', request.method)
-    print('session', session)
 
     # Check if we have session data for the form.
     # Session data will correspond to the state of the form at the time of

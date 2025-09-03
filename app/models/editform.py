@@ -114,6 +114,11 @@ def getchoices(sl: SenLib, predicate: str) -> list[tuple]:
     return choices
 
 
+class RegMarkerEntryForm(Form):
+    marker = StringField('Regulating Marker')
+    action = StringField('Regulating Action')
+
+
 class EditForm(Form):
 
     # Set up the Senlib interface to obtain valueset information.
@@ -168,4 +173,5 @@ class EditForm(Form):
     marker = FieldList(StringField('Specified Marker'), min_entries=0, label='Specified Marker')
 
     # Regulating markers
-    regmarker = FieldList(StringField('Regulating Marker'), label='Regulating Marker', min_entries=0)
+    #regmarker = FieldList(StringField('Regulating Marker'), label='Regulating Marker', min_entries=0)
+    regmarker = FieldList(FormField(RegMarkerEntryForm), min_entries=0)

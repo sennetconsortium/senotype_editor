@@ -13,61 +13,52 @@ Build lists with:
 <div class="col-md-6" style="background-color: {{ label_bg }}; border: 1px solid #ccc; border-radius: 5px; padding: 16px;">
     <strong>{{ form[field_name].label }}</strong>
     <ul id="{{ field_name }}-list" class="list-group mb-2 w-100">
+        {# If rendering specified markers: FieldList of StringField #}
+        {% if field_name == "marker" %}
+            {% for field in form.marker %}
+                {% set idx = loop.index0 %}
+                {% set marker_display = field.data %}
+                {% set marker_code = field.data.split('(')[0] %}
 
-        {% for field in form[field_name] %}
-            {% set field_full = field.data %}
-
-            {# Split the marker (description) from the type of regulation. #}
-            {% set parts = field_full.split('|') %}
-            {% set marker_and_description = parts[0] if parts|length > 1 else field_full %}
-
-            {# Extract marker #}
-            {% if '(' in marker_and_description and ')' in marker_and_description %}
-                {% set paren_start = marker_and_description.find('(') %}
-                {% set paren_end = marker_and_description.find(')') %}
-                {% set marker = marker_and_description[:paren_start].strip() %}
-                {% set description = marker_and_description[paren_start + 1:paren_end] %}
-              {% else %}
-                {% set marker=marker_and_description %}
-            {% endif %}
-
-            {# Translate regulation type to symbol #}
-            {% set regulation_type = parts[1].strip() if parts|length > 1 else "" %}
-            {% set field_hidden_code = marker %}
-            {% set field_hidden_action = regulation_type %}
-
-            {% if field_name == "regmarker" %}
-                {% if regulation_type == "up_regulates" %}
-                    {% set regulation_symbol = "↑" %}
-                {% elif regulation_type == "down_regulates" %}
-                    {% set regulation_symbol = "↓" %}
-                {% elif regulation_type == "inconclusively_regulates" %}
-                    {% set regulation_symbol = "?" %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <input type="text" name="marker-{{ idx }}" value="{{ marker_code }}">
+                    <span class="list-field-display">{{ marker_display }}</span>
+                    <button type="button" class="btn btn-sm btn-danger ms-2" onclick="removeMarker(this)">-</button>
+                </li>
+            {% endfor %}
+            {% for error in form.marker.errors %}
+                <div class="text-danger">{{ error }}</div>
+            {% endfor %}
+        {% elif field_name == "regmarker" %}
+            {# If rendering regulated markers: FieldList of FormField(RegMarkerEntryForm) #}
+            {% for entry in form.regmarker %}
+                {% set idx = loop.index0 %}
+                {% set marker_display = entry.marker.data %}
+                {% set marker_code = entry.marker.data.split('(')[0] %}
+                {% set action_code = entry.action.data %}
+                {% if action_code == "up_regulates" %}
+                    {% set action_symbol = "↑" %}
+                {% elif action_code == "down_regulates" %}
+                    {% set action_symbol = "↓" %}
+                {% elif action_code == "inconclusively_regulates" %}
+                    {% set action_symbol = "?" %}
                 {% else %}
-                    {% set regulation_symbol = "" %}
+                    {% set action_symbol = "" %}
                 {% endif %}
-                {% set display_string = marker_and_description ~ " " ~ regulation_symbol %}
-            {% else %}
-                {% set display_string = marker_and_description if marker_and_description else field_full %}
-            {% endif %}
-
-        <li class="list-group-item d-flex justify-content-between align-items-center">
-            <!-- Hidden input with code only -->
-                <!--<input type="hidden" name="{{ field.name }}" value="{{ field_hidden }}">-->
-                <input name="{{ field.code }}" value="{{ field_hidden_code }}">
-                {% if regulation_type %}
-                    <input name="{{ field.action}}" value="{{ field_hidden_action }}">
-                {% endif %}
-                <!-- Display full string -->
-                <span class="list-field-display" name="{{ field_name }}_field_display">{{ display_string }}</span>
-                <button type="button" class="btn btn-sm btn-danger ms-2" onclick="removeMarker(this)">-</button>
-            </li>
-
-        {% endfor %}
-        {% for error in form[field_name].errors %}
-            <div class="text-danger">{{ error }}</div>
-        {% endfor %}
-
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <input type="text" name="regmarker-{{ idx }}-marker" value="{{ marker_code }}">
+                    <input type="text" name="regmarker-{{ idx }}-action" value="{{ action_code }}">
+                    <span class="list-field-display">
+                        {{ marker_display }}
+                        <span class="action-symbol"><strong>{{ action_symbol }}</strong></span>
+                    </span>
+                    <button type="button" class="btn btn-sm btn-danger ms-2" onclick="removeMarker(this)">-</button>
+                </li>
+            {% endfor %}
+            {% for error in form.regmarker.errors %}
+                <div class="text-danger">{{ error }}</div>
+            {% endfor %}
+        {% endif %}
     </ul>
     <button type="button"
             title="Add single specified {{ field_name }}"
@@ -77,7 +68,6 @@ Build lists with:
             data-bs-target="#{{ single_modal_id }}">
         +
     </button>
-    <!-- Add CSV upload button below list -->
     <button type="button"
             title="Add multiple specified {{ field_name }}s"
             aria-label="Add multiple specified {{ field_name }}s"

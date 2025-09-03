@@ -26,7 +26,7 @@ function addMarker(id, description) {
     // Visible text: show the description instead of the ID
     var span = document.createElement('span');
     span.className = 'list-field-display';
-    span.textContent = description || id;
+    span.textContent = id + ' ' + description;
     li.appendChild(span);
 
     // Remove button
@@ -106,7 +106,7 @@ document.addEventListener('DOMContentLoaded', function () {
                             validateId = id;
                             var approved_symbol = item.approved_symbol;
                             var approved_name = item.approved_name;
-                            description = validateId + " (" + approved_symbol + ")" ;
+                            description =  "(" + approved_symbol + ")" ;
                         }
                         var btn = document.createElement('button');
                         btn.className = 'btn btn-link text-start w-100 mb-1';
