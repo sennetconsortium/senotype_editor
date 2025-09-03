@@ -1,25 +1,37 @@
 // Features to support management of individual markers for Senotype submission.
 // Assume a list that is initially populated via Flask/WTForms.
 
-// Remove marker from list (for client UX, WTForms update is handled on submit)
+// Remove marker from list.
 function removeMarker(btn) {
     btn.parentNode.remove();
+    reindexMarkerInputs();
 }
 
+// Reindexes after a removal.
+function reindexMarkerInputs() {
+    var ul = document.getElementById('marker-list');
+    Array.from(ul.querySelectorAll('input')).forEach((input, i) => {
+        input.name = 'marker-' + i;
+    });
+}
 // Add marker from API result: Only add ID if not already present, but display description in the list
 function addMarker(id, description) {
     var ul = document.getElementById('marker-list');
     // Prevent duplicates
+    // Standardize ID format for duplicate prevention (assume id is already standardized, e.g., "HGNC:1100")
     var exists = Array.from(ul.querySelectorAll('input')).some(input => input.value === id);
     if (exists) return;
+
     var li = document.createElement('li');
     li.className = 'list-group-item d-flex justify-content-between align-items-center';
 
-    // Hidden input for WTForms submission
+    // Hidden input for WTForms submission.
+    // Assign unique, sequential input name
+    const index = ul.querySelectorAll('li').length;
     var input = document.createElement('input');
     input.type = 'hidden';
-    input.name = 'marker-' + ul.children.length; // WTForms FieldList expects this pattern
-    input.value = id;
+    input.name = 'marker-' + index; // WTForms FieldList expects this pattern
+     input.value = id;
     input.className = 'form-control';// d-none'; // Hidden but submitted
     li.appendChild(input);
 
@@ -34,7 +46,7 @@ function addMarker(id, description) {
     btn.className = 'btn btn-sm btn-danger ms-2';
     btn.textContent = '-';
     btn.type = 'button';
-    btn.onclick = function () { li.remove(); };
+    btn.onclick = function () { removeMarker(btn); };
     btn.title = 'Remove ' + description + ' from specified marker list';
     li.appendChild(btn);
 
@@ -88,25 +100,25 @@ document.addEventListener('DOMContentLoaded', function () {
                     items.forEach(item => {
                         var id, description, validateId;
                         if (type === "protein") {
-                            id = item.uniprotkb_id || query;
-                            // If the id does not correspond to a UniProtKB ID, do not add it.
-                            if (!id) return;
 
-                            validateId =  id;
+                            // Standardized marker ID for proteins
+                            validateId = item.uniprotkb_id;
+                            if (!validateId) return;
 
                             // UniProtKB recommended name
                             var recNameArr = item.recommended_name || [];
                             var recName = Array.isArray(recNameArr) ? recNameArr[0] : recNameArr;
+                            id = "UNIPROTKB:" + validateId;
+                            description = id + " (" + (recName ? recName.trim() : validateId) + ")";
 
-                            //description = (id && recName) ? (id + ' (' + recName + ')') : (id || recName || query);
-                            description = "UNIPROTKB:" + validateId + " (" + recName.trim() + ")";
                         } else {
-                            id = item.hgnc_id || query;
-                            if (!id) return;
-                            validateId = id;
-                            var approved_symbol = item.approved_symbol;
-                            var approved_name = item.approved_name;
-                            description =  "HGNC:" + validateId + " (" + approved_symbol + ")" ;
+
+                            // Standardized marker id for genes
+                            validateId = item.hgnc_id;
+                            if (!validateId) return;
+                            var approved_symbol = item.approved_symbol || validateId;
+                            id = "HGNC:" + validateId;
+                            description = id + " (" + approved_symbol + ")";
                         }
                         var btn = document.createElement('button');
                         btn.className = 'btn btn-link text-start w-100 mb-1';
@@ -130,12 +142,7 @@ document.addEventListener('DOMContentLoaded', function () {
                                     return validateResponse.json();
                                 })
                                 .then(validateData => {
-                                    // Only add marker if validation succeeded (i.e., exists in ontology)
-                                    if (type === "protein") {
-                                        id = 'UNIPROTKB:' + id;
-                                    } else {
-                                        id = 'HGNC:' + id;
-                                    }
+                                     // Only add marker if validation succeeded (i.e., exists in ontology)
                                     addMarker(id, description);
                                     // Hide modal with Bootstrap 5
                                     var modalEl = document.getElementById('markerSearchModal');

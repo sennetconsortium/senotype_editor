@@ -1,15 +1,28 @@
 // Features to support management of individual regulating markers for Senotype submission.
 // Works with the provided modal HTML and list <ul id="regmarker-list">
 
+// Reindex all marker inputs after removal so names are always sequential
+function reindexRegMarkerInputs() {
+    var ul = document.getElementById('regmarker-list');
+    Array.from(ul.querySelectorAll('input[name^="regmarker-"][name$="-marker"]')).forEach((input, i) => {
+        input.name = 'regmarker-' + i + '-marker';
+    });
+    Array.from(ul.querySelectorAll('input[name^="regmarker-"][name$="-action"]')).forEach((input, i) => {
+        input.name = 'regmarker-' + i + '-action';
+    });
+}
+
 // Remove marker from list (for client UX, WTForms update is handled on submit)
 function removeRegMarker(btn) {
     btn.parentNode.remove();
+    reindexRegMarkerInputs();
 }
 
 // Add regulating marker from API result.
 function addRegMarker(id, description, action) {
 
     var ul = document.getElementById('regmarker-list');
+
    // Prevent adding duplicate marker-action pairs
     var exists = Array.from(ul.children).some(li => {
         var inputCode = li.querySelector('input[name^="regmarker-code"]');
@@ -21,20 +34,25 @@ function addRegMarker(id, description, action) {
     var li = document.createElement('li');
     li.className = 'list-group-item d-flex justify-content-between align-items-center';
 
-    // Hidden input for WTForms submission: code and action
+    // Assign unique, sequential input names
+    const index = ul.querySelectorAll('li').length;
+
+    // Hidden input for WTForms submission: code
     var inputCode = document.createElement('input');
     inputCode.type = 'hidden';
-    inputCode.name = 'regmarker-code-' + ul.children.length; // WTForms FieldList expects this pattern
+    inputCode.name = 'regmarker-' + index + '-marker'; // WTForms FieldList expects this pattern
+    //inputCode.name = 'regmarker-code-' + index;
     inputCode.value = id ;
-    inputCode.className = 'form-control';//d-none'; // Hidden but submitted
+    inputCode.className = 'form-control';
     li.appendChild(inputCode);
 
     // Hidden input for WTForms submission: action
     var inputAction = document.createElement('input');
     inputAction.type = 'hidden';
-    inputAction.name = 'regmarker-action-' + ul.children.length;
+    inputAction.name = 'regmarker-' + index + '-action';
+    //inputAction.name = 'regmarker-action-' + index;
     inputAction.value = action;
-    inputAction.className = 'form-control';//d-none';
+    inputAction.className = 'form-control';
     li.appendChild(inputAction);
 
     // Visible text: show the description (or id) and action as arrow or question mark
@@ -48,9 +66,7 @@ function addRegMarker(id, description, action) {
     } else {
         actionSymbol = '?'; // question mark
     }
-
     span.textContent =  description + " " + actionSymbol;
-    span.className = 'list-field-display';
     li.appendChild(span);
 
     // Remove button
@@ -111,11 +127,13 @@ document.addEventListener('DOMContentLoaded', function () {
                     items.forEach(item => {
                         var id, description;
                         if (type === "protein") {
+                            // Standardized protein id
                             id = item.uniprotkb_id || query;
                             var recNameArr = item.recommended_name || [];
                             var recName = Array.isArray(recNameArr) ? recNameArr[0] : recNameArr;
                             description = "UNIPROTKB:" + id + " (" + recName.trim() + ")" ;
                         } else {
+                            // Standardized gene id
                             id = item.hgnc_id || query;
                             var approved_symbol = item.approved_symbol;
                             var approved_name = item.approved_name;

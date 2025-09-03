@@ -7,6 +7,17 @@ document.addEventListener("DOMContentLoaded", function () {
     const resultsDiv = document.getElementById("regcsv-validation-results");
     const submitBtn = document.getElementById("regmarker-csv-submit");
 
+    // Reindex all marker inputs after removal so names are always sequential
+    function reindexRegMarkerInputs() {
+        const ul = document.getElementById("regmarker-list");
+        Array.from(ul.querySelectorAll('input[name^="regmarker-"][name$="-marker"]')).forEach((input, i) => {
+            input.name = `regmarker-${i}-marker`;
+        });
+        Array.from(ul.querySelectorAll('input[name^="regmarker-"][name$="-action"]')).forEach((input, i) => {
+            input.name = `regmarker-${i}-action`;
+        });
+    }
+
     let parsedMarkers = [];
 
     fileInput.addEventListener("change", async function (e) {
@@ -83,7 +94,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 const m = markers[i];
                 let apiUrl = `/ontology/${m.type === "gene" ? "genes" : "proteins"}/${encodeURIComponent(m.id)}`;
                 try {
-
+                    // Disable the ESLint no-await-in-loop checks and warnings--i.e.,
+                    // that there is an await in a loop.
                     /* eslint-disable no-await-in-loop */
                     let resp = await fetch(apiUrl);
                     if (!resp.ok) throw new Error();
@@ -129,7 +141,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const ul = document.getElementById("regmarker-list");
 
         parsedMarkers.forEach(m => {
-            let id, description, action;
+            let marker, description, action;
             // Translate the action into an icon for display.
             let actionSymbol;
             if (m.action === "up_regulates") {
@@ -143,51 +155,46 @@ document.addEventListener("DOMContentLoaded", function () {
             if (m.type === "gene") {
                 // visible: HGNC:code (approved symbol) action symbol
                 // hidden: HGNC:code action
-                id = m.code;
-                description = m.symbol;
-            } else {
-                // visible: UNIPROTKB:code (recommended name) action symbol
-                let id = m.code;
-                description = m.recommended_name;
-            }
-            // Prevent duplicates of combinations of marker and action.
-            let marker;
-            if (m.type === "gene") {
                 marker = "HGNC:" + m.code;
                 description = m.symbol;
             } else {
+                // visible: UNIPROTKB:code (recommended name) action symbol
                 marker = "UNIPROTKB:" + m.code;
                 description = m.recommended_name;
             }
             action = m.action;
+
+            // Prevent duplicates of combinations of marker and action.
+
             let exists = Array.from(ul.querySelectorAll('li')).some(li => {
-                let codeInput = li.querySelector('input[name^="regmarker-code-"]');
-                let actionInput = li.querySelector('input[name^="regmarker-action-"]');
-
+                 let codeInput = li.querySelector('input[name^="regmarker-"][name$="-marker"]');
+                let actionInput = li.querySelector('input[name^="regmarker-"][name$="-action"]');
                 return codeInput && actionInput && codeInput.value === marker && actionInput.value === action;
-            });
-
+              });
             if (exists) {
                 return;
             }
 
+            // Calculate next index
+            const index = ul.querySelectorAll('li').length;
+
             let li = document.createElement('li');
             li.className = 'list-group-item d-flex justify-content-between align-items-center w-100';
 
-            // hidden input for marker ID submitted by Update button in Edit form
+            /// hidden input for marker ID
             let input = document.createElement('input');
             input.type = 'hidden';
-            input.name = 'regmarker-code-' + ul.children.length;
+            input.name = `regmarker-${index}-marker`;
             input.value = marker;
             input.className = 'form-control w-100';
             li.appendChild(input);
 
-            // hidden input for action submitted by Update button in Edit form
+            // hidden input for action
             let inputAction = document.createElement('input');
             inputAction.type = 'hidden';
-            inputAction.name = 'regmarker-action-' + ul.children.length;
-            inputAction.value = m.action;
-            inputAction.className = 'form-control';// d-none';
+            inputAction.name = `regmarker-${index}-action`;
+            inputAction.value = action;
+            inputAction.className = 'form-control';
             li.appendChild(inputAction);
 
             // Visible description
@@ -201,11 +208,14 @@ document.addEventListener("DOMContentLoaded", function () {
             btn.className = 'btn btn-sm btn-danger ms-2';
             btn.textContent = '-';
             btn.type = 'button';
-            btn.onclick = function () { li.remove(); };
+            btn.onclick = function () { li.remove(); reindexRegMarkerInputs(); };
             li.appendChild(btn);
 
             ul.appendChild(li);
         });
+        // Reindex all marker inputs for consistency
+        reindexRegMarkerInputs();
+
         // Reset form and hide modal
         form.reset();
         resultsDiv.innerHTML = "";

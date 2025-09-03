@@ -1,4 +1,4 @@
-// CSV upload and validation for marker bulk add
+// CSV upload and validation for marker bulk addition.
 
 document.addEventListener("DOMContentLoaded", function () {
     // Elements from the modal div/form for specified markers in edit.html
@@ -128,47 +128,57 @@ document.addEventListener("DOMContentLoaded", function () {
         reader.readAsText(file);
     });
 
+// Adds the markers specified in the CSV to the list so that the update function
+// can POST them for validation.
     form.addEventListener("submit", function (e) {
 
         e.preventDefault();
-        // Add markers from the CSV to the marker-list.
+
         const ul = document.getElementById("marker-list");
         parsedMarkers.forEach(m => {
-            let id, description;
-            console.log(m);
-            if (m.type === "gene") {
+            // id in format SAB:code
+            const standardizedId = m.type === "gene" ? "HGNC:" + m.id : "UNIPROTKB:" + m.id;
+            const description = m.type === "gene"
+                ? m.approved_symbol || m.symbol || m.id
+                : m.recommended_name || m.id;
+            //let id, description;
+
+            //if (m.type === "gene") {
                 // Use approved_symbol if present, else symbol, else id
-                let symbol = m.approved_symbol || m.symbol || m.id;
-                id = "HGNC:" + m.id;
-                description = id + " (" + symbol + ")";
-            } else {
+                //let symbol = m.approved_symbol || m.symbol || m.id;
+                //id = "HGNC:" + m.id;
+                //description = id + " (" + symbol + ")";
+            //} else {
                 // Use uniprotkb_id if present, else id
-                let proteinId = m.uniprotkb_id || m.id;
-                id = "UNIPROTKB:" + proteinId;
-                description = id + " (" + m.recommended_name + ")";
-            }
+                //let proteinId = m.uniprotkb_id || m.id;
+                //id = "UNIPROTKB:" + proteinId;
+                //description = id + " (" + m.recommended_name + ")";
+           // }
 
             // Prevent duplicates in the marker list.
-            if (Array.from(ul.querySelectorAll('input')).some(input => input.value === id)) return;
+            if (Array.from(ul.querySelectorAll('input')).some(input => input.value === standardizedId)) return;
+            //if (Array.from(ul.querySelectorAll('input')).some(input => input.value === id)) return;
 
             let li = document.createElement('li');
             li.className = 'list-group-item d-flex justify-content-between align-items-center';
 
             // Hidden input for WTForms submission
+            const index = ul.querySelectorAll('li').length;
             let input = document.createElement('input');
             input.type = 'hidden';
-            input.name = 'marker-' + ul.children.length;
-
-            input.value = id;
-            input.className = 'form-control'; // d-none'; // Hidden but submitted
+            //input.name = 'marker-' + ul.children.length;
+            input.name = 'marker-' + index;
+            input.value = standardizedId;
+            //input.value = id;
+            input.className = 'form-control';
             li.appendChild(input);
 
             // Visible text: show the description instead of the ID
             var span = document.createElement('span');
             span.className = 'list-field-display';
-            span.textContent = description || id;
+            //span.textContent = description || id;
+            span.textContent = standardizedId + " (" + description + ")";
             li.appendChild(span);
-
 
             // Add removal button.
             let btn = document.createElement('button');
@@ -178,10 +188,12 @@ document.addEventListener("DOMContentLoaded", function () {
             li.appendChild(btn);
             ul.appendChild(li);
         });
+
         // Reset form and hide modal.
         form.reset();
         resultsDiv.innerHTML = "";
         submitBtn.disabled = true;
+
         let modalEl = document.getElementById('markerCsvModal');
         let modal = bootstrap.Modal.getInstance(modalEl);
         modal.hide();
