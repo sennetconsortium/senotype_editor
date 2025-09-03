@@ -51,6 +51,13 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // On update_form submit, copy all edit_form inputs to update_form
     updateForm.addEventListener("submit", function (e) {
+
+        // Show spinner
+        const spinner = document.getElementById('update-spinner');
+        const spinnerLabel = document.getElementById('update-spinner-label');
+        if (spinner) spinner.style.display = 'inline-block';
+        if (spinnerLabel) spinnerLabel.style.display = 'inline-block';
+
         //e.preventDefault();
         // Remove previously added hidden inputs
         Array.from(updateForm.querySelectorAll(".cloned-edit-input")).forEach(el => el.remove());

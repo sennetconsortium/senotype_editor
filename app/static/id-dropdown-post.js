@@ -9,6 +9,13 @@ document.addEventListener('DOMContentLoaded', function() {
       // Only submit if the value actually changed
       if (idSelect.value !== lastValue) {
         lastValue = idSelect.value;
+
+        // Show spinner
+        const spinner = document.getElementById('senotype-spinner');
+        const spinnerLabel = document.getElementById('senotype-spinner-label');
+        if (spinner) spinner.style.display = 'inline-block';
+        if (spinnerLabel) spinnerLabel.style.display = 'inline-block';
+
         // Optionally disable the update button while submitting
         const updateBtn = document.getElementById('update_btn');
         if (updateBtn) updateBtn.disabled = true;
