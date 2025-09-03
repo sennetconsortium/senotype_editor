@@ -1,80 +1,103 @@
-<!--Categorical lists for specified and regulated markers in edit.html represent encoded values. #}
-The WTForm for edit.html provides list values in formats
- - SAB:code (description) for specified markers
- - SAB:code (description)<tab> type of regulation for regulating markers
+<!--
+Categorical lists for specified and regulated markers in edit.html represent encoded values.
+The WTForm for edit.html provides list controls with information including
+- code
+- symbol (gene) or description (protein)
+- if a regulating marker, the type of regulation (e.g., upregulation)
 
 Build lists with:
-- A hidden list element with value=SAB:code|(type of regulation). The Update button will POST the hidden list values.
-- A span with the full display term.
+- A hidden input with value SAB:code
+- For regulating markers, a hidden input for type of regulation
+The Update button will POST the hidden list values.
+- A span with a display term in format
+  - SAB:code (description), where description is HGNC symbol for gene or recommended name for protein
+  - SAB:code (description) symbol for type of regulating activity (e.g, up arrow)
 - Add and remove buttons allow addition or removal of individual items (via JavaScript)
 - A bulk add button that loads values from CSV (via JavaScript)
 -->
-{% macro render_marker_section(form, field_name, single_modal_id, csv_modal_id, label_bg="#F0FDF4") %}
+{% macro render_marker_section(form, single_modal_id, csv_modal_id, label_bg="#F0FDF4") %}
 <div class="col-md-6" style="background-color: {{ label_bg }}; border: 1px solid #ccc; border-radius: 5px; padding: 16px;">
-    <strong>{{ form[field_name].label }}</strong>
-    <ul id="{{ field_name }}-list" class="list-group mb-2 w-100">
-        {# If rendering specified markers: FieldList of StringField #}
-        {% if field_name == "marker" %}
-            {% for field in form.marker %}
-                {% set idx = loop.index0 %}
-                {% set marker_display = field.data %}
-                {% set marker_code = field.data.split('(')[0] %}
-
-                <li class="list-group-item d-flex justify-content-between align-items-center">
-                    <input type="text" name="marker-{{ idx }}" value="{{ marker_code }}">
-                    <span class="list-field-display">{{ marker_display }}</span>
-                    <button type="button" class="btn btn-sm btn-danger ms-2" onclick="removeMarker(this)">-</button>
-                </li>
-            {% endfor %}
-            {% for error in form.marker.errors %}
-                <div class="text-danger">{{ error }}</div>
-            {% endfor %}
-        {% elif field_name == "regmarker" %}
-            {# If rendering regulated markers: FieldList of FormField(RegMarkerEntryForm) #}
-            {% for entry in form.regmarker %}
-                {% set idx = loop.index0 %}
-                {% set marker_display = entry.marker.data %}
-                {% set marker_code = entry.marker.data.split('(')[0] %}
-                {% set action_code = entry.action.data %}
-                {% if action_code == "up_regulates" %}
-                    {% set action_symbol = "↑" %}
-                {% elif action_code == "down_regulates" %}
-                    {% set action_symbol = "↓" %}
-                {% elif action_code == "inconclusively_regulates" %}
-                    {% set action_symbol = "?" %}
-                {% else %}
-                    {% set action_symbol = "" %}
-                {% endif %}
-                <li class="list-group-item d-flex justify-content-between align-items-center">
-                    <input type="text" name="regmarker-{{ idx }}-marker" value="{{ marker_code }}">
-                    <input type="text" name="regmarker-{{ idx }}-action" value="{{ action_code }}">
-                    <span class="list-field-display">
-                        {{ marker_display }}
-                        <span class="action-symbol"><strong>{{ action_symbol }}</strong></span>
-                    </span>
-                    <button type="button" class="btn btn-sm btn-danger ms-2" onclick="removeMarker(this)">-</button>
-                </li>
-            {% endfor %}
-            {% for error in form.regmarker.errors %}
-                <div class="text-danger">{{ error }}</div>
-            {% endfor %}
-        {% endif %}
+    {# header #}
+    <strong>{{ form.marker.label }}</strong>
+    <ul id="marker-list" class="list-group mb-2 w-100">
+        {% for field in form.marker %}
+            {% set full_value = field.data %}
+            {% set marker_code = field.data.split('(')[0].strip() if field.data else '' %}
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+                <input type="hidden" name="{{ field.name }}" value="{{ marker_code }}">
+                <span class="list-field-display" name="{{ field_name }}_field_display">{{ full_value }}</span>
+                <button type="button" class="btn btn-sm btn-danger ms-2" onclick="removeMarker(this)">-</button>
+            </li>
+        {% endfor %}
+        {% for error in form.marker.errors %}
+            <div class="text-danger">{{ error }}</div>
+        {% endfor %}
     </ul>
     <button type="button"
-            title="Add single specified {{ field_name }}"
-            aria-label="Add single specified {{ field_name }}"
+            title="Add single specified marker"
+            aria-label="Add single specified marker"
             class="btn btn-outline-primary btn-sm"
             data-bs-toggle="modal"
             data-bs-target="#{{ single_modal_id }}">
         +
     </button>
     <button type="button"
-            title="Add multiple specified {{ field_name }}s"
-            aria-label="Add multiple specified {{ field_name }}s"
+            title="Add multiple specified markers"
+            aria-label="Add multiple specified markers"
             class="btn btn-outline-primary btn-sm"
             data-bs-toggle="modal"
             data-bs-target="#{{ csv_modal_id }}">
-        Add {{ field_name|capitalize }}s from CSV
+        Add Markers from CSV
+    </button>
+</div>
+{% endmacro %}
+
+{% macro render_regmarker_section(form, single_modal_id, csv_modal_id, label_bg="#F0FDF4") %}
+<div class="col-md-6" style="background-color: {{ label_bg }}; border: 1px solid #ccc; border-radius: 5px; padding: 16px;">
+    <strong>{{ form.regmarker.label }}</strong>
+    <ul id="regmarker-list" class="list-group mb-2 w-100">
+        {% for entry in form.regmarker %}
+            {% set full_value = entry.marker.data %}
+            {% set marker_code = entry.marker.data.split('(')[0].strip() if entry.marker.data else '' %}
+            {% set action_code = entry.action.data %}
+            {% if action_code == "up_regulates" %}
+                {% set action_symbol = "↑" %}
+            {% elif action_code == "down_regulates" %}
+                {% set action_symbol = "↓" %}
+            {% elif action_code == "inconclusively_regulates" %}
+                {% set action_symbol = "?" %}
+            {% else %}
+                {% set action_symbol = "" %}
+            {% endif %}
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+                <input type="hidden" name="{{ entry.marker.name }}" value="{{ marker_code }}">
+                <input type="hidden" name="{{ entry.action.name }}" value="{{ action_code }}">
+                <span class="list-field-display">
+                    {{ full_value }}
+                    <span class="action-symbol"> <strong>{{ action_symbol }}</strong></span>
+                </span>
+                <button type="button" class="btn btn-sm btn-danger ms-2" onclick="removeMarker(this)">-</button>
+            </li>
+        {% endfor %}
+        {% for error in form.regmarker.errors %}
+            <div class="text-danger">{{ error }}</div>
+        {% endfor %}
+    </ul>
+    <button type="button"
+            title="Add single regulated marker"
+            aria-label="Add single regulated marker"
+            class="btn btn-outline-primary btn-sm"
+            data-bs-toggle="modal"
+            data-bs-target="#{{ single_modal_id }}">
+        +
+    </button>
+    <button type="button"
+            title="Add multiple regulated markers"
+            aria-label="Add multiple regulated markers"
+            class="btn btn-outline-primary btn-sm"
+            data-bs-toggle="modal"
+            data-bs-target="#{{ csv_modal_id }}">
+        Add Regulated Markers from CSV
     </button>
 </div>
 {% endmacro %}

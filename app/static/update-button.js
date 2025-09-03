@@ -9,7 +9,8 @@ document.addEventListener("DOMContentLoaded", function () {
         "assay-list", "citation-list", "origin-list", "dataset-list", "marker-list", "regmarker-list"
     ];
 
-    // Helper to get current form state (including hidden)
+    // Helper to get current form state (including hidden).
+    // Used to control the enabling of the Update button.
     function getFormState() {
         const elements = Array.from(editForm.elements).filter(el =>
             (el.tagName === "INPUT" || el.tagName === "SELECT" || el.tagName === "TEXTAREA")

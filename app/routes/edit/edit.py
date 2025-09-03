@@ -18,6 +18,7 @@ from models.requestretry import RequestRetry
 
 edit_blueprint = Blueprint('edit', __name__, url_prefix='/edit')
 
+
 def truncateddisplaytext(id: str, description:str, trunclength: int) -> str:
     """
     Builds a truncated display string.
@@ -30,6 +31,7 @@ def truncateddisplaytext(id: str, description:str, trunclength: int) -> str:
         ellipsis = ''
 
     return f'{id} ({description[0:trunclength]}{ellipsis})'
+
 
 def getcitationobjects(rawobjects: list) -> list:
     """
@@ -55,6 +57,7 @@ def getcitationobjects(rawobjects: list) -> list:
 
     return oret
 
+
 def getoriginobjects(rawobjects: list) -> list:
 
     """
@@ -76,6 +79,7 @@ def getoriginobjects(rawobjects: list) -> list:
         oret.append({"code": code, "term": description})
 
     return oret
+
 
 def getdatasetobjects(rawobjects: list) -> list:
 
@@ -99,6 +103,7 @@ def getdatasetobjects(rawobjects: list) -> list:
 
     return oret
 
+
 def getmarkerobjects(rawobjects: list) -> list:
 
     """
@@ -111,7 +116,7 @@ def getmarkerobjects(rawobjects: list) -> list:
 
     oret = []
     for o in rawobjects:
-        code = o.get('code')
+        code = o.get('code').strip()
         if not code or ':' not in code:
             oret.append({"code": code, "term": None})
             continue
@@ -122,7 +127,7 @@ def getmarkerobjects(rawobjects: list) -> list:
             endpoint = 'proteins'
 
         url = f'{base_url}{endpoint}/{markerid}'
-        print(url)
+
         resp = api.getresponse(url=url, format='json')
         # Defensive: check if resp is a list and not empty
         if not resp or not isinstance(resp, list) or not resp[0]:
@@ -162,7 +167,6 @@ def getregmarkerobjects(assertions: list) -> list:
             for o in listret:
                 o['type'] = predicate_term
 
-
     return listret
 
 
@@ -183,6 +187,7 @@ def getassertionobjects(rawobjects: list) -> list:
             }
         )
         return listret
+
 
 def getstoredsimpleassertiondata(assertions: list, predicate: str) -> list:
     """
@@ -215,7 +220,6 @@ def getstoredsimpleassertiondata(assertions: list, predicate: str) -> list:
             elif pred == 'has_dataset':
                 objects = getdatasetobjects(rawobjects)
             elif pred == 'has_characterizing_marker_set':
-                print('RAWOBJECTS: ', rawobjects)
                 objects = getmarkerobjects(rawobjects)
             else:
                 objects = getassertionobjects(rawobjects)
@@ -285,6 +289,7 @@ def setdefaults(form):
     # Markers
     form.marker.process([''])
     form.regmarker.process([''])
+
 
 def loadexistingdata(id: str, senlib: SenLib, form: EditForm):
     """
@@ -400,17 +405,17 @@ def loadexistingdata(id: str, senlib: SenLib, form: EditForm):
     markerlist = getstoredsimpleassertiondata(assertions=assertions, predicate='has_characterizing_marker_set')
     if len(markerlist) > 0:
         form.marker.process(form.marker, [truncateddisplaytext(id=item['code'],
-                                                                description=item['term'],
-                                                                trunclength=100)
-                                           for item in markerlist])
+                                                               description=item['term'],
+                                                               trunclength=100)
+                                          for item in markerlist])
     else:
         form.marker.process([''])
+    print('form.marker.data', form.marker.data)
 
     # Regulating Markers (multiple possible values).
     # The format of the process call is different because the regmarker
     # control is a FieldList(FormField) instead of just a Fieldlist.
     regmarkerlist = getregmarkerobjects(assertions=assertions)
-    print(regmarkerlist)
     if len(regmarkerlist) > 0:
         form.regmarker.process(
             None,
@@ -424,6 +429,7 @@ def loadexistingdata(id: str, senlib: SenLib, form: EditForm):
         )
     else:
         form.regmarker.process(None, [])
+
 
 def build_session_list(senlib: SenLib, form_data: dict, listkey: str):
     """
@@ -472,13 +478,11 @@ def build_session_list(senlib: SenLib, form_data: dict, listkey: str):
             objects = getoriginobjects(rawobjects)
         elif assertion == 'has_dataset':
             objects = getdatasetobjects(rawobjects)
-        elif assertion == 'has_characterizing_marker_set':
-            objects = getmarkerobjects(rawobjects)
         else:
             objects = rawobjects
 
-
     return objects
+
 
 def build_session_markerlist(form_data: dict) -> list:
     """
@@ -490,7 +494,27 @@ def build_session_markerlist(form_data: dict) -> list:
     for code in codelist:
         rawobjects.append({'code': code})
 
-    return getmarkerobjects(rawobjects=rawobjects)
+    objects = getmarkerobjects(rawobjects=rawobjects)
+    return objects
+
+def build_session_regmarkerlist(form_data: dict) -> list:
+    """
+    Builds content for the regulating marker list on the Edit Form based on session data.
+    :param form_data: dict of form state data.
+    """
+
+    regmarkers = form_data['regmarker']
+    # Elements in regmarkers are dictionaries with format {'action': action, 'marker': marker}.
+
+    regmarkerlist = []
+    for rm in regmarkers:
+        rawobject = [{"code": rm['marker'].strip()}]
+        # Obtain description of marker via API call.
+        obj = getmarkerobjects(rawobjects=rawobject)[0]
+        obj['type'] = rm['action']
+        regmarkerlist.append(obj)
+
+    return regmarkerlist
 
 def getsessiondata(senlib: SenLib, form:EditForm, form_data: dict):
     """
@@ -513,92 +537,113 @@ def getsessiondata(senlib: SenLib, form:EditForm, form_data: dict):
     # Taxon
     taxonlist = build_session_list(senlib=senlib, form_data=form_data, listkey='taxon')
     if len(taxonlist) > 0:
-        form.taxon.process(form.taxon, [f"{item['code']} ({item['term']})" for item in taxonlist])
+        form.taxon.process(None, [f"{item['code']} ({item['term']})" for item in taxonlist])
     else:
-        form.taxon.process([''])
+        form.taxon.process(None, [''])
 
     # Location
     locationlist = build_session_list(senlib=senlib, form_data=form_data, listkey='location')
     if len(locationlist) > 0:
-        form.location.process(form.location, [f"{item['code']} ({item['term']})" for item in locationlist])
+        form.location.process(None, [f"{item['code']} ({item['term']})" for item in locationlist])
     else:
-        form.location.process([''])
+        form.location.process(None, [''])
 
     # Cell type
     celltypelist = build_session_list(senlib=senlib, form_data=form_data, listkey='celltype')
     if len(celltypelist) > 0:
-        form.celltype.process(form.celltype, [f"{item['code']} ({item['term']})" for item in celltypelist])
+        form.celltype.process(None, [f"{item['code']} ({item['term']})" for item in celltypelist])
     else:
-        form.celltype.process([''])
+        form.celltype.process(None, [''])
 
     # Hallmark
     hallmarklist = build_session_list(senlib=senlib, form_data=form_data, listkey='hallmark')
     if len(hallmarklist) > 0:
-        form.hallmark.process(form.hallmark, [f"{item['code']} ({item['term']})" for item in hallmarklist])
+        form.hallmark.process(None, [f"{item['code']} ({item['term']})" for item in hallmarklist])
     else:
-        form.hallmark.process([''])
+        form.hallmark.process(None, [''])
 
     # Molecular observable
     observablelist = build_session_list(senlib=senlib, form_data=form_data, listkey='observable')
     if len(observablelist) > 0:
-        form.observable.process(form.observable, [f"{item['code']} ({item['term']})" for item in observablelist])
+        form.observable.process(None, [f"{item['code']} ({item['term']})" for item in observablelist])
     else:
-        form.observable.process([''])
+        form.observable.process(None, [''])
 
     # Inducer
     inducerlist = build_session_list(senlib=senlib, form_data=form_data, listkey='inducer')
     if len(inducerlist) > 0:
-        form.inducer.process(form.inducer, [f"{item['code']} ({item['term']})" for item in inducerlist])
+        form.inducer.process(None, [f"{item['code']} ({item['term']})" for item in inducerlist])
     else:
-        form.inducer.process([''])
+        form.inducer.process(None, [''])
 
     # Assay
     assaylist = build_session_list(senlib=senlib, form_data=form_data, listkey='assay')
     if len(assaylist) > 0:
-        form.assay.process(form.assay, [f"{item['code']} ({item['term']})" for item in assaylist])
+        form.assay.process(None, [f"{item['code']} ({item['term']})" for item in assaylist])
     else:
-        form.assay.process([''])
+        form.assay.process(None, [''])
 
     # Citation
     citationlist = build_session_list(senlib=senlib, form_data=form_data, listkey='citation')
     if len(citationlist) > 0:
-        form.citation.process(form.citation, [truncateddisplaytext(id=item['code'],
+        form.citation.process(None, [truncateddisplaytext(id=item['code'],
                                                                    description=item['term'],
                                                                    trunclength=40)
                                               for item in citationlist])
     else:
-        form.citation.process([''])
+        form.citation.process(None, [''])
 
     # Origin
     originlist = build_session_list(senlib=senlib, form_data=form_data, listkey='origin')
     if len(originlist) > 0:
-        form.origin.process(form.origin, [truncateddisplaytext(id=item['code'],
-                                                               description=item['term'],
-                                                               trunclength=50)
-                                          for item in originlist])
+        form.origin.process(None, [truncateddisplaytext(id=item['code'],
+                                                        description=item['term'],
+                                                        trunclength=50)
+                                   for item in originlist])
     else:
-        form.origin.process([''])
+        form.origin.process(None, [''])
 
     # Dataset
     datasetlist = build_session_list(senlib=senlib, form_data=form_data, listkey='dataset')
     if len(datasetlist) > 0:
-        form.dataset.process(form.dataset, [truncateddisplaytext(id=item['code'],
-                                                                 description=item['term'],
-                                                                 trunclength=50)
-                                            for item in datasetlist])
+        form.dataset.process(None, [truncateddisplaytext(id=item['code'],
+                                                         description=item['term'],
+                                                         trunclength=50)
+                                    for item in datasetlist])
     else:
-        form.dataset.process([''])
+        form.dataset.process(None, [''])
 
     # Specified markers
     markerlist = build_session_markerlist(form_data=form_data)
+    print('session - marker:', markerlist)
+    print([truncateddisplaytext(id=item['code'], description=item['term'], trunclength=100) for item in markerlist])
     if len(markerlist) > 0:
-        form.marker.process(form.marker, [truncateddisplaytext(id=item['code'],
-                                                               description=item['term'],
-                                                               trunclength=50)
-                                          for item in markerlist])
+        form.marker.process(None, [truncateddisplaytext(id=item['code'],
+                                                        description=item['term'],
+                                                        trunclength=100)
+                                   for item in markerlist])
     else:
-        form.marker.process([''])
+        form.marker.process(None, [''])
 
+    # Regulating markers. The field processing is different because regmarker is a
+    # FieldList(FormField) instead of a simple FieldList.
+    regmarkerlist = build_session_regmarkerlist(form_data=form_data)
+    if len(regmarkerlist) > 0:
+        form.regmarker.process(
+            None,
+            [
+                {
+                    "marker": truncateddisplaytext(id=item['code'], description=item['term'], trunclength=50),
+                    "action": item['type']
+                }
+                for item in regmarkerlist
+            ]
+        )
+    else:
+        form.regmarker.process(None, [''])
+    print('session - regmarkerlist:', regmarkerlist)
+    print([truncateddisplaytext(id=item['code'], description=item['term'], trunclength=50) for item in regmarkerlist])
+    print('form.regmarker.data', form.regmarker.data)
 
 
 @edit_blueprint.route('', methods=['POST', 'GET'])

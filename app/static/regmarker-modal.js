@@ -23,7 +23,7 @@ function addRegMarker(id, description, action) {
 
     // Hidden input for WTForms submission: code and action
     var inputCode = document.createElement('input');
-    inputCode.type = 'text';
+    inputCode.type = 'hidden';
     inputCode.name = 'regmarker-code-' + ul.children.length; // WTForms FieldList expects this pattern
     inputCode.value = id ;
     inputCode.className = 'form-control';//d-none'; // Hidden but submitted
@@ -31,7 +31,7 @@ function addRegMarker(id, description, action) {
 
     // Hidden input for WTForms submission: action
     var inputAction = document.createElement('input');
-    inputAction.type = 'text';
+    inputAction.type = 'hidden';
     inputAction.name = 'regmarker-action-' + ul.children.length;
     inputAction.value = action;
     inputAction.className = 'form-control';//d-none';
@@ -48,8 +48,8 @@ function addRegMarker(id, description, action) {
     } else {
         actionSymbol = '?'; // question mark
     }
-    //span.textContent = (description || id) + ' ' + actionSymbol;
-    span.textContent = id + ' (' + description + ') ' + actionSymbol;
+
+    span.textContent =  description + " " + actionSymbol;
     span.className = 'list-field-display';
     li.appendChild(span);
 
@@ -114,13 +114,12 @@ document.addEventListener('DOMContentLoaded', function () {
                             id = item.uniprotkb_id || query;
                             var recNameArr = item.recommended_name || [];
                             var recName = Array.isArray(recNameArr) ? recNameArr[0] : recNameArr;
-                            description = id;
+                            description = "UNIPROTKB:" + id + " (" + recName.trim() + ")" ;
                         } else {
                             id = item.hgnc_id || query;
                             var approved_symbol = item.approved_symbol;
                             var approved_name = item.approved_name;
-
-                            description = approved_symbol;
+                            description =  "HGNC:" + id + " (" + approved_symbol + ")" ;
                         }
                         var btn = document.createElement('button');
                         btn.type = "button";

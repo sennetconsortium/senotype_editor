@@ -17,7 +17,7 @@ function addMarker(id, description) {
 
     // Hidden input for WTForms submission
     var input = document.createElement('input');
-    input.type = 'text';
+    input.type = 'hidden';
     input.name = 'marker-' + ul.children.length; // WTForms FieldList expects this pattern
     input.value = id;
     input.className = 'form-control';// d-none'; // Hidden but submitted
@@ -26,7 +26,7 @@ function addMarker(id, description) {
     // Visible text: show the description instead of the ID
     var span = document.createElement('span');
     span.className = 'list-field-display';
-    span.textContent = id + ' ' + description;
+    span.textContent = description;
     li.appendChild(span);
 
     // Remove button
@@ -99,14 +99,14 @@ document.addEventListener('DOMContentLoaded', function () {
                             var recName = Array.isArray(recNameArr) ? recNameArr[0] : recNameArr;
 
                             //description = (id && recName) ? (id + ' (' + recName + ')') : (id || recName || query);
-                            description = validateId + " (" + recName.trim() + ")";
+                            description = "UNIPROTKB:" + validateId + " (" + recName.trim() + ")";
                         } else {
                             id = item.hgnc_id || query;
                             if (!id) return;
                             validateId = id;
                             var approved_symbol = item.approved_symbol;
                             var approved_name = item.approved_name;
-                            description =  "(" + approved_symbol + ")" ;
+                            description =  "HGNC:" + validateId + " (" + approved_symbol + ")" ;
                         }
                         var btn = document.createElement('button');
                         btn.className = 'btn btn-link text-start w-100 mb-1';

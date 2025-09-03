@@ -144,24 +144,39 @@ document.addEventListener("DOMContentLoaded", function () {
                 // visible: HGNC:code (approved symbol) action symbol
                 // hidden: HGNC:code action
                 id = m.code;
-                marker= "HGNC:" + id ;
                 description = m.symbol;
             } else {
                 // visible: UNIPROTKB:code (recommended name) action symbol
                 let id = m.code;
-                marker = "UNIPROTKB:" + id;
                 description = m.recommended_name;
             }
-            // Prevent duplicates (ID only)
-            let exists = Array.from(ul.querySelectorAll('input.form-control.w-100')).some(input => input.value === id);
-            if (exists) return;
+            // Prevent duplicates of combinations of marker and action.
+            let marker;
+            if (m.type === "gene") {
+                marker = "HGNC:" + m.code;
+                description = m.symbol;
+            } else {
+                marker = "UNIPROTKB:" + m.code;
+                description = m.recommended_name;
+            }
+            action = m.action;
+            let exists = Array.from(ul.querySelectorAll('li')).some(li => {
+                let codeInput = li.querySelector('input[name^="regmarker-code-"]');
+                let actionInput = li.querySelector('input[name^="regmarker-action-"]');
+
+                return codeInput && actionInput && codeInput.value === marker && actionInput.value === action;
+            });
+
+            if (exists) {
+                return;
+            }
 
             let li = document.createElement('li');
             li.className = 'list-group-item d-flex justify-content-between align-items-center w-100';
 
             // hidden input for marker ID submitted by Update button in Edit form
             let input = document.createElement('input');
-            input.type = 'text';
+            input.type = 'hidden';
             input.name = 'regmarker-code-' + ul.children.length;
             input.value = marker;
             input.className = 'form-control w-100';
@@ -169,7 +184,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
             // hidden input for action submitted by Update button in Edit form
             let inputAction = document.createElement('input');
-            inputAction.type = 'text';
+            inputAction.type = 'hidden';
             inputAction.name = 'regmarker-action-' + ul.children.length;
             inputAction.value = m.action;
             inputAction.className = 'form-control';// d-none';

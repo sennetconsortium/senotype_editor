@@ -156,7 +156,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
             // Hidden input for WTForms submission
             let input = document.createElement('input');
-            input.type = 'text';
+            input.type = 'hidden';
             input.name = 'marker-' + ul.children.length;
 
             input.value = id;

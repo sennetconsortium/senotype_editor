@@ -12,6 +12,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Optionally disable the update button while submitting
         const updateBtn = document.getElementById('update_btn');
         if (updateBtn) updateBtn.disabled = true;
+        // Submit the form (page will reload, spinner will disappear automatically)
         document.getElementById('edit_form').submit();
       }
     });
