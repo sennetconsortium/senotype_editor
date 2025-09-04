@@ -15,22 +15,37 @@ logger = logging.getLogger(__name__)
 
 class SenLib:
 
-    def _getsenliblist(self) -> list:
+    def _getsenlibrepolist(self) -> list:
         """
         Obtains list of files in the senlib repo.
         """
         return self.request.getresponse(url=self.senliburl, format='json')
 
-    def _getsenlibjsonids(self) -> list:
+    def _getlatestsenotypeids(self) -> list:
         """
-        Obtain all senlib jsons from repo.
-        :return: list of senlib JSON IDs
+        Obtains the latest versions of all Senotype submissions in the senlib repo.
+        :return: list of Senotype ids
         """
 
-        listfiles = self._getsenliblist()
+        listdir = self._getsenlibrepolist()
         listids = []
-        for f in listfiles:
-            listids.append(f.get('name').split('.')[0])
+
+        # The latest version of a Senotype will not have a successor.
+        for entry in listdir:
+            filename = entry.get('name')
+            senotypeid = filename.split('.json')[0]
+            senotypejson = self.getsenlibjson(senotypeid)
+            senotype = senotypejson.get('senotype')
+            provenance = senotype.get('provenance')
+            successor = provenance.get('successor')
+            if successor is None:
+                id = senotypeid
+                name = senotype.get('name', '')
+                if name != '':
+                    if len(name) >= 50:
+                        name = f'{name[0:47]}...'
+
+                listids.append(f'{id} ({name})')
 
         return listids
 
@@ -64,7 +79,7 @@ class SenLib:
         self.senliburl = senliburl
         self.valueseturl = valueseturl
         self.jsonurl = jsonurl
-        self.senlibjsonids = self._getsenlibjsonids()
+        self.senlibjsonids = self._getlatestsenotypeids()
         self.senlibvaluesets = self._getsenlibvaluesets()
 
     def getsenlibvalueset(self, predicate: str) -> pd.DataFrame:

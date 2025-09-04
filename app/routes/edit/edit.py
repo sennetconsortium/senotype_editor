@@ -695,7 +695,7 @@ def edit():
         # Initial load of the form as a result of the redirect from Globus login.
         # Load an empty form.
         form = EditForm()
-        form.senotypeid.choices = choices # includes "new"
+        form.senotypeid.choices = choices  # includes "new"
         setdefaults(form=form)
 
     elif request.method == 'POST':
@@ -709,7 +709,7 @@ def edit():
         form = EditForm(request.form)
         form.senotypeid.choices = choices  # includes "new"
 
-        id = form.senotypeid.data # Senotype submission id
+        id = form.senotypeid.data.split(' (')[0]  # Senotype submission id
 
         if id == 'new' or id is None:
             # The user selected 'new'. Load an empty form.

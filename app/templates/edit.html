@@ -18,18 +18,23 @@
         <div class="col-md-6" style="background-color: #f5f5f5; border: 1px solid #ccc; border-radius: 5px; padding: 16px;">
             <div class="mb-3 position-relative">
                 <h4>Senotype</h4>
-                <strong>{{ form.senotypeid.label }}</strong>
-                <select name="{{ form.senotypeid.name }}" class="form-select" style="width: 20ch; display: inline-block;">
-                    {% for value, label in form.senotypeid.choices %}
-                        <option value="{{ value }}" {% if form.senotypeid.data == value %}selected{% endif %}>{{ label }}</option>
-                    {% endfor %}
-                </select>
-                <input type="hidden" name="original_id" value="{{ form.senotypeid.data }}">
-                <!-- Spinner (Bootstrap) -->
-                <div id="senotype-spinner" class="spinner-border text-primary position-absolute" role="status" style="display:none;top:10px;right:10px;z-index:10;width:2rem;height:2rem;">
-                    <span class="visually-hidden">Loading...</span>
-                </div>
-                <div id="senotype-spinner-label" style="display:none;position:absolute;top:10px;right:60px;z-index:10;">Loading...</div>
+                <div class="row mb-3">
+                    <div class="col-6 d-flex flex-column justify-content-stretch" style="width:50%;">
+                        <strong>{{ form.senotypeid.label }}</strong>
+                        <select name="{{ form.senotypeid.name }}" class="form-select w-100" style="width:100%;">
+                            {% for value, label in form.senotypeid.choices %}
+                            <option value="{{ value }}" {% if form.senotypeid.data == value %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                    <input type="hidden" name="original_id" value="{{ form.senotypeid.data }}">
+                        <div id="senotype-spinner" class="spinner-border text-primary position-absolute" role="status" style="display:none;top:10px;right:10px;z-index:10;width:2rem;height:2rem;">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <div id="senotype-spinner-label" style="display:none;position:absolute;top:10px;right:60px;z-index:10;">Loading...</div>
+                        </div>
+                    <div class="col-6 d-flex flex-column justify-content-stretch" style="width:50%;">
+                        version and doi
+                    </div>
             </div>
             <div class="mb-3">
                 <strong>{{ form.senotypename.label }}</strong>
@@ -45,6 +50,7 @@
                   <div class="text-danger">{{ error }}</div>
                 {% endfor %}
             </div>
+        </div>
         </div>
         <div class="col-md-6" style="background-color: #f5f5f5; border: 1px solid #ccc; border-radius: 5px; padding: 16px;">
             <div class="mb-3">
