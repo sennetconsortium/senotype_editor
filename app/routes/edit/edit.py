@@ -13,7 +13,6 @@ from models.editform import EditForm
 from models.appconfig import AppConfig
 from models.senlib import SenLib
 from models.requestretry import RequestRetry
-from models.setinputdisabled import setinputdisabled
 
 
 edit_blueprint = Blueprint('edit', __name__, url_prefix='/edit')
@@ -241,6 +240,7 @@ def getstoredcontextassertiondata(assertions: list, predicate: str, context: str
     :param context: type of context assertion
     """
 
+    print(assertions)
     for assertion in assertions:
 
         assertion_predicate = assertion.get('predicate')
@@ -249,14 +249,13 @@ def getstoredcontextassertiondata(assertions: list, predicate: str, context: str
         pred = ''
         if IRI == predicate:
             pred = predicate
+
         elif term == predicate:
             pred = predicate
-
         if pred != '':
             objects = assertion.get('objects',[])
-
             for o in objects:
-                objcontext = o.get('term')
+                objcontext = o.get('type')
                 if objcontext == context:
                     return o
 
@@ -312,12 +311,12 @@ def loadexistingdata(id: str, senlib: SenLib, form: EditForm):
 
     senotype = dictsenlib.get('senotype')
     form.senotypename.data = senotype.get('name', '')
-    form.senotypedescription.data = senotype.get('definition')
-    form.doi.data = senotype.get('doi')
+    form.senotypedescription.data = senotype.get('definition','')
+    form.doi.data = senotype.get('doi','')
 
     # Submitter data
-    submitter = dictsenlib.get('submitter')
-    submitter_name = submitter.get('name')
+    submitter = dictsenlib.get('submitter','')
+    submitter_name = submitter.get('name','')
     form.submitterfirst.data = submitter_name.get('first', '')
     form.submitterlast.data = submitter_name.get('last', '')
     form.submitteremail.data = submitter.get('email', '')
@@ -651,7 +650,6 @@ def getsessiondata(senlib: SenLib, form:EditForm, form_data: dict):
     else:
         form.regmarker.process(None, [''])
 
-
 @edit_blueprint.route('', methods=['POST', 'GET'])
 def edit():
 
@@ -671,13 +669,11 @@ def edit():
     valueset_url = cfg.getfield(key='VALUESET_URL')
     # URL to the folder for Senotype Submissions in the senlib repo
     json_url = cfg.getfield(key='JSON_URL')
+    # Github personal access token for authorized calls
+    github_token = cfg.getfield(key='GITHUB_TOKEN')
 
     # Senlib interface
-    senlib = SenLib(senlib_url, valueset_url, json_url)
-
-    # Add 'new' as an option for the Senotype ID list.
-    # Must be a tuple for correct display in the form.
-    choices = [("new", "(new)")] + [(id, id) for id in senlib.senlibjsonids]
+    senlib = SenLib(senlib_url, valueset_url, json_url, github_token)
 
     # Check if we have session data for the form.
     # Session data will correspond to the state of the form at the time of
@@ -728,8 +724,6 @@ def edit():
         else:
             # Load from existing data.
             loadexistingdata(id=id, senlib=senlib, form=form)
-
-    setinputdisabled(form.ageunit, disabled=True)
 
     # Pass to the edit form the tree of senotype id information for the jstree control.
     return render_template('edit.html', form=form, response={'tree_data': senlib.senotypetree}, selected_node_id=request.form.get('selected_node_id'))

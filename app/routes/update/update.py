@@ -68,9 +68,11 @@ def writesubmission():
     senlib_url = cfg.getfield(key='SENOTYPE_URL')
     valueset_url = cfg.getfield(key='VALUESET_URL')
     json_url = cfg.getfield(key='JSON_URL')
+    # Github personal access token for authorized calls
+    github_token = cfg.getfield(key='GITHUB_TOKEN')
 
     # Senlib interface
-    senlib = SenLib(senlib_url, valueset_url, json_url)
+    senlib = SenLib(senlib_url, valueset_url, json_url, github_token)
 
 
 def remove_duplicates_from_multidict(md: MultiDict, prefix_list: list) -> MultiDict:
@@ -153,9 +155,12 @@ def update():
     senlib_url = cfg.getfield(key='SENOTYPE_URL')
     valueset_url = cfg.getfield(key='VALUESET_URL')
     json_url = cfg.getfield(key='JSON_URL')
+    # Github personal access token for authorized calls
+    github_token = cfg.getfield(key='GITHUB_TOKEN')
+
     uuid_base_url = cfg.getfield(key='UUID_BASE_URL')
 
-    senlib = SenLib(senlib_url, valueset_url, json_url)
+    senlib = SenLib(senlib_url, valueset_url, json_url, github_token)
 
     # In the Edit form, the modal sections and Javascript build hidden text inputs
     # that store values added dynamically to lists in the assertion sections. For some

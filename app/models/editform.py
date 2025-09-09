@@ -108,9 +108,11 @@ class EditForm(Form):
     senlib_url = cfg.getfield(key='SENOTYPE_URL')
     valueset_url = cfg.getfield(key='VALUESET_URL')
     json_url = cfg.getfield(key='JSON_URL')
+    # Github personal access token for authorized calls
+    github_token = cfg.getfield(key='GITHUB_TOKEN')
 
     # Senlib interface
-    senlib = SenLib(senlib_url, valueset_url, json_url)
+    senlib = SenLib(senlib_url, valueset_url, json_url, github_token)
 
     # SET DEFAULTS
 

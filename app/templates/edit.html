@@ -531,6 +531,12 @@
         </form>
     </div>
 </div>
+<!--For disabling of inputs if the selected senotype has been published-->
+<script>
+  window.senotype_doi_value = {{ form.doi.data|tojson|safe }};
+</script>
+<script src="{{ url_for('static', filename='disable-if-doi.js') }}"></script>
+<!---->
 <script src="{{ url_for('static', filename='citation-modal.js') }}"></script>
 <script src="{{ url_for('static', filename='origin-modal.js') }}"></script>
 <script src="{{ url_for('static', filename='dataset-modal.js') }}"></script>
@@ -541,4 +547,5 @@
 <script src="{{ url_for('static', filename='valueset-modal.js') }}"></script>
 <script src="{{ url_for('static', filename='senotype-treeview.js') }}"></script>
 <script src="{{ url_for('static', filename='update-button.js') }}"></script>
+
 {% endblock %}

@@ -21,7 +21,9 @@ class SenLib:
         """
         Obtains list of files in the senlib repo.
         """
-        return self.request.getresponse(url=self.senliburl, format='json')
+        return self.request.getresponse(url=self.senliburl,
+                                        format='json',
+                                        headers = self.github_header)
 
     def _getsenotypeids(self) -> list:
         """
@@ -34,20 +36,17 @@ class SenLib:
 
         # The latest version of a Senotype will not have a successor.
         for entry in listdir:
-            try:
-                filename = entry.get('name')
-                senotypeid = filename.split('.json')[0]
-                senotypejson = self.getsenlibjson(senotypeid)
-                senotype = senotypejson.get('senotype')
-                provenance = senotype.get('provenance')
-                successor = provenance.get('successor')
-                name = senotype.get('name', '')
-                if len(name) >= 50:
-                    name = f'{name[0:47]}...'
+            filename = entry.get('name')
+            senotypeid = filename.split('.json')[0]
+            senotypejson = self.getsenlibjson(senotypeid)
+            senotype = senotypejson.get('senotype')
+            provenance = senotype.get('provenance')
+            successor = provenance.get('successor')
+            name = senotype.get('name', '')
+            if len(name) >= 50:
+                name = f'{name[0:47]}...'
 
-                listids.append(f'{senotypeid} ({name})')
-            except Exception as e:
-                raise(e)
+            listids.append(f'{senotypeid} ({name})')
 
         return listids
 
@@ -179,8 +178,8 @@ class SenLib:
             editable = not bool(snt.get("doi"))
             a_attrs = {
                 **({"class": "editable"} if editable else {}),
-                **({"style": "color: green; font-type: bold"} if editable
-                   else {"style": "color: gray; font-type: italic"})
+                **({"style": "color: green; font-style: bold"} if editable
+                   else {"style": "color: gray; font-style: italic"})
             }
 
             # Published nodes should be displayed as "disabled"--i.e., in gray
@@ -226,12 +225,12 @@ class SenLib:
                 # "state": {"opened": True},
                 "state": {},
                 "icon": "jstree-folder",  # folder icon
-                "a_attr": {"style": "color: black; font-type: normal"},
+                "a_attr": {"style": "color: black; font-style: normal"},
             })
 
         # Add "new" node
         a_attrs = {"class": "editable",
-                   "style": "color: green; font-type: normal; font-type: bold"}
+                   "style": "color: green; font-style: bold"}
         new_node = {
             "id": "new",
             "text": "new",
@@ -248,7 +247,7 @@ class SenLib:
             "text": "Senotype",
             "children": wrapped_roots + [new_node],
             "state": {"opened": True},
-            "a_attr": {"style": "color: black; font-type: normal; font-size: 1.5em"},
+            "a_attr": {"style": "color: black; font-style: normal; font-size: 1.5em"},
         }
 
         return [senotype_parent]
@@ -276,7 +275,7 @@ class SenLib:
         # Read into Pandas.
         return pd.read_csv(csv_data)
 
-    def __init__(self, senliburl: str, valueseturl: str, jsonurl: str):
+    def __init__(self, senliburl: str, valueseturl: str, jsonurl: str, github_token: str):
 
         self.request = RequestRetry()
 
@@ -284,10 +283,13 @@ class SenLib:
         self.senliburl = senliburl
         self.valueseturl = valueseturl
         self.jsonurl = jsonurl
+        self.github_header = {
+            'Authorization': f'token {github_token}',
+            'Accept': 'application/vnd.github.v3+json'
+        }
         self.senlibjsonids = self._getsenotypeids()
         self.senlibvaluesets = self._getsenlibvaluesets()
         self.senotypetree = self._getsenotypejtree()
-        # print(json.dumps(self.senotypetree, indent=2))
 
     def getsenlibvalueset(self, predicate: str) -> pd.DataFrame:
         """

@@ -8,6 +8,7 @@ KEY=x
 # Globus keys
 GLOBUS_SENNET_CLIENT='x'
 GLOBUS_SENNET_SECRET='x'
+GITHUB_TOKEN = 'x'
 
 # API base URLs
 UUID_BASE_URL='https://uuid-api.dev.sennetconsortium.org/uuid'
