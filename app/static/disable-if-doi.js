@@ -1,12 +1,27 @@
+// Disables inputs.
+// Most are disabled conditionally based on whether the selected senotype version
+// has been published.
+
 document.addEventListener('DOMContentLoaded', function() {
   var doiValue = window.senotype_doi_value;
   var form = document.getElementById('edit_form');
   if (!form) return;
+
+  // Form elements to enable or disable.
   var elements = form.querySelectorAll('input, span, textarea, button');
+
+  // Update button.
   var update_btn = document.getElementById('update_btn');
+
+  // Loop through the main form elements.
   elements.forEach(function(el) {
     // Don't disable the jsTree's hidden input for selection
     if (el.id === 'selected_node_id') return;
+    if (el.id === 'doi') {
+        el.disabled = true;
+        el.style.backgroundColor = '#e5e5e5';
+        return;
+    }
     if (doiValue) {
       if (el.tagName === "SPAN") {
         // visually indicate disabled for span
@@ -40,5 +55,6 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 
   update_btn.disabled = doiValue;
+
 
 });
