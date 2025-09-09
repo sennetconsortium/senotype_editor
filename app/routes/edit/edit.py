@@ -240,7 +240,6 @@ def getstoredcontextassertiondata(assertions: list, predicate: str, context: str
     :param context: type of context assertion
     """
 
-    print(assertions)
     for assertion in assertions:
 
         assertion_predicate = assertion.get('predicate')
@@ -298,6 +297,30 @@ def setdefaults(form):
     form.regmarker.process([''])
 
 
+def getdoi(senotype: dict) -> str:
+    """
+    Calls the DataCite API to obtain the title for a DOI.
+    :param senlib: SenLib interface
+    :param senotype: senotype object of a senotype JSON
+    """
+    title = ''
+    doi_url = senotype.get('doi', '')
+
+    api = RequestRetry()
+
+    if doi_url is None:
+        return ''
+    else:
+        doi = doi_url.split('https://doi.org/')[1]
+        url = f'https://api.datacite.org/dois/{doi}'
+        response = api.getresponse(url=url, format='json')
+        if response is not None:
+            title = response.get('data').get('attributes').get('titles')[0].get('title', '')
+            if len(title) > 50:
+                title = f'{title[0:47]}...'
+        return f'{doi_url} ({title})'
+
+
 def loadexistingdata(id: str, senlib: SenLib, form: EditForm):
     """
     Loads and formats data from an existing Senotype submission, obtained
@@ -312,7 +335,7 @@ def loadexistingdata(id: str, senlib: SenLib, form: EditForm):
     senotype = dictsenlib.get('senotype')
     form.senotypename.data = senotype.get('name', '')
     form.senotypedescription.data = senotype.get('definition','')
-    form.doi.data = senotype.get('doi','')
+    form.doi.data = getdoi(senotype=senotype)
 
     # Submitter data
     submitter = dictsenlib.get('submitter','')
