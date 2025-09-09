@@ -1,11 +1,15 @@
 document.addEventListener('DOMContentLoaded', function() {
+
+  // Distinguish between selection because of form load and
+  // selection by user.
   let programmaticSelection = true;
 
+  // Initialize the treeview.
   $('#senotype-tree').jstree({
     'core': {
       'data': window.tree_data
     },
-    'plugins': ['state']
+    'plugins': ['state'] // maintain selection state
   });
 
   // Get root node ID (first node in array)

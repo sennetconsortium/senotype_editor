@@ -269,6 +269,7 @@ def setdefaults(form):
     form.senotypeid.data = ''
     form.senotypename.data = ''
     form.senotypedescription.data = ''
+    form.doi.data = ''
     form.submitterfirst.data = ''
     form.submitterlast.data = ''
     form.submitteremail.data = ''
@@ -300,7 +301,8 @@ def setdefaults(form):
 
 def loadexistingdata(id: str, senlib: SenLib, form: EditForm):
     """
-    Loads and formats data from an existing Senotype submission.
+    Loads and formats data from an existing Senotype submission, obtained
+    from stored data.
 
     """
     form.senotypeid.data = id
@@ -309,9 +311,9 @@ def loadexistingdata(id: str, senlib: SenLib, form: EditForm):
     dictsenlib = senlib.getsenlibjson(id=id)
 
     senotype = dictsenlib.get('senotype')
-    print(senotype)
     form.senotypename.data = senotype.get('name', '')
     form.senotypedescription.data = senotype.get('definition')
+    form.doi.data = senotype.get('doi')
 
     # Submitter data
     submitter = dictsenlib.get('submitter')
@@ -652,6 +654,10 @@ def getsessiondata(senlib: SenLib, form:EditForm, form_data: dict):
 
 @edit_blueprint.route('', methods=['POST', 'GET'])
 def edit():
+
+    # Clear any prior error messages that can display in the edit form.
+    if 'flashes' in session:
+        session['flashes'].clear()
 
     # Read the app.cfg file outside the Flask application context.
 

@@ -106,8 +106,8 @@
     <!-- Flask flash message display -->
     {% with messages = get_flashed_messages() %}
       {% if messages %}
-
-        <div class="text-bg-success p-3">
+        {% set joined = messages|join(' ') %}
+        <div class="p-3 {{ 'text-bg-danger' if 'Error' in joined else 'text-bg-success' }}">
           <ul class=flashes>
             {% for message in messages %}
               <li>{{ message }}</li>
@@ -132,7 +132,7 @@
       /* Make the root node font larger */
       #senotype-tree > ul > li > a {
         font-size: 1.5em !important;
-        font-weight: bold;
+        //font-weight: bold;
       }
       /* All other nodes use normal font size */
       #senotype-tree .jstree-anchor {

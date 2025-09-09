@@ -156,7 +156,6 @@ def update():
     uuid_base_url = cfg.getfield(key='UUID_BASE_URL')
 
     senlib = SenLib(senlib_url, valueset_url, json_url)
-    choices = [("new", "(new)")] + [(id, id) for id in senlib.senlibjsonids]
 
     # In the Edit form, the modal sections and Javascript build hidden text inputs
     # that store values added dynamically to lists in the assertion sections. For some
@@ -183,7 +182,6 @@ def update():
     deduped_form_data = remove_duplicates_from_multidict(request.form, fieldlist_prefixes)
 
     form = EditForm(deduped_form_data)  # Use POSTed form data
-    form.senotypeid.choices = choices  # Must reset choices for select field
 
     # Set selected value for senotypeid (to preserve selection)
     prior_senotypeid = request.form.get('senotypeid', 'new')
@@ -209,7 +207,7 @@ def update():
                 for err in custom_field_errors:
                     if err not in form_field.errors:
                         form_field.errors.append(err)
-        flash("Validation failed. Please check your inputs.", "danger")
+        flash("Error: Validation failed. Please check your inputs.", "danger")
         # Pass both the current form data (which, in general, will have been modified
         # from the existing submission data) and the validation errors from the validated form
         # to a reload of the form.

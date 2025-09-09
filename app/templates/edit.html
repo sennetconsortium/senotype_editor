@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<!--Data for the senotype treeview -->
+<!--Data for the senotype treeview passed from the edit route-->
 <script>
   window.tree_data = {{ response.tree_data|tojson|safe }};
 </script>
@@ -60,6 +60,18 @@
                     </div>
                 </div>
             </div>
+            <div class="row">
+                <div class="col">
+                  <div class="mb-3">
+                        <strong>{{ form.doi.label }}</strong>
+                        {{ form.doi(class="form-control w-100", rows="2") }}
+                        {% for error in form.doi.errors %}
+                            <div class="text-danger">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            <!-- Description -->
             <div class="row">
                 <div class="col">
                     <div class="mb-3">

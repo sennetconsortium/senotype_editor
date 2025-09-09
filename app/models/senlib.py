@@ -34,18 +34,18 @@ class SenLib:
 
         # The latest version of a Senotype will not have a successor.
         for entry in listdir:
-            print(entry)
-            filename = entry.get('name')
-            senotypeid = filename.split('.json')[0]
-            senotypejson = self.getsenlibjson(senotypeid)
-            senotype = senotypejson.get('senotype')
-            provenance = senotype.get('provenance')
-            successor = provenance.get('successor')
-            name = senotype.get('name', '')
-            if len(name) >= 50:
-                name = f'{name[0:47]}...'
+            if entry != 'message':
+                filename = entry.get('name')
+                senotypeid = filename.split('.json')[0]
+                senotypejson = self.getsenlibjson(senotypeid)
+                senotype = senotypejson.get('senotype')
+                provenance = senotype.get('provenance')
+                successor = provenance.get('successor')
+                name = senotype.get('name', '')
+                if len(name) >= 50:
+                    name = f'{name[0:47]}...'
 
-            listids.append(f'{senotypeid} ({name})')
+                listids.append(f'{senotypeid} ({name})')
 
         return listids
 
