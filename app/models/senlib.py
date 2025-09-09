@@ -34,7 +34,7 @@ class SenLib:
 
         # The latest version of a Senotype will not have a successor.
         for entry in listdir:
-            if entry != 'message':
+            try:
                 filename = entry.get('name')
                 senotypeid = filename.split('.json')[0]
                 senotypejson = self.getsenlibjson(senotypeid)
@@ -46,6 +46,8 @@ class SenLib:
                     name = f'{name[0:47]}...'
 
                 listids.append(f'{senotypeid} ({name})')
+            except Exception as e:
+                raise(e)
 
         return listids
 
@@ -172,9 +174,18 @@ class SenLib:
             snt = senotype_by_id[id_]
 
             # A senotype JSON can only be edited if it has not already been
-            # published and assigned a DOI. The edit page uses this property
-            # to enable/disable editing features.
+            # published and assigned a DOI, and also not a folder.
+            # The edit page uses this property to enable/disable editing features.
             editable = not bool(snt.get("doi"))
+            a_attrs = {
+                **({"class": "editable"} if editable else {}),
+                **({"style": "color: green; font-type: bold"} if editable
+                   else {"style": "color: gray; font-type: italic"})
+            }
+
+            # Published nodes should be displayed as "disabled"--i.e., in gray
+            # italic font. Folders, although not editable, should be displayed
+            # with normal font.
 
             node_map[id_] = {
                 "id": id_,
@@ -182,7 +193,7 @@ class SenLib:
                 "children": [],
                 "state": {},
                 "icon": "jstree-file",
-                "a_attr": {"class": "editable"} if editable else {},
+                "a_attr": a_attrs,
             }
 
         # Attach children: each node is a child of its successor (reverse orientation)
@@ -202,7 +213,12 @@ class SenLib:
         # Wrap each root with a "Senotype node".
         wrapped_roots = []
         for root in roots:
-            name_only = name_map[root["id"]]
+            version = version_map[root['id']]
+            if int(version) > 1:
+                versions = str(version) + ' versions'
+            else:
+                versions = str(version) + ' version'
+            name_only = f"{name_map[root['id']]} ({versions})"
             wrapped_roots.append({
                 "id": f"rootwrap_{root['id']}", # name from latest version
                 "text": name_only,
@@ -210,10 +226,12 @@ class SenLib:
                 # "state": {"opened": True},
                 "state": {},
                 "icon": "jstree-folder",  # folder icon
-                "a_attr": {}, # not editable
+                "a_attr": {"style": "color: black; font-type: normal"},
             })
 
         # Add "new" node
+        a_attrs = {"class": "editable",
+                   "style": "color: green; font-type: normal; font-type: bold"}
         new_node = {
             "id": "new",
             "text": "new",
@@ -221,7 +239,7 @@ class SenLib:
             "state": {},
             "icon": "jstree-file",
             "li_attr": {},
-            "a_attr": {"class": "editable"},
+            "a_attr": a_attrs,
         }
 
         # Top-level "Senotype" node as parent
@@ -229,7 +247,8 @@ class SenLib:
             "id": "Senotype",
             "text": "Senotype",
             "children": wrapped_roots + [new_node],
-            "state": {"opened": True}
+            "state": {"opened": True},
+            "a_attr": {"style": "color: black; font-type: normal; font-size: 1.5em"},
         }
 
         return [senotype_parent]
