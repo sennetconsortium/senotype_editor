@@ -1,6 +1,10 @@
 {% extends 'base.html' %}
 
 {% block content %}
+<!--Data for the senotype treeview -->
+<script>
+  window.tree_data = {{ response.tree_data|tojson|safe }};
+</script>
 <!-- Jinja macros -->
 {% from "_formhelpers.html" import render_field %}
 {% from "_field_lists.html" import render_fieldlist_section %}
@@ -12,46 +16,63 @@
 </div>
 <!--EDIT FORM -->
 <form id="edit_form" method="post" action= "/edit" class="mt-0 m-3 p-3">
-</div>
     <!-- Senotype / Submitter -->
     <div class="row">
+        <!-- Senotype -->
         <div class="col-md-6" style="background-color: #f5f5f5; border: 1px solid #ccc; border-radius: 5px; padding: 16px;">
+            <!-- Senotype tree view -->
             <div class="mb-3 position-relative">
-                <h4>Senotype</h4>
-                <div class="row mb-3">
-                    <div class="col-6 d-flex flex-column justify-content-stretch" style="width:50%;">
+            <div class="col-6 d-flex flex-column justify-content-stretch" style="width:100%;">
+                <div id="senotype-tree"></div>
+                <!--Track selected id for state-->
+                <input type="hidden" name="selected_node_id" id="selected_node_id" value="">
+                <!-- Spinner -->
+                <div id="senotype-spinner" class="spinner-border text-primary position-absolute"
+                    role="status"
+                    style="display:none;top:10px;right:10px;z-index:10;width:2rem;height:2rem;">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <!-- Spinner label -->
+                <div id="senotype-spinner-label"
+                    style="display:none;position:absolute;top:10px;right:60px;z-index:10;">
+                    Loading...
+                </div>
+            </div>
+        </div>
+            <!-- Senotype id and name-->
+            <div class="row">
+                <div class="col-4">
+                    <div class="mb-3">
                         <strong>{{ form.senotypeid.label }}</strong>
-                        <select name="{{ form.senotypeid.name }}" class="form-select w-100" style="width:100%;">
-                            {% for value, label in form.senotypeid.choices %}
-                            <option value="{{ value }}" {% if form.senotypeid.data == value %}selected{% endif %}>{{ label }}</option>
+                        {{ form.senotypeid(class="form-control w-100") }}
+                        {% for error in form.senotypeid.errors %}
+                            <div class="text-danger">{{ error }}</div>
                         {% endfor %}
-                    </select>
-                    <input type="hidden" name="original_id" value="{{ form.senotypeid.data }}">
-                        <div id="senotype-spinner" class="spinner-border text-primary position-absolute" role="status" style="display:none;top:10px;right:10px;z-index:10;width:2rem;height:2rem;">
-                            <span class="visually-hidden">Loading...</span>
-                        </div>
-                        <div id="senotype-spinner-label" style="display:none;position:absolute;top:10px;right:60px;z-index:10;">Loading...</div>
-                        </div>
-                    <div class="col-6 d-flex flex-column justify-content-stretch" style="width:50%;">
-                        version and doi
                     </div>
+                </div>
+                <div class="col-8">
+                    <div class="mb-3">
+                        <strong>{{ form.senotypename.label }}</strong>
+                        {{ form.senotypename(class="form-control w-100", rows="2") }}
+                        {% for error in form.senotypename.errors %}
+                            <div class="text-danger">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                </div>
             </div>
-            <div class="mb-3">
-                <strong>{{ form.senotypename.label }}</strong>
-                {{ form.senotypename(class="form-control w-100", rows="2") }}
-                {% for error in form.senotypename.errors %}
-                  <div class="text-danger">{{ error }}</div>
-                {% endfor %}
-            </div>
-            <div class="mb-3">
-                <strong>{{ form.senotypedescription.label }}</strong>
-                {{ form.senotypedescription(class="form-control w-100", rows="2") }}
-                {% for error in form.senotypedescription.errors %}
-                  <div class="text-danger">{{ error }}</div>
-                {% endfor %}
+            <div class="row">
+                <div class="col">
+                    <div class="mb-3">
+                        <strong>{{ form.senotypedescription.label }}</strong>
+                        {{ form.senotypedescription(class="form-control w-100", rows="2") }}
+                        {% for error in form.senotypedescription.errors %}
+                            <div class="text-danger">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                </div>
             </div>
         </div>
-        </div>
+        <!-- Submitter -->
         <div class="col-md-6" style="background-color: #f5f5f5; border: 1px solid #ccc; border-radius: 5px; padding: 16px;">
             <div class="mb-3">
                 <h4>Submitter</h4>
@@ -506,7 +527,6 @@
 <script src="{{ url_for('static', filename='regmarker-modal.js') }}"></script>
 <script src="{{ url_for('static', filename='regmarker-csv.js') }}"></script>
 <script src="{{ url_for('static', filename='valueset-modal.js') }}"></script>
-<script src="{{ url_for('static', filename='id-dropdown-post.js') }}"></script>
+<script src="{{ url_for('static', filename='senotype-treeview.js') }}"></script>
 <script src="{{ url_for('static', filename='update-button.js') }}"></script>
-
 {% endblock %}

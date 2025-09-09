@@ -170,31 +170,37 @@ def getregmarkerobjects(assertions: list) -> list:
     return listret
 
 
-def getassertionobjects(rawobjects: list) -> list:
+def getassertionobjects(senlib: SenLib, pred: str, rawobjects: list) -> list:
     """
     Reformats the objects array from a Senotype submission file for corresponding
     list in the edit form.
     :param rawobjects: list of assertion objects from a submission file.
+    :param senlib: SenLib interface
+    :param pred: assertion predicate
+
     """
 
     listret = []
     for o in rawobjects:
         code = o.get('code')
+        term = senlib.getsenlibterm(predicate=pred, code=code)
+
         listret.append(
             {
                 'code': code,
-                'term': f'{code} ({o.get("term","")})'
+                'term': f'{code} ({term})'
             }
         )
         return listret
 
 
-def getstoredsimpleassertiondata(assertions: list, predicate: str) -> list:
+def getstoredsimpleassertiondata(senlib: SenLib, assertions: list, predicate: str) -> list:
     """
     Obtains information for the specified assertion from a Senotype submission
     JSON.
     :param assertions: list of assertion objects
     :param predicate: assertion predicate key
+    :param senlib: SenLib interface
 
     """
 
@@ -222,7 +228,7 @@ def getstoredsimpleassertiondata(assertions: list, predicate: str) -> list:
             elif pred == 'has_characterizing_marker_set':
                 objects = getmarkerobjects(rawobjects)
             else:
-                objects = getassertionobjects(rawobjects)
+                objects = getassertionobjects(senlib=senlib, pred=pred, rawobjects=rawobjects)
             return objects
     return []
 
@@ -260,6 +266,7 @@ def getstoredcontextassertiondata(assertions: list, predicate: str, context: str
 def setdefaults(form):
 
     # Senotype and Submitter
+    form.senotypeid.data = ''
     form.senotypename.data = ''
     form.senotypedescription.data = ''
     form.submitterfirst.data = ''
@@ -296,11 +303,14 @@ def loadexistingdata(id: str, senlib: SenLib, form: EditForm):
     Loads and formats data from an existing Senotype submission.
 
     """
+    form.senotypeid.data = id
+
     # Get senotype data
     dictsenlib = senlib.getsenlibjson(id=id)
 
     senotype = dictsenlib.get('senotype')
-    form.senotypename.data = senotype.get('term', '')
+    print(senotype)
+    form.senotypename.data = senotype.get('name', '')
     form.senotypedescription.data = senotype.get('definition')
 
     # Submitter data
@@ -314,49 +324,49 @@ def loadexistingdata(id: str, senlib: SenLib, form: EditForm):
     assertions = dictsenlib.get('assertions')
 
     # Taxon (multiple possible values)
-    taxonlist = getstoredsimpleassertiondata(assertions=assertions, predicate='in_taxon')
+    taxonlist = getstoredsimpleassertiondata(senlib=senlib, assertions=assertions, predicate='in_taxon')
     if len(taxonlist) > 0:
         form.taxon.process(form.taxon, [item['term'] for item in taxonlist])
     else:
         form.taxon.process([''])
 
     # Locations (multiple possible values)
-    locationlist = getstoredsimpleassertiondata(assertions=assertions, predicate='located_in')
+    locationlist = getstoredsimpleassertiondata(senlib=senlib, assertions=assertions, predicate='located_in')
     if len(locationlist) > 0:
         form.location.process(form.location, [item['term'] for item in locationlist])
     else:
         form.location.process([''])
 
     # Cell type (one possible value)
-    celltypelist = getstoredsimpleassertiondata(assertions=assertions, predicate='has_cell_type')
+    celltypelist = getstoredsimpleassertiondata(senlib=senlib, assertions=assertions, predicate='has_cell_type')
     if len(celltypelist) > 0:
         form.celltype.process(form.celltype, [item['term'] for item in celltypelist])
     else:
         form.celltype.process([''])
 
     # Hallmark (multiple possible values)
-    hallmarklist = getstoredsimpleassertiondata(assertions=assertions, predicate='has_hallmark')
+    hallmarklist = getstoredsimpleassertiondata(senlib=senlib, assertions=assertions, predicate='has_hallmark')
     if len(hallmarklist) > 0:
         form.hallmark.process(form.hallmark, [item['term'] for item in hallmarklist])
     else:
         form.hallmark.process([''])
 
     # Molecular observable (multiple possible values)
-    observablelist = getstoredsimpleassertiondata(assertions=assertions, predicate='has_molecular_observable')
+    observablelist = getstoredsimpleassertiondata(senlib=senlib, assertions=assertions, predicate='has_molecular_observable')
     if len(observablelist) > 0:
         form.observable.process(form.observable, [item['term'] for item in observablelist])
     else:
         form.observable.process([''])
 
     # Inducer (multiple possible values)
-    inducerlist = getstoredsimpleassertiondata(assertions=assertions, predicate='has_inducer')
+    inducerlist = getstoredsimpleassertiondata(senlib=senlib, assertions=assertions, predicate='has_inducer')
     if len(inducerlist) > 0:
         form.inducer.process(form.inducer, [item['term'] for item in inducerlist])
     else:
         form.inducer.process([''])
 
     # Assay (multiple possible values)
-    assaylist = getstoredsimpleassertiondata(assertions=assertions, predicate='has_assay')
+    assaylist = getstoredsimpleassertiondata(senlib=senlib, assertions=assertions, predicate='has_assay')
     if len(assaylist) > 0:
         form.assay.process(form.assay, [item['term'] for item in assaylist])
     else:
@@ -372,7 +382,7 @@ def loadexistingdata(id: str, senlib: SenLib, form: EditForm):
         form.ageunit.data = age.get('unit', '')
 
     # Citation (multiple possible values)
-    citationlist = getstoredsimpleassertiondata(assertions=assertions, predicate='has_citation')
+    citationlist = getstoredsimpleassertiondata(senlib=senlib, assertions=assertions, predicate='has_citation')
     if len(citationlist) > 0:
         form.citation.process(form.citation, [truncateddisplaytext(id=item['code'],
                                                                    description=item['term'],
@@ -382,7 +392,7 @@ def loadexistingdata(id: str, senlib: SenLib, form: EditForm):
         form.citation.process([''])
 
     # Origin (multiple possible values)
-    originlist = getstoredsimpleassertiondata(assertions=assertions, predicate='has_origin')
+    originlist = getstoredsimpleassertiondata(senlib=senlib, assertions=assertions, predicate='has_origin')
     if len(originlist) > 0:
         form.origin.process(form.origin, [truncateddisplaytext(id=item['code'],
                                                                description=item['term'],
@@ -392,7 +402,7 @@ def loadexistingdata(id: str, senlib: SenLib, form: EditForm):
         form.origin.process([''])
 
     # Dataset (multiple possible values)
-    datasetlist = getstoredsimpleassertiondata(assertions=assertions, predicate='has_dataset')
+    datasetlist = getstoredsimpleassertiondata(senlib=senlib, assertions=assertions, predicate='has_dataset')
     if len(datasetlist) > 0:
         form.dataset.process(form.dataset, [truncateddisplaytext(id=item['code'],
                                                                  description=item['term'],
@@ -402,7 +412,7 @@ def loadexistingdata(id: str, senlib: SenLib, form: EditForm):
         form.dataset.process([''])
 
     # Specified Markers (multiple possible values)
-    markerlist = getstoredsimpleassertiondata(assertions=assertions, predicate='has_characterizing_marker_set')
+    markerlist = getstoredsimpleassertiondata(senlib=senlib, assertions=assertions, predicate='has_characterizing_marker_set')
     if len(markerlist) > 0:
         form.marker.process(form.marker, [truncateddisplaytext(id=item['code'],
                                                                description=item['term'],
@@ -410,7 +420,6 @@ def loadexistingdata(id: str, senlib: SenLib, form: EditForm):
                                           for item in markerlist])
     else:
         form.marker.process([''])
-    print('form.marker.data', form.marker.data)
 
     # Regulating Markers (multiple possible values).
     # The format of the process call is different because the regmarker
@@ -664,9 +673,6 @@ def edit():
     # Must be a tuple for correct display in the form.
     choices = [("new", "(new)")] + [(id, id) for id in senlib.senlibjsonids]
 
-    print('edit')
-    print('request.method', request.method)
-
     # Check if we have session data for the form.
     # Session data will correspond to the state of the form at the time of
     # validation errors resulting from an attempt at updating.
@@ -680,7 +686,6 @@ def edit():
         # Populate the form with session data--i.e., the data for the submission that
         # the user is attempting to add or update.
         form = EditForm(data=form_data)
-        form.senotypeid.choices = choices  # includes "new"
         getsessiondata(senlib=senlib, form=form, form_data=form_data)
 
         # Re-inject validation errors from the failed update.
@@ -695,7 +700,6 @@ def edit():
         # Initial load of the form as a result of the redirect from Globus login.
         # Load an empty form.
         form = EditForm()
-        form.senotypeid.choices = choices  # includes "new"
         setdefaults(form=form)
 
     elif request.method == 'POST':
@@ -707,9 +711,9 @@ def edit():
 
         # Load existing data for the selected submission.
         form = EditForm(request.form)
-        form.senotypeid.choices = choices  # includes "new"
 
-        id = form.senotypeid.data.split(' (')[0]  # Senotype submission id
+        # Selected senotype id
+        id = request.form.get('selected_node_id')
 
         if id == 'new' or id is None:
             # The user selected 'new'. Load an empty form.
@@ -718,6 +722,8 @@ def edit():
         else:
             # Load from existing data.
             loadexistingdata(id=id, senlib=senlib, form=form)
+
     setinputdisabled(form.ageunit, disabled=True)
 
-    return render_template('edit.html', form=form)
+    # Pass to the edit form the tree of senotype id information for the jstree control.
+    return render_template('edit.html', form=form, response={'tree_data': senlib.senotypetree}, selected_node_id=request.form.get('selected_node_id'))

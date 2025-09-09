@@ -3,8 +3,8 @@ Form used to manage Senotype submisstion JSONs.
 """
 
 
-from wtforms import (Form, StringField, SelectField, DecimalField, validators, ValidationError,
-                     TextAreaField, SubmitField, FieldList, StringField, FormField)
+from wtforms import (Form, SelectField, validators, ValidationError,
+                     TextAreaField, FieldList, StringField, FormField, RadioField)
 from wtforms.validators import Email
 
 # Helper classes
@@ -115,9 +115,12 @@ class EditForm(Form):
     # SET DEFAULTS
 
     # Senotype
-    senotypeid = SelectField('ID', choices=[])
+    senotypeid = StringField('ID')
     senotypename = StringField('Senotype Name', validators=[validators.InputRequired()])
     senotypedescription = TextAreaField('Senotype Description', validators=[validators.InputRequired()])
+
+    # Provenance and version
+    provenance = FieldList(StringField('Provenance ID'), min_entries=0)
 
     # Submitter
     submitterfirst = StringField('First Name', validators=[validators.InputRequired()])
