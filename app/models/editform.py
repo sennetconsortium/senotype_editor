@@ -120,7 +120,7 @@ class EditForm(Form):
     senotypeid = StringField('ID')
     senotypename = StringField('Senotype Name', validators=[validators.InputRequired()])
     senotypedescription = TextAreaField('Senotype Description', validators=[validators.InputRequired()])
-    doi = StringField('DOI')
+    doi = TextAreaField('DOI')
 
     # Provenance and version
     provenance = FieldList(StringField('Provenance ID'), min_entries=0)

@@ -17,7 +17,7 @@ Build sections with lists for which each row contains:
 -->
 
 {% macro render_fieldlist_section(form, field_name, modal_id, label_bg="#FEF2F2", is_external=False) %}
-<div class="col-md-6" style="background-color: {{ label_bg }}; border: 1px solid #ccc; border-radius: 5px; padding: 16px;">
+<div class="col-md-6" style="background-color: {{ label_bg }}; border: 1px solid #ccc; border-radius: 5px; padding: 8px;">
     {# header #}
     <strong>{{ form[field_name].label }}</strong>
     <ul id="{{ field_name }}-list" class="list-group mb-2 w-100">

@@ -53,7 +53,7 @@ The Update button will POST the hidden list values.
 {% endmacro %}
 
 {% macro render_regmarker_section(form, single_modal_id, csv_modal_id, label_bg="#F0FDF4") %}
-<div class="col-md-6" style="background-color: {{ label_bg }}; border: 1px solid #ccc; border-radius: 5px; padding: 16px;">
+<div class="col-md-6" style="background-color: {{ label_bg }}; border: 1px solid #ccc; border-radius: 5px; padding: 8px;">
     <strong>{{ form.regmarker.label }}</strong>
     <ul id="regmarker-list" class="list-group mb-2 w-100">
         {% for entry in form.regmarker %}

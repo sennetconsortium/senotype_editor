@@ -316,8 +316,8 @@ def getdoi(senotype: dict) -> str:
         response = api.getresponse(url=url, format='json')
         if response is not None:
             title = response.get('data').get('attributes').get('titles')[0].get('title', '')
-            if len(title) > 50:
-                title = f'{title[0:47]}...'
+            #if len(title) > 50:
+                #title = f'{title[0:47]}...'
         return f'{doi_url} ({title})'
 
 

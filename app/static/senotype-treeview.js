@@ -1,11 +1,31 @@
+/* Controls the senotype jstree.
+
+1. Manages selection and focus.
+2. Reacts programmatically to selection changes (for example, selecting a root node on load),
+   and visually highlights the focused node. Distinguishes between user actions and
+   events related to reloading the form, preventing infinite loops.
+3. The jstree contains both nodes that organize the senotype hierarchy and those that
+   correspond to senotype admission JSONs.
+   When the user selects a node that corresponds a senotype admission JSON,
+   the script:
+   - updates a hidden field
+   - submits the edit form
+   - shows a spinner
+*/
+
 document.addEventListener('DOMContentLoaded', function() {
+
+  // Flag to distinguish between user selections and programmatic selections of nodes.
   let programmaticSelection = true;
 
+  // Initialize the jstree, using data provided from Flask/WTForms.
+  // Uses the state plugin to keep track of jstree state.
   $('#senotype-tree').jstree({
     'core': { 'data': window.tree_data },
     'plugins': ['state']
   });
 
+  // Identify the "Senotype" root node for the jstree.
   function getRootId() {
     if (window.tree_data && window.tree_data.length) {
       return window.tree_data[0].id;
@@ -13,6 +33,7 @@ document.addEventListener('DOMContentLoaded', function() {
     return null;
   }
 
+  // Manages a custom CSS class (focused-node) for visual feedback.
   function updateFocusedNode(nodeId) {
     $('#senotype-tree .jstree-anchor.focused-node').removeClass('focused-node');
     if (nodeId) {

@@ -15,15 +15,15 @@
     <h2 class="m-3">Senotype Editor</h2>
 </div>
 <!--EDIT FORM -->
-<form id="edit_form" method="post" action= "/edit" class="mt-0 m-3 p-3">
+<form id="edit_form" method="post" action= "/edit" class="mt-0 m-3 p-1">
     <!-- Senotype / Submitter -->
     <div class="row">
         <!-- Senotype -->
-        <div class="col-md-6" style="background-color: #f5f5f5; border: 1px solid #ccc; border-radius: 5px; padding: 16px;">
+        <div class="col-md-6" style="background-color: #f5f5f5; border: 1px solid #ccc; border-radius: 5px; padding: 8px;">
             <!-- Senotype tree view -->
             <div class="mb-3 position-relative">
             <div class="col-6 d-flex flex-column justify-content-stretch" style="width:100%;">
-                <div id="senotype-tree"></div>
+                <div id="senotype-tree" style="background-color:white; border: 1px solid #ccc; border-radius: 5px; padding: 8px;"></div>
                 <!--Track selected id for state-->
                 <input type="hidden" name="selected_node_id" id="selected_node_id" value="">
                 <!-- Spinner -->
@@ -70,9 +70,7 @@
                         {% endfor %}
                     </div>
                 </div>
-            </div>
-            <!-- Description -->
-            <div class="row">
+                <!-- Description -->
                 <div class="col">
                     <div class="mb-3">
                         <strong>{{ form.senotypedescription.label }}</strong>
@@ -85,7 +83,7 @@
             </div>
         </div>
         <!-- Submitter -->
-        <div class="col-md-6" style="background-color: #f5f5f5; border: 1px solid #ccc; border-radius: 5px; padding: 16px;">
+        <div class="col-md-6" style="background-color: #f5f5f5; border: 1px solid #ccc; border-radius: 5px; padding: 8px;">
             <div class="mb-3">
                 <h4>Submitter</h4>
                 <strong>{{ form.submitterfirst.label }}</strong>
@@ -134,7 +132,7 @@
         <!-- ASSAY section -->
         {{ render_fieldlist_section(form, "assay", "assayModal") }}
         <!-- CONTEXT assertion section -->
-        <div class="col-md-6" style="background-color: #FEF2F2; border: 1px solid #ccc; border-radius: 5px; padding: 16px;">
+        <div class="col-md-6" style="background-color: #FEF2F2; border: 1px solid #ccc; border-radius: 5px; padding: 8px;">
             <div class="container">
                 <div class="row mb-3">
                     <h6 class="mb-4">Age</h6>
@@ -177,7 +175,7 @@
     <!-- SenNet datasets -->
     <div class="row">
         {{ render_fieldlist_section(form, "dataset", "datasetSearchModal", is_external=True) }}
-        <div class="col-md-6" style="background-color: #FEF2F2; border: 1px solid #ccc; border-radius: 5px; padding: 16px;">
+        <div class="col-md-6" style="background-color: #FEF2F2; border: 1px solid #ccc; border-radius: 5px; padding: 8px;">
             <!-- spacer -->
         </div>
     </div>

@@ -33,7 +33,7 @@ function addValuesetToList(fieldname, valuesetId, valuesetLabel) {
     li.className = 'list-group-item d-flex justify-content-between align-items-center';
     // Hidden input for the POST submission via the Update button.
     var input = document.createElement('input');
-    input.type = 'text';
+    input.type = 'hidden';
     input.className = 'form-control w-100';// d-none';
     input.value = valuesetId;
     li.appendChild(input);
