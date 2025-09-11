@@ -410,7 +410,7 @@ def loadexistingdata(id: str, senlib: SenLib, form: EditForm):
     if len(citationlist) > 0:
         form.citation.process(form.citation, [truncateddisplaytext(id=item['code'],
                                                                    description=item['term'],
-                                                                   trunclength=60)
+                                                                   trunclength=40)
                                               for item in citationlist])
     else:
         form.citation.process([''])
@@ -420,7 +420,7 @@ def loadexistingdata(id: str, senlib: SenLib, form: EditForm):
     if len(originlist) > 0:
         form.origin.process(form.origin, [truncateddisplaytext(id=item['code'],
                                                                description=item['term'],
-                                                               trunclength=60)
+                                                               trunclength=40)
                                           for item in originlist])
     else:
         form.origin.process([''])
@@ -430,7 +430,7 @@ def loadexistingdata(id: str, senlib: SenLib, form: EditForm):
     if len(datasetlist) > 0:
         form.dataset.process(form.dataset, [truncateddisplaytext(id=item['code'],
                                                                  description=item['term'],
-                                                                 trunclength=100)
+                                                                 trunclength=40)
                                             for item in datasetlist])
     else:
         form.dataset.process([''])

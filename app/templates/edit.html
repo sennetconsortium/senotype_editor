@@ -15,17 +15,17 @@
     <h2 class="m-3">Senotype Editor</h2>
 </div>
 <!--EDIT FORM -->
-<form id="edit_form" method="post" action= "/edit" class="mt-0 m-3 p-1">
+<form id="edit_form" method="post" action= "/edit" class="mt-0 m-3">
 
     <!-- Senotype / Submitter -->
     <div class="row">
       <!-- Senotype column -->
-      <div class="col-md-6" style="background-color: #f5f5f5; border: 1px solid #ccc; border-radius: 5px; padding: 8px;">
+      <div class="col-md-6" style="background-color: #f5f5f5; border: 1px solid #ccc; border-radius: 5px; padding: 2px;">
         <!-- 1st row: Senotype treeview -->
         <div class="row mb-3">
           <div class="col-12 position-relative">
             <div class="d-flex flex-column justify-content-stretch" style="width:100%;">
-              <div id="senotype-tree" style="background-color:white; border: 1px solid #ccc; border-radius: 5px; padding: 8px;"></div>
+              <div id="senotype-tree" style="background-color:white; border: 1px solid #ccc; border-radius: 5px; padding: 2px;"></div>
               <input type="hidden" name="selected_node_id" id="selected_node_id" value="">
               <div id="senotype-spinner" class="spinner-border text-primary position-absolute"
                    role="status"
@@ -79,7 +79,7 @@
       </div>
 
       <!-- Submission column -->
-      <div class="col-md-6" style="background-color: #f5f5f5; border: 1px solid #ccc; border-radius: 5px; padding: 8px;">
+      <div class="col-md-6" style="background-color: #f5f5f5; border: 1px solid #ccc; border-radius: 5px; padding: 2px;">
         <h4>Submission</h4>
         <!-- 1st row: submitter fields -->
         <div class="row align-items-center mb-1">
@@ -149,34 +149,34 @@
         <!-- ASSAY section -->
         {{ render_fieldlist_section(form, "assay", "assayModal",  col_class="col-md-4") }}
         <!-- CONTEXT assertion section -->
-        <div class="col-md-6" style="background-color: #FEF2F2; border: 1px solid #ccc; border-radius: 5px; padding: 8px;">
+        <div class="col-md-6" style="background-color: #FEF2F2; border: 1px solid #ccc; border-radius: 5px; padding: 2px;">
             <div class="container">
                 <div class="row mb-3">
-                    <h6 class="mb-4"><strong>Age</strong></h6>
+                    <h6><strong>Age</strong></h6>
                     <div class="col-3 d-flex align-items-center">
                         <strong>{{ form.agevalue.label }}</strong>
-                        {{ form.agevalue(class="form-control ms-2") }}
+                        {{ form.agevalue(class="form-control ms-2", type="number", maxlength="4", min="0", max="90", style="max-width:8ch;") }}
                     </div>
                     {% for error in form.agevalue.errors %}
                         <div class="text-danger">{{ error }}</div>
                     {% endfor %}
                     <div class="col-3 d-flex align-items-center">
                         <strong>{{ form.agelowerbound.label }}</strong>
-                        {{ form.agelowerbound(class="form-control ms-2") }}
+                        {{ form.agelowerbound(class="form-control ms-2", type="number", maxlength="4", min="0", max="90",style="max-width:8ch;") }}
                     </div>
                     {% for error in form.agelowerbound.errors %}
                         <div class="text-danger">{{ error }}</div>
                     {% endfor %}
                     <div class="col-3 d-flex align-items-center">
                         <strong>{{ form.ageupperbound.label }}</strong>
-                        {{ form.ageupperbound(class="form-control ms-2") }}
+                        {{ form.ageupperbound(class="form-control ms-2", type="number", maxlength="4",min="0", max="90", style="max-width:8ch;") }}
                     </div>
                     {% for error in form.ageupperbound.errors %}
                         <div class="text-danger">{{ error }}</div>
                     {% endfor %}
                     <div class="col-3 d-flex align-items-center">
                         <strong>{{ form.ageunit.label }}</strong>
-                        {{ form.ageunit(class="form-control ms-2") }}
+                        {{ form.ageunit(class="form-control ms-2", maxlength="5") }}
                     </div>
                 </div>
             </div>

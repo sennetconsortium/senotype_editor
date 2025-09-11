@@ -22,89 +22,101 @@ Arguments:
 - label_bg: background color hex code
 
 -->
-{% macro render_marker_section(form, single_modal_id, csv_modal_id, label_bg="#F0FDF4") %}
-<div class="col-md-6" style="background-color: {{ label_bg }}; border: 1px solid #ccc; border-radius: 5px; padding: 16px;">
+{% macro render_marker_section(form, single_modal_id, csv_modal_id, label_bg="#F0FFFF") %}
+<div class="col-md-6" style="background-color: {{ label_bg }}; border: 1px solid #ccc; border-radius: 5px; padding: 4px;">
     {# header #}
     <strong>{{ form.marker.label }}</strong>
-    <ul id="marker-list" class="list-group mb-2 w-100">
-        {% for field in form.marker %}
-            {% set full_value = field.data %}
-            {% set marker_code = field.data.split('(')[0].strip() if field.data else '' %}
-            <li class="list-group-item d-flex justify-content-between align-items-center">
-                <input type="hidden" name="{{ field.name }}" value="{{ marker_code }}">
-                <span class="list-field-display" name="{{ field_name }}_field_display">{{ full_value }}</span>
-                <button type="button" class="btn btn-sm btn-danger ms-2" onclick="removeMarker(this)">-</button>
-            </li>
-        {% endfor %}
-        {% for error in form.marker.errors %}
-            <div class="text-danger">{{ error }}</div>
-        {% endfor %}
-    </ul>
-    <button type="button"
-            title="Add single specified marker"
-            aria-label="Add single specified marker"
-            class="btn btn-outline-primary btn-sm"
-            data-bs-toggle="modal"
-            data-bs-target="#{{ single_modal_id }}">
-        +
-    </button>
-    <button type="button"
-            title="Add multiple specified markers"
-            aria-label="Add multiple specified markers"
-            class="btn btn-outline-primary btn-sm"
-            data-bs-toggle="modal"
-            data-bs-target="#{{ csv_modal_id }}">
-        Add Markers from CSV
-    </button>
+    <div class="d-flex align-items-start">
+        <ul id="marker-list" class="list-group mb-2 w-100">
+            {% for field in form.marker %}
+                {% set full_value = field.data %}
+                {% set marker_code = field.data.split('(')[0].strip() if field.data else '' %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <input type="hidden" name="{{ field.name }}" value="{{ marker_code }}">
+                    <span class="list-field-display" name="{{ field_name }}_field_display">{{ full_value }}</span>
+                    <button type="button" class="btn btn-sm btn-danger ms-2" onclick="removeMarker(this)">-</button>
+                </li>
+            {% endfor %}
+            {% for error in form.marker.errors %}
+                <div class="text-danger">{{ error }}</div>
+            {% endfor %}
+        </ul>
+        <div class="d-flex align-items-start ms-2">
+            <button type="button"
+                    title="Add single specified marker"
+                    aria-label="Add single specified marker"
+                    class="btn btn-sm"
+                    style="background-color: #0d6efd; color: #fff; margin-top:8px;"
+                    data-bs-toggle="modal"
+                    data-bs-target="#{{ single_modal_id }}">
+                +
+            </button>
+            <button type="button"
+                    title="Add multiple specified markers"
+                    aria-label="Add multiple specified markers"
+                    class="btn btn-sm ms-2"
+                    style="background-color: #0d6efd; color: #fff; margin-top:8px;"
+                    data-bs-toggle="modal"
+                    data-bs-target="#{{ csv_modal_id }}">
+                bulk
+            </button>
+        </div>
+    </div>
 </div>
 {% endmacro %}
 
-{% macro render_regmarker_section(form, single_modal_id, csv_modal_id, label_bg="#F0FDF4") %}
-<div class="col-md-6" style="background-color: {{ label_bg }}; border: 1px solid #ccc; border-radius: 5px; padding: 8px;">
+{% macro render_regmarker_section(form, single_modal_id, csv_modal_id, label_bg="#F0FFFF") %}
+<div class="col-md-6" style="background-color: {{ label_bg }}; border: 1px solid #ccc; border-radius: 5px; padding: 4px;">
     <strong>{{ form.regmarker.label }}</strong>
-    <ul id="regmarker-list" class="list-group mb-2 w-100">
-        {% for entry in form.regmarker %}
-            {% set full_value = entry.marker.data %}
-            {% set marker_code = entry.marker.data.split('(')[0].strip() if entry.marker.data else '' %}
-            {% set action_code = entry.action.data %}
-            {% if action_code == "up_regulates" %}
-                {% set action_symbol = "↑" %}
-            {% elif action_code == "down_regulates" %}
-                {% set action_symbol = "↓" %}
-            {% elif action_code == "inconclusively_regulates" %}
-                {% set action_symbol = "?" %}
-            {% else %}
-                {% set action_symbol = "" %}
-            {% endif %}
-            <li class="list-group-item d-flex justify-content-between align-items-center">
-                <input type="hidden" name="{{ entry.marker.name }}" value="{{ marker_code }}">
-                <input type="hidden" name="{{ entry.action.name }}" value="{{ action_code }}">
-                <span class="list-field-display">
-                    {{ full_value }}
-                    <span class="action-symbol"> <strong>{{ action_symbol }}</strong></span>
-                </span>
-                <button type="button" class="btn btn-sm btn-danger ms-2" onclick="removeMarker(this)">-</button>
-            </li>
-        {% endfor %}
-        {% for error in form.regmarker.errors %}
-            <div class="text-danger">{{ error }}</div>
-        {% endfor %}
-    </ul>
-    <button type="button"
-            title="Add single regulated marker"
-            aria-label="Add single regulated marker"
-            class="btn btn-outline-primary btn-sm"
-            data-bs-toggle="modal"
-            data-bs-target="#{{ single_modal_id }}">
-        +
-    </button>
-    <button type="button"
-            title="Add multiple regulated markers"
-            aria-label="Add multiple regulated markers"
-            class="btn btn-outline-primary btn-sm"
-            data-bs-toggle="modal"
-            data-bs-target="#{{ csv_modal_id }}">
-        Add Regulated Markers from CSV
-    </button>
+    <div class="d-flex align-items-start">
+        <ul id="regmarker-list" class="list-group mb-2 w-100">
+            {% for entry in form.regmarker %}
+                {% set full_value = entry.marker.data %}
+                {% set marker_code = entry.marker.data.split('(')[0].strip() if entry.marker.data else '' %}
+                {% set action_code = entry.action.data %}
+                {% if action_code == "up_regulates" %}
+                    {% set action_symbol = "↑" %}
+                {% elif action_code == "down_regulates" %}
+                    {% set action_symbol = "↓" %}
+                {% elif action_code == "inconclusively_regulates" %}
+                    {% set action_symbol = "?" %}
+                {% else %}
+                    {% set action_symbol = "" %}
+                {% endif %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <input type="hidden" name="{{ entry.marker.name }}" value="{{ marker_code }}">
+                    <input type="hidden" name="{{ entry.action.name }}" value="{{ action_code }}">
+                    <span class="list-field-display" style="padding-left:2px; padding-right:2px;">
+                        {{ full_value }}
+                        <span class="action-symbol" style="padding-left:2px; padding-right:2px;"> <strong>{{ action_symbol }}</strong></span>
+                    </span>
+                    <button type="button" class="btn btn-sm btn-danger ms-2" onclick="removeMarker(this)">-</button>
+                </li>
+            {% endfor %}
+            {% for error in form.regmarker.errors %}
+                <div class="text-danger">{{ error }}</div>
+            {% endfor %}
+        </ul>
+        <div class="d-flex align-items-start ms-2">
+            <button type="button"
+                    title="Add single regulated marker"
+                    aria-label="Add single regulated marker"
+                    class="btn btn-sm"
+                    style="background-color: #0d6efd; color: #fff; margin-top:8px;"
+                    data-bs-toggle="modal"
+                    data-bs-target="#{{ single_modal_id }}">
+                +
+            </button>
+            <button type="button"
+                    title="Add multiple regulated markers"
+                    aria-label="Add multiple regulated markers"
+                    class="btn btn-sm ms-2"
+                    style="background-color: #0d6efd; color: #fff; margin-top:8px;"
+                    data-bs-toggle="modal"
+                    data-bs-target="#{{ csv_modal_id }}">
+                bulk
+            </button>
+        </div>
+    </div>
 </div>
 {% endmacro %}
