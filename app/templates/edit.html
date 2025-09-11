@@ -16,126 +16,143 @@
 </div>
 <!--EDIT FORM -->
 <form id="edit_form" method="post" action= "/edit" class="mt-0 m-3 p-1">
+
     <!-- Senotype / Submitter -->
     <div class="row">
-        <!-- Senotype -->
-        <div class="col-md-6" style="background-color: #f5f5f5; border: 1px solid #ccc; border-radius: 5px; padding: 8px;">
-            <!-- Senotype tree view -->
-            <div class="mb-3 position-relative">
-            <div class="col-6 d-flex flex-column justify-content-stretch" style="width:100%;">
-                <div id="senotype-tree" style="background-color:white; border: 1px solid #ccc; border-radius: 5px; padding: 8px;"></div>
-                <!--Track selected id for state-->
-                <input type="hidden" name="selected_node_id" id="selected_node_id" value="">
-                <!-- Spinner -->
-                <div id="senotype-spinner" class="spinner-border text-primary position-absolute"
-                    role="status"
-                    style="display:none;top:10px;right:10px;z-index:10;width:2rem;height:2rem;">
-                    <span class="visually-hidden">Loading...</span>
-                </div>
-                <!-- Spinner label -->
-                <div id="senotype-spinner-label"
-                    style="display:none;position:absolute;top:10px;right:60px;z-index:10;">
-                    Loading...
-                </div>
+      <!-- Senotype column -->
+      <div class="col-md-6" style="background-color: #f5f5f5; border: 1px solid #ccc; border-radius: 5px; padding: 8px;">
+        <!-- 1st row: Senotype treeview -->
+        <div class="row mb-3">
+          <div class="col-12 position-relative">
+            <div class="d-flex flex-column justify-content-stretch" style="width:100%;">
+              <div id="senotype-tree" style="background-color:white; border: 1px solid #ccc; border-radius: 5px; padding: 8px;"></div>
+              <input type="hidden" name="selected_node_id" id="selected_node_id" value="">
+              <div id="senotype-spinner" class="spinner-border text-primary position-absolute"
+                   role="status"
+                   style="display:none;top:10px;right:10px;z-index:10;width:2rem;height:2rem;">
+                <span class="visually-hidden">Loading...</span>
+              </div>
+              <div id="senotype-spinner-label"
+                   style="display:none;position:absolute;top:10px;right:60px;z-index:10;">
+                Loading...
+              </div>
             </div>
+          </div>
         </div>
-            <!-- Senotype id and name-->
-            <div class="row">
-                <div class="col-4">
-                    <div class="mb-3">
-                        <strong>{{ form.senotypeid.label }}</strong>
-                        {{ form.senotypeid(class="form-control w-100") }}
-                        {% for error in form.senotypeid.errors %}
-                            <div class="text-danger">{{ error }}</div>
-                        {% endfor %}
-                    </div>
-                </div>
-                <div class="col-8">
-                    <div class="mb-3">
-                        <strong>{{ form.senotypename.label }}</strong>
-                        {{ form.senotypename(class="form-control w-100", rows="2") }}
-                        {% for error in form.senotypename.errors %}
-                            <div class="text-danger">{{ error }}</div>
-                        {% endfor %}
-                    </div>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col">
-                  <div class="mb-3">
-                        <strong>{{ form.doi.label }}</strong>
-                        {{ form.doi(class="form-control w-100", rows="2") }}
-                        {% for error in form.doi.errors %}
-                            <div class="text-danger">{{ error }}</div>
-                        {% endfor %}
-                    </div>
-                </div>
-                <!-- Description -->
-                <div class="col">
-                    <div class="mb-3">
-                        <strong>{{ form.senotypedescription.label }}</strong>
-                        {{ form.senotypedescription(class="form-control w-100", rows="2") }}
-                        {% for error in form.senotypedescription.errors %}
-                            <div class="text-danger">{{ error }}</div>
-                        {% endfor %}
-                    </div>
-                </div>
-            </div>
+        <!-- 2nd row: Senotype id and name -->
+        <div class="row align-items-center mb-1">
+          <div class="col-md-4 d-flex align-items-center">
+            <label for="{{ form.senotypeid.id }}" class="me-2 mb-0"><strong>{{ form.senotypeid.label.text }}</strong></label>
+            {{ form.senotypeid(class="form-control", style="width: 100%;") }}
+          </div>
+          <div class="col-md-8 d-flex align-items-center">
+            <label for="{{ form.senotypename.id }}" class="me-2 mb-0"><strong>{{ form.senotypename.label.text }}</strong></label>
+            {{ form.senotypename(class="form-control", style="width: 100%;", rows="2") }}
+          </div>
         </div>
-        <!-- Submitter -->
-        <div class="col-md-6" style="background-color: #f5f5f5; border: 1px solid #ccc; border-radius: 5px; padding: 8px;">
-            <div class="mb-3">
-                <h4>Submitter</h4>
-                <strong>{{ form.submitterfirst.label }}</strong>
-                {{ form.submitterfirst(class="form-control d-inline-block", style="width: 20ch; display: inline-block;") }}
-                {% for error in form.submitterfirst.errors %}
-                  <div class="text-danger">{{ error }}</div>
-                {% endfor %}
-                <strong class="ms-3">{{ form.submitterlast.label }}</strong>
-                {{ form.submitterlast(class="form-control d-inline-block", style="width: 20ch; display: inline-block;") }}
-                {% for error in form.submitterlast.errors %}
-                  <div class="text-danger">{{ error }}</div>
-                {% endfor %}
-            </div>
-            <div class="mb-3">
-                <strong>{{ form.submitteremail.label }}</strong>
-                {{ form.submitteremail(class="form-control") }}
-                {% for error in form.submitteremail.errors %}
-                  <div class="text-danger">{{ error }}</div>
-                {% endfor %}
-            </div>
+        <div class="row mb-3">
+          <div class="col-md-4">
+            {% for error in form.senotypeid.errors %}
+              <div class="text-danger">{{ error }}</div>
+            {% endfor %}
+          </div>
+          <div class="col-md-8">
+            {% for error in form.senotypename.errors %}
+              <div class="text-danger">{{ error }}</div>
+            {% endfor %}
+          </div>
         </div>
+        <!-- 3rd row: Senotype description -->
+        <div class="row align-items-center mb-1">
+          <div class="col-md-12 d-flex align-items-center">
+            <label for="{{ form.senotypedescription.id }}" class="me-2 mb-0"><strong>{{ form.senotypedescription.label.text }}</strong></label>
+            {{ form.senotypedescription(class="form-control", style="width: 100%;", rows="2") }}
+          </div>
+        </div>
+        <div class="row mb-3">
+          <div class="col-md-12">
+            {% for error in form.senotypedescription.errors %}
+              <div class="text-danger">{{ error }}</div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+
+      <!-- Submission column -->
+      <div class="col-md-6" style="background-color: #f5f5f5; border: 1px solid #ccc; border-radius: 5px; padding: 8px;">
+        <h4>Submission</h4>
+        <!-- 1st row: submitter fields -->
+        <div class="row align-items-center mb-1">
+          <div class="col-md-4">
+            <strong>{{ form.submitterfirst.label }}</strong>
+            {{ form.submitterfirst(class="form-control d-inline-block", style="width: 100%;") }}
+          </div>
+          <div class="col-md-4">
+            <strong>{{ form.submitterlast.label }}</strong>
+            {{ form.submitterlast(class="form-control d-inline-block", style="width: 100%;") }}
+          </div>
+          <div class="col-md-4">
+            <strong>{{ form.submitteremail.label }}</strong>
+            {{ form.submitteremail(class="form-control d-inline-block", style="width: 100%;") }}
+          </div>
+        </div>
+        <div class="row mb-3">
+          <div class="col-md-4">
+            {% for error in form.submitterfirst.errors %}
+              <div class="text-danger">{{ error }}</div>
+            {% endfor %}
+          </div>
+          <div class="col-md-4">
+            {% for error in form.submitterlast.errors %}
+              <div class="text-danger">{{ error }}</div>
+            {% endfor %}
+          </div>
+          <div class="col-md-4">
+            {% for error in form.submitteremail.errors %}
+              <div class="text-danger">{{ error }}</div>
+            {% endfor %}
+          </div>
+        </div>
+        <!-- 2nd row: doi -->
+        <div class="row align-items-center mb-1">
+          <div class="col-md-12">
+            <strong>{{ form.doi.label }}</strong>
+            {{ form.doi(class="form-control w-100", rows="2") }}
+          </div>
+        </div>
+        <div class="row mb-3">
+          <div class="col-md-12">
+            {% for error in form.doi.errors %}
+              <div class="text-danger">{{ error }}</div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
     </div>
-    <!-- Taxon / Location -->
+
+    <!-- Simple Assertions -->
     <div class="row">
         <!-- TAXON section-->
-        {{ render_fieldlist_section(form, "taxon", "taxonModal") }}
+        {{ render_fieldlist_section(form, "taxon", "taxonModal", col_class="col-md-2") }}
         <!-- LOCATION section -->
-        {{ render_fieldlist_section(form, "location", "locationModal") }}
-    </div>
-    <!-- Cell Type / Hallmark -->
-    <div class="row">
+        {{ render_fieldlist_section(form, "location", "locationModal", col_class="col-md-2") }}
         <!-- CELL TYPE section -->
-        {{ render_fieldlist_section(form, "celltype", "celltypeModal") }}
+        {{ render_fieldlist_section(form, "celltype", "celltypeModal",  col_class="col-md-2") }}
         <!-- HALLMARK section -->
-        {{ render_fieldlist_section(form, "hallmark", "hallmarkModal") }}
-    </div>
-    <!-- Observable / Inducer -->
-    <div class="row">
+        {{ render_fieldlist_section(form, "hallmark", "hallmarkModal",  col_class="col-md-4") }}
         <!-- OBSERVABLE section -->
-        {{ render_fieldlist_section(form, "observable", "observableModal") }}
-        <!-- INDUCER section -->
-        {{ render_fieldlist_section(form, "inducer", "inducerModal") }}
+        {{ render_fieldlist_section(form, "observable", "observableModal",  col_class="col-md-2") }}
     </div>
-    <!-- Assay / Context Assertions -->
     <div class="row">
+        <!-- INDUCER section -->
+        {{ render_fieldlist_section(form, "inducer", "inducerModal",  col_class="col-md-2") }}
         <!-- ASSAY section -->
-        {{ render_fieldlist_section(form, "assay", "assayModal") }}
+        {{ render_fieldlist_section(form, "assay", "assayModal",  col_class="col-md-4") }}
         <!-- CONTEXT assertion section -->
         <div class="col-md-6" style="background-color: #FEF2F2; border: 1px solid #ccc; border-radius: 5px; padding: 8px;">
             <div class="container">
                 <div class="row mb-3">
-                    <h6 class="mb-4">Age</h6>
+                    <h6 class="mb-4"><strong>Age</strong></h6>
                     <div class="col-3 d-flex align-items-center">
                         <strong>{{ form.agevalue.label }}</strong>
                         {{ form.agevalue(class="form-control ms-2") }}
@@ -165,21 +182,16 @@
             </div>
         </div>
     </div>
-    <!-- PubMed Citations/RRID origin -->
+    <!-- PubMed citations/RRID origin/SenNet datasets -->
     <div class="row">
         <!-- CITATION section -->
-        {{ render_fieldlist_section(form, "citation", "citationSearchModal", is_external=True) }}
-        <!-- ORIGIN sectno -->
-        {{ render_fieldlist_section(form, "origin", "originSearchModal", is_external=True) }}
+        {{ render_fieldlist_section(form, "citation", "citationSearchModal", is_external=True,  col_class="col-md-4") }}
+        <!-- ORIGIN section -->
+        {{ render_fieldlist_section(form, "origin", "originSearchModal", is_external=True,  col_class="col-md-4") }}
+        <!-- DATASET section -->
+        {{ render_fieldlist_section(form, "dataset", "datasetSearchModal", is_external=True,  col_class="col-md-4") }}
     </div>
-    <!-- SenNet datasets -->
-    <div class="row">
-        {{ render_fieldlist_section(form, "dataset", "datasetSearchModal", is_external=True) }}
-        <div class="col-md-6" style="background-color: #FEF2F2; border: 1px solid #ccc; border-radius: 5px; padding: 8px;">
-            <!-- spacer -->
-        </div>
-    </div>
-     <!-- Specified Markers/Regulating Markers -->
+    <!-- Specified Markers/Regulating Markers -->
     <div class="row">
         <!-- SPECIFIED MARKERS  section -->
         {{ render_marker_section(form, "markerSearchModal", "markerCsvModal") }}

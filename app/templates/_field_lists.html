@@ -14,10 +14,19 @@ Build sections with lists for which each row contains:
     external APIs to obtain terms
   The span corresponds to the display value of the list element.
 - Add and remove buttons that modify the lists (via Javascript).
+
+Arguments:
+- form - the Edit form
+- field_name - the name of the field input
+- modal_id - the id in edit.html of the modal div used to add new values of field_name
+             to the associated list
+- label_bg - label background hex code
+- is_external - whether the field's term has to be obtained via call to external api
+- col_class - Bootstrap column class to use
 -->
 
-{% macro render_fieldlist_section(form, field_name, modal_id, label_bg="#FEF2F2", is_external=False) %}
-<div class="col-md-6" style="background-color: {{ label_bg }}; border: 1px solid #ccc; border-radius: 5px; padding: 8px;">
+{% macro render_fieldlist_section(form, field_name, modal_id, label_bg="#FEF2F2", is_external=False, col_class="col-md-4") %}
+<div class="{{ col_class }}" style="background-color: {{ label_bg }}; border: 1px solid #ccc; border-radius: 5px; padding: 8px;">
     {# header #}
     <strong>{{ form[field_name].label }}</strong>
     <ul id="{{ field_name }}-list" class="list-group mb-2 w-100">

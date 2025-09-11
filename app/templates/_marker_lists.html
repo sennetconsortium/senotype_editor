@@ -14,6 +14,13 @@ The Update button will POST the hidden list values.
   - SAB:code (description) symbol for type of regulating activity (e.g, up arrow)
 - Add and remove buttons allow addition or removal of individual items (via JavaScript)
 - A bulk add button that loads values from CSV (via JavaScript)
+
+Arguments:
+- form: the Edit form
+- single_modal_id: id of the modal div used to add a single marker to a marker list
+- csv_modal_id: id of the modal div used to bulk-add markers to a marker list
+- label_bg: background color hex code
+
 -->
 {% macro render_marker_section(form, single_modal_id, csv_modal_id, label_bg="#F0FDF4") %}
 <div class="col-md-6" style="background-color: {{ label_bg }}; border: 1px solid #ccc; border-radius: 5px; padding: 16px;">

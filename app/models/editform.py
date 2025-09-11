@@ -118,16 +118,16 @@ class EditForm(Form):
 
     # Senotype
     senotypeid = StringField('ID')
-    senotypename = StringField('Senotype Name', validators=[validators.InputRequired()])
-    senotypedescription = TextAreaField('Senotype Description', validators=[validators.InputRequired()])
+    senotypename = StringField('Name', validators=[validators.InputRequired()])
+    senotypedescription = TextAreaField('Description', validators=[validators.InputRequired()])
     doi = TextAreaField('DOI')
 
     # Provenance and version
     provenance = FieldList(StringField('Provenance ID'), min_entries=0)
 
     # Submitter
-    submitterfirst = StringField('First Name', validators=[validators.InputRequired()])
-    submitterlast = StringField('Last Name', validators=[validators.InputRequired()])
+    submitterfirst = StringField('First', validators=[validators.InputRequired()])
+    submitterlast = StringField('Last', validators=[validators.InputRequired()])
     submitteremail = StringField('email', validators=[validators.InputRequired(), Email(message='Invalid email address.')])
 
     # Simple assertions.
