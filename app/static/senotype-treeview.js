@@ -1,96 +1,79 @@
-/* Controls the senotype jstree.
-
-1. Manages selection and focus.
-2. Reacts programmatically to selection changes (for example, selecting a root node on load),
-   and visually highlights the focused node. Distinguishes between user actions and
-   events related to reloading the form, preventing infinite loops.
-3. The jstree contains both nodes that organize the senotype hierarchy and those that
-   correspond to senotype admission JSONs.
-   When the user selects a node that corresponds a senotype admission JSON,
-   the script:
-   - updates a hidden field
-   - submits the edit form
-   - shows a spinner
-*/
-
 document.addEventListener('DOMContentLoaded', function() {
-
-  // Flag to distinguish between user selections and programmatic selections of nodes.
   let programmaticSelection = true;
 
-  // Initialize the jstree, using data provided from Flask/WTForms.
-  // Uses the state plugin to keep track of jstree state.
   $('#senotype-tree').jstree({
     'core': { 'data': window.tree_data },
     'plugins': ['state']
   });
 
-  // Identify the "Senotype" root node for the jstree.
-  function getRootId() {
-    if (window.tree_data && window.tree_data.length) {
-      return window.tree_data[0].id;
-    }
-    return null;
-  }
-
-  // Manages a custom CSS class (focused-node) for visual feedback.
-  function updateFocusedNode(nodeId) {
-    $('#senotype-tree .jstree-anchor.focused-node').removeClass('focused-node');
-    if (nodeId) {
-      let nodeDom = $('#senotype-tree').jstree(true).get_node(nodeId, true);
-      if (nodeDom && nodeDom.length) {
-        nodeDom.find('.jstree-anchor').addClass('focused-node');
+  // Show or hide spinner and label
+  function setSpinner(visible, labelText) {
+    const spinner = document.getElementById('senotype-spinner');
+    const spinnerLabel = document.getElementById('senotype-spinner-label');
+    if (spinner) spinner.style.display = visible ? 'inline-block' : 'none';
+    if (spinnerLabel) {
+      spinnerLabel.style.display = visible ? 'inline-block' : 'none';
+      if (visible && labelText) {
+        spinnerLabel.textContent = labelText;
       }
     }
   }
 
+  // On initial load hide spinner
+  $(function() {
+    setSpinner(false);
+  });
+
+  // On jstree ready (form reload), hide spinner
   $('#senotype-tree').on('ready.jstree', function(e, data) {
-    let selectedId = window.selected_node_id || '';
-    let rootId = getRootId();
+    let selectedId = window.selected_node_id || (window.tree_data[0] && window.tree_data[0].id);
+    if (!selectedId) {
+      setSpinner(false);
+      programmaticSelection = false;
+      return;
+    }
 
-    if (!selectedId && rootId) {
-      selectedId = rootId;
-    }
-    if (selectedId) {
-      programmaticSelection = true;
-      data.instance.deselect_all();
-      data.instance.select_node(selectedId);
-      setTimeout(() => updateFocusedNode(selectedId), 10);
-    } else {
-      // If jsTree's state plugin restored a selection, highlight that
-      let sel = data.instance.get_selected();
-      if (sel && sel.length) setTimeout(() => updateFocusedNode(sel[0]), 10);
-    }
-    setTimeout(() => { programmaticSelection = false; }, 0);
+    programmaticSelection = true;
+    data.instance.deselect_all();
+    data.instance.select_node(selectedId);
+
+    setTimeout(() => {
+      let nodeObj = data.instance.get_node(selectedId);
+      let icon = nodeObj && nodeObj.icon;
+      let isFile = icon && (Array.isArray(icon) ? icon.includes('jstree-file') : icon === 'jstree-file');
+      let nodeDom = data.instance.get_node(selectedId, true);
+      let editable = nodeDom && nodeDom.find('.jstree-anchor').hasClass('editable');
+
+      setSpinner(false);
+
+      programmaticSelection = false;
+    }, 10);
   });
 
+  // On user select, handle state and submit if needed (with spinner)
   $('#senotype-tree').on('select_node.jstree', function(e, data) {
-    if (programmaticSelection) return;
-    updateFocusedNode(data.node.id);
+    let nodeObj = data.node;
+    let icon = nodeObj.icon;
+    let isFile = icon && (Array.isArray(icon) ? icon.includes('jstree-file') : icon === 'jstree-file');
+    let nodeDom = $('#senotype-tree').jstree(true).get_node(data.node.id, true);
+    let editable = nodeDom && nodeDom.find('.jstree-anchor').hasClass('editable');
 
-    // Only submit if selected node's icon is 'jstree-file'
-    let icon = data.node.icon;
-    if (Array.isArray(icon) ? icon.includes('jstree-file') : icon === 'jstree-file') {
-      document.getElementById('selected_node_id').value = data.node.id;
-
-      const spinner = document.getElementById('senotype-spinner');
-      const spinnerLabel = document.getElementById('senotype-spinner-label');
-      if (spinner) spinner.style.display = 'inline-block';
-      if (spinnerLabel) {
-        spinnerLabel.textContent = `Loading ${data.node.id}...`;
-        spinnerLabel.style.display = 'inline-block';
-      }
-      const updateBtn = document.getElementById('update_btn');
-      if (updateBtn) updateBtn.disabled = true;
-      document.getElementById('edit_form').submit();
+    if (programmaticSelection) {
+      programmaticSelection = false;
+      return; // skip programmatic select
     }
+
+    if (!isFile) {
+      // Not a file. Do nothing. Hide spinner just in case
+      setSpinner(false);
+      return;
+    }
+    // File node: always submit
+    let hidden = document.getElementById('selected_node_id');
+    if (hidden) hidden.value = data.node.id;
+
+    setSpinner(true, `Loading ${data.node.id}...`);
+    document.getElementById('edit_form').submit();
   });
 
-  $('#senotype-tree').on('hover_node.jstree', function(e, data) {
-    updateFocusedNode(data.node.id);
-  });
-
-  $('#senotype-tree').on('dehover_node.jstree', function(e, data) {
-    updateFocusedNode(null);
-  });
 });

@@ -17,7 +17,7 @@ document.addEventListener('DOMContentLoaded', function() {
   elements.forEach(function(el) {
     // Don't disable the jsTree's hidden input for selection
     if (el.id === 'selected_node_id') return;
-    readonly = ['doi','senotypeid'];
+    readonly = ['senotypeid'];
     if (readonly.includes(el.id)) {
         el.disabled = true;
         el.style.backgroundColor = '#e5e5e5';
