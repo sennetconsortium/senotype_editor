@@ -80,9 +80,9 @@ document.addEventListener('DOMContentLoaded', function () {
             // Call the API.
             var apiUrl;
             if (type === "protein") {
-                apiUrl = '/ontology/proteins/' + encodeURIComponent(query);
+                apiUrl = '/ontology/proteins/' + encodeURIComponent(query.toUpperCase());
             } else {
-                apiUrl = '/ontology/genes/' + encodeURIComponent(query);
+                apiUrl = '/ontology/genes/' + encodeURIComponent(query.toUpperCase());
             }
 
             fetch(apiUrl)
