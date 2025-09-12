@@ -36,7 +36,6 @@ document.addEventListener('DOMContentLoaded', function() {
   // the last selected node (window.selected_node_id), with a default
   // of the root node. Hide the spinner.
   $('#senotype-tree').on('ready.jstree', function(e, data) {
-    console.log('window.selected_node_id: ' + window.selected_node_id);
     let selectedId = window.selected_node_id || (window.tree_data[0] && window.tree_data[0].id);
     if (!selectedId) {
       setSpinner(false);

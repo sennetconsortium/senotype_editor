@@ -545,13 +545,7 @@
         </form>
     </div>
 </div>
-<!--For disabling of inputs if the selected senotype has been published. Used
-by the disable-if-doi.js script.-->
-<script>
-  window.senotype_doi_value = {{ form.doi.data|tojson|safe }};
-</script>
-<script src="{{ url_for('static', filename='disable-if-doi.js') }}"></script>
-<!---->
+<!-- JavaScripts-->
 <!-- Get the id of the node selected in the treeview for the senotype-treeview.js script. -->
 <script>
   window.selected_node_id = document.getElementById('selected_node_id')
@@ -560,6 +554,8 @@ by the disable-if-doi.js script.-->
 </script>
 <!-- Script to manage the Senotype treeview-->
 <script src="{{ url_for('static', filename='senotype-treeview.js') }}"></script>
+<!-- Script to enable/disable controls based on whether the selected id is editable -->
+<script src="{{ url_for('static', filename='enable-based-on-selection.js') }}"></script>
 <!-- Script behind the update button-->
 <script src="{{ url_for('static', filename='update-button.js') }}"></script>
 <!-- Scripts to manage modals related to the add and remove buttons-->
