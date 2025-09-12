@@ -748,5 +748,6 @@ def edit():
             # Load from existing data.
             loadexistingdata(id=id, senlib=senlib, form=form)
 
+    selected_node_id = request.form.get('selected_node_id') or request.args.get('selected_node_id')
     # Pass to the edit form the tree of senotype id information for the jstree control.
-    return render_template('edit.html', form=form, response={'tree_data': senlib.senotypetree}, selected_node_id=request.form.get('selected_node_id'))
+    return render_template('edit.html', form=form, response={'tree_data': senlib.senotypetree}, selected_node_id=selected_node_id)

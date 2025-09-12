@@ -25,8 +25,12 @@
         <div class="row mb-3">
           <div class="col-12 position-relative">
             <div class="d-flex flex-column justify-content-stretch" style="width:100%;">
-              <div id="senotype-tree" style="background-color:white; border: 1px solid #ccc; border-radius: 5px; padding: 2px;"></div>
-              <input type="hidden" name="selected_node_id" id="selected_node_id" value="">
+              <div id="senotype-tree" style="background-color:white; border: 1px solid #ccc; border-radius: 5px; padding: 2px;">
+
+              </div>
+                <!-- Hidden input to track the id of the node selected from the treeview.
+                The senotype-treeview.js script uses this to set focus highlighting after submission/reloading-->
+                <input type="hidden" name="selected_node_id" id="selected_node_id" value="{{ selected_node_id or '' }}">
               <div id="senotype-spinner" class="spinner-border text-primary position-absolute"
                    role="status"
                    style="display:none;top:10px;right:10px;z-index:10;width:2rem;height:2rem;">
@@ -199,6 +203,7 @@
         {{ render_regmarker_section(form, "regmarkerSearchModal", "regmarkerCsvModal") }}
     </div>
 </form>
+
 <!--MODAL DIVS -->
 <!-- Modal for external API search for PubMed citation-->
 <div class="modal fade" id="citationSearchModal" tabindex="-1" aria-labelledby="citationSearchModalLabel" aria-hidden="true">
@@ -439,7 +444,6 @@
         <span class="visually-hidden">Loading...</span>
     </div>
     <div id="update-spinner-label" style="display:none;position:absolute;top:10px;right:60px;z-index:10;">Updating...</div>
-
 </form>
 <!-- CSV UPLOAD CSV MODAL FORMS -->
 <!-- Modal div with form to upload CSV of specified markers. Placed here so that form will not be transparent. -->
@@ -541,12 +545,25 @@
         </form>
     </div>
 </div>
-<!--For disabling of inputs if the selected senotype has been published-->
+<!--For disabling of inputs if the selected senotype has been published. Used
+by the disable-if-doi.js script.-->
 <script>
   window.senotype_doi_value = {{ form.doi.data|tojson|safe }};
 </script>
 <script src="{{ url_for('static', filename='disable-if-doi.js') }}"></script>
 <!---->
+<!-- Get the id of the node selected in the treeview for the senotype-treeview.js script. -->
+<script>
+  window.selected_node_id = document.getElementById('selected_node_id')
+    ? document.getElementById('selected_node_id').value
+    : null;
+</script>
+<!-- Script to manage the Senotype treeview-->
+<script src="{{ url_for('static', filename='senotype-treeview.js') }}"></script>
+<!-- Script behind the update button-->
+<script src="{{ url_for('static', filename='update-button.js') }}"></script>
+<!-- Scripts to manage modals related to the add and remove buttons-->
+<script src="{{ url_for('static', filename='valueset-modal.js') }}"></script>
 <script src="{{ url_for('static', filename='citation-modal.js') }}"></script>
 <script src="{{ url_for('static', filename='origin-modal.js') }}"></script>
 <script src="{{ url_for('static', filename='dataset-modal.js') }}"></script>
@@ -554,8 +571,5 @@
 <script src="{{ url_for('static', filename='marker-csv.js') }}"></script>
 <script src="{{ url_for('static', filename='regmarker-modal.js') }}"></script>
 <script src="{{ url_for('static', filename='regmarker-csv.js') }}"></script>
-<script src="{{ url_for('static', filename='valueset-modal.js') }}"></script>
-<script src="{{ url_for('static', filename='senotype-treeview.js') }}"></script>
-<script src="{{ url_for('static', filename='update-button.js') }}"></script>
 
 {% endblock %}

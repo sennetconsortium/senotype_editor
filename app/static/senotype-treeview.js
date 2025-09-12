@@ -1,12 +1,20 @@
+//Manages the function of the Senotype tree view.
+
 document.addEventListener('DOMContentLoaded', function() {
+
+  // Flag to distinguish between user-initiated selections in the
+  // treeview and those initiated by events such as reloading of the form.
+  // Prevents unwanted double-handling or form submissions.
   let programmaticSelection = true;
 
+  // Populate the treeview with the JSON provided by Flask.
+  // Maintain selection state.
   $('#senotype-tree').jstree({
     'core': { 'data': window.tree_data },
     'plugins': ['state']
   });
 
-  // Show or hide spinner and label
+  // Show or hide spinner and label.
   function setSpinner(visible, labelText) {
     const spinner = document.getElementById('senotype-spinner');
     const spinnerLabel = document.getElementById('senotype-spinner-label');
@@ -19,13 +27,16 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   }
 
-  // On initial load hide spinner
+  // On initial load, hide spinner.
   $(function() {
     setSpinner(false);
   });
 
-  // On jstree ready (form reload), hide spinner
+  // On jstree ready (form reload), restore selection to
+  // the last selected node (window.selected_node_id), with a default
+  // of the root node. Hide the spinner.
   $('#senotype-tree').on('ready.jstree', function(e, data) {
+    console.log('window.selected_node_id: ' + window.selected_node_id);
     let selectedId = window.selected_node_id || (window.tree_data[0] && window.tree_data[0].id);
     if (!selectedId) {
       setSpinner(false);
