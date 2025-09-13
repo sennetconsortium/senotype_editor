@@ -25,15 +25,16 @@
     <div class="row">
       <!-- Senotype column -->
       <div class="col-md-6" style="background-color: #f5f5f5; border: 1px solid #ccc; border-radius: 5px; padding: 3px;">
-        <!-- 1st row: Senotype treeview -->
-        <div class="row mb-3">
+        <!-- Senotype treeview -->
+        <div class="row">
           <div class="col-12 position-relative">
             <div class="d-flex flex-column justify-content-stretch" style="width:100%;">
-              <div id="senotype-tree" style="background-color:white; border: 1px solid #ccc; border-radius: 5px; padding: 3px; height: 150px; overflow-y: auto; overflow-x: auto;">
+              <div id="senotype-tree" style="background-color:white; border: 1px solid #ccc;
+              border-radius: 5px; padding: 3px; height: 180px; overflow-y: auto; overflow-x: auto;">
               </div>
-                <!-- Hidden input to track the id of the node selected from the treeview.
-                The senotype-treeview.js script uses this to set focus highlighting after submission/reloading-->
-                <input type="hidden" name="selected_node_id" id="selected_node_id" value="{{ selected_node_id or '' }}">
+              <!-- Hidden input to track the id of the node selected from the treeview.
+                   The senotype-treeview.js script uses this to set focus highlighting after submission/reloading-->
+              <input type="hidden" name="selected_node_id" id="selected_node_id" value="{{ selected_node_id or '' }}">
               <div id="senotype-spinner" class="spinner-border text-primary position-absolute"
                    role="status"
                    style="display:none;top:10px;right:10px;z-index:10;width:2rem;height:2rem;">
@@ -46,87 +47,81 @@
             </div>
           </div>
         </div>
-        <!-- 2nd row: Senotype id and name -->
+      </div>
+      <!-- Submission column -->
+      <div class="col-md-6" style="background-color: #f5f5f5; border: 1px solid #ccc; border-radius: 5px; padding: 3px;">
+        <!-- Senotype id, name, description -->
         <div class="row align-items-center mb-1">
-          <div class="col-md-4 d-flex align-items-center">
-            <label for="{{ form.senotypeid.id }}" class="me-2 mb-0"><strong>{{ form.senotypeid.label.text }}</strong></label>
-            {{ form.senotypeid(class="form-control", style="width: 100%;") }}
-          </div>
-          <div class="col-md-8 d-flex align-items-center">
-            <label for="{{ form.senotypename.id }}" class="me-2 mb-0"><strong>{{ form.senotypename.label.text }}</strong></label>
-            {{ form.senotypename(class="form-control", style="width: 100%;", rows="2") }}
-          </div>
+            <div class="col-md-3 d-flex align-items-center">
+                <label for="{{ form.senotypeid.id }}" class="me-2 mb-0"><strong>{{ form.senotypeid.label.text }}</strong></label>
+                {{ form.senotypeid(class="form-control", style="width: 100%;") }}
+            </div>
+            <div class="col-md-4 d-flex align-items-center">
+                <label for="{{ form.senotypename.id }}" class="me-2 mb-0"><strong>{{ form.senotypename.label.text }}</strong></label>
+                {{ form.senotypename(class="form-control", style="width: 100%;", rows="2") }}
+            </div>
+            <div class="col-md-5 d-flex align-items-center">
+                <label for="{{ form.senotypedescription.id }}" class="me-2 mb-0"><strong>{{ form.senotypedescription.label.text }}</strong></label>
+                {{ form.senotypedescription(class="form-control", style="width: 100%;", rows="2") }}
+            </div>
         </div>
-        <div class="row mb-3">
-          <div class="col-md-4">
+        <!-- Senotype id, name, description errors -->
+        <div class="row mb-1">
+          <div class="col-md-3">
             {% for error in form.senotypeid.errors %}
               <div class="text-danger">{{ error }}</div>
             {% endfor %}
           </div>
-          <div class="col-md-8">
+          <div class="col-md-4">
             {% for error in form.senotypename.errors %}
               <div class="text-danger">{{ error }}</div>
             {% endfor %}
           </div>
-        </div>
-        <!-- 3rd row: Senotype description -->
-        <div class="row align-items-center mb-1">
-          <div class="col-md-12 d-flex align-items-center">
-            <label for="{{ form.senotypedescription.id }}" class="me-2 mb-0"><strong>{{ form.senotypedescription.label.text }}</strong></label>
-            {{ form.senotypedescription(class="form-control", style="width: 100%;", rows="2") }}
-          </div>
-        </div>
-        <div class="row mb-3">
-          <div class="col-md-12">
+          <div class="col-md-5">
             {% for error in form.senotypedescription.errors %}
               <div class="text-danger">{{ error }}</div>
             {% endfor %}
           </div>
         </div>
-      </div>
-      <!-- Submission column -->
-      <div class="col-md-6" style="background-color: #f5f5f5; border: 1px solid #ccc; border-radius: 5px; padding: 3px;">
-        <h4>Submission</h4>
-        <!-- 1st row: submitter fields -->
-        <div class="row mb-3">
-          <div class="col-md-4">
-            <strong>{{ form.submitterfirst.label }}</strong>
+        <!-- Submitter fields -->
+          <div class="row align-items-center mb-1">
+          <div class="col-md-4 d-flex align-items-center">
+            <label for="{{ form.submitterfirst.id }}" class="me-2 mb-0"><strong>{{ form.submitterfirst.label.text }}</strong></label>
             {{ form.submitterfirst(class="form-control d-inline-block", style="width: 100%;") }}
           </div>
-          <div class="col-md-4">
-            <strong>{{ form.submitterlast.label }}</strong>
+          <div class="col-md-4 d-flex align-items-center">
+            <label for="{{ form.submitterlast.id }}" class="me-2 mb-0"><strong>{{ form.submitterlast.label.text }}</strong></label>
             {{ form.submitterlast(class="form-control d-inline-block", style="width: 100%;") }}
           </div>
-          <div class="col-md-4">
-            <strong>{{ form.submitteremail.label }}</strong>
+          <div class="col-md-4 d-flex align-items-center">
+            <label for="{{ form.submitteremail.id }}" class="me-2 mb-0"><strong>{{ form.submitteremail.label.text }}</strong></label>
             {{ form.submitteremail(class="form-control d-inline-block", style="width: 100%;") }}
           </div>
         </div>
-        <div class="row mb-3">
-          <div class="col-md-4">
-            {% for error in form.submitterfirst.errors %}
-              <div class="text-danger">{{ error }}</div>
-            {% endfor %}
-          </div>
-          <div class="col-md-4">
-            {% for error in form.submitterlast.errors %}
-              <div class="text-danger">{{ error }}</div>
-            {% endfor %}
-          </div>
-          <div class="col-md-4">
-            {% for error in form.submitteremail.errors %}
-              <div class="text-danger">{{ error }}</div>
-            {% endfor %}
-          </div>
-        </div>
-        <!-- 2nd row: doi -->
-        <div class="row mb-3">
-            <div class="col-md-8">
-                {{ render_textarea_section(form, "doi", "doiModal") }}
+        <!-- Submitter field errors -->
+          <div class="row mb-1">
+            <div class="col-md-4">
+                {% for error in form.submitterfirst.errors %}
+                <div class="text-danger">{{ error }}</div>
+                {% endfor %}
             </div>
-            <div class="col-md-4"></div>
+            <div class="col-md-4">
+                {% for error in form.submitterlast.errors %}
+                <div class="text-danger">{{ error }}</div>
+                {% endfor %}
+            </div>
+            <div class="col-md-4">
+                {% for error in form.submitteremail.errors %}
+                <div class="text-danger">{{ error }}</div>
+                {% endfor %}
+            </div>
         </div>
-    </div>
+      <!-- DOI -->
+      <div class="row mb-1">
+          <div class="col-md-12">
+              {{ render_textarea_section(form, "doi", "doiModal") }}
+          </div>
+      </div>
     </div>
     <!-- Simple Assertions section-->
     <div class="row">

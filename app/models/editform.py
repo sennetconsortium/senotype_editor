@@ -118,7 +118,7 @@ class EditForm(Form):
 
     # Senotype
     senotypeid = StringField('ID')
-    senotypename = StringField('Name', validators=[validators.InputRequired()])
+    senotypename = TextAreaField('Name', validators=[validators.InputRequired()])
     senotypedescription = TextAreaField('Description', validators=[validators.InputRequired()])
     doi = TextAreaField('DOI')
 
