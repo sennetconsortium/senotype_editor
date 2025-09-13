@@ -1,32 +1,35 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<!--Data for the senotype treeview passed from the edit route-->
+<!--Data for the senotype treeview passed from the edit route in Flask-->
 <script>
   window.tree_data = {{ response.tree_data|tojson|safe }};
 </script>
-<!-- Jinja macros -->
+<!-- JINJA RENDERING MACROS-->
+<!-- Standard field rendering -->
 {% from "_formhelpers.html" import render_field %}
-{% from "_field_lists.html" import render_fieldlist_section %}
+<!-- Renders sections for assertions other than markers, with add button and error display-->
+{% from "_field_sections.html" import render_fieldlist_section %}
+{% from "_field_sections.html" import render_textarea_section %}
+<!-- Renders sections for specified and regulating markers, with add buttons and error display -->
 {% from "_marker_lists.html" import render_marker_section %}
 {% from "_marker_lists.html" import render_regmarker_section %}
+<!-- START OF PAGE -->
 <div class="d-flex align-items-end mb-1 p-1" style="background-color: #F0FDF4; border: 1px solid #ccc; border-radius: 5px;">
     <img src="static/editor.png" width="80" height="76" alt="Senotype Editor" style="border: 1px solid #ccc;">
     <h2 class="m-3">Senotype Editor</h2>
 </div>
-<!--EDIT FORM -->
+<!-- EDIT FORM -->
 <form id="edit_form" method="post" action= "/edit" class="mt-0 m-3">
-
-    <!-- Senotype / Submitter -->
+    <!-- Senotype / Submission -->
     <div class="row">
       <!-- Senotype column -->
-      <div class="col-md-6" style="background-color: #f5f5f5; border: 1px solid #ccc; border-radius: 5px; padding: 2px;">
+      <div class="col-md-6" style="background-color: #f5f5f5; border: 1px solid #ccc; border-radius: 5px; padding: 3px;">
         <!-- 1st row: Senotype treeview -->
         <div class="row mb-3">
           <div class="col-12 position-relative">
             <div class="d-flex flex-column justify-content-stretch" style="width:100%;">
-              <div id="senotype-tree" style="background-color:white; border: 1px solid #ccc; border-radius: 5px; padding: 2px;">
-
+              <div id="senotype-tree" style="background-color:white; border: 1px solid #ccc; border-radius: 5px; padding: 3px; height: 150px; overflow-y: auto; overflow-x: auto;">
               </div>
                 <!-- Hidden input to track the id of the node selected from the treeview.
                 The senotype-treeview.js script uses this to set focus highlighting after submission/reloading-->
@@ -81,12 +84,11 @@
           </div>
         </div>
       </div>
-
       <!-- Submission column -->
-      <div class="col-md-6" style="background-color: #f5f5f5; border: 1px solid #ccc; border-radius: 5px; padding: 2px;">
+      <div class="col-md-6" style="background-color: #f5f5f5; border: 1px solid #ccc; border-radius: 5px; padding: 3px;">
         <h4>Submission</h4>
         <!-- 1st row: submitter fields -->
-        <div class="row align-items-center mb-1">
+        <div class="row mb-3">
           <div class="col-md-4">
             <strong>{{ form.submitterfirst.label }}</strong>
             {{ form.submitterfirst(class="form-control d-inline-block", style="width: 100%;") }}
@@ -118,23 +120,15 @@
           </div>
         </div>
         <!-- 2nd row: doi -->
-        <div class="row align-items-center mb-1">
-          <div class="col-md-12">
-            <strong>{{ form.doi.label }}</strong>
-            {{ form.doi(class="form-control w-100", rows="2") }}
-          </div>
-        </div>
         <div class="row mb-3">
-          <div class="col-md-12">
-            {% for error in form.doi.errors %}
-              <div class="text-danger">{{ error }}</div>
-            {% endfor %}
-          </div>
+            <div class="col-md-8">
+                {{ render_textarea_section(form, "doi", "doiModal") }}
+            </div>
+            <div class="col-md-4"></div>
         </div>
-      </div>
     </div>
-
-    <!-- Simple Assertions -->
+    </div>
+    <!-- Simple Assertions section-->
     <div class="row">
         <!-- TAXON section-->
         {{ render_fieldlist_section(form, "taxon", "taxonModal", col_class="col-md-2") }}
@@ -153,7 +147,7 @@
         <!-- ASSAY section -->
         {{ render_fieldlist_section(form, "assay", "assayModal",  col_class="col-md-4") }}
         <!-- CONTEXT assertion section -->
-        <div class="col-md-6" style="background-color: #FEF2F2; border: 1px solid #ccc; border-radius: 5px; padding: 2px;">
+        <div class="col-md-6" style="background-color: #FEF2F2; border: 1px solid #ccc; border-radius: 5px; padding: 3px;">
             <div class="container">
                 <div class="row mb-3">
                     <h6><strong>Age</strong></h6>
@@ -250,6 +244,23 @@
             <div class="modal-body">
                 <input type="text" id="dataset-search-input" class="form-control" placeholder="Enter query...">
                 <div id="dataset-search-results" class="mt-3">
+                    <!-- Search results from API appear here -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Modal for external DataCite API search for DOI -->
+<div class="modal fade" id="doiSearchModal" tabindex="-1" aria-labelledby="doiSearchModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="doiSearchModalLabel">Search DataCite for DOI</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <input type="text" id="doi-search-input" class="form-control" placeholder="Enter query...">
+                <div id="doi -search-results" class="mt-3">
                     <!-- Search results from API appear here -->
                 </div>
             </div>
