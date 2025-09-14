@@ -21,16 +21,13 @@ function addCitation(pmid, title) {
     li.appendChild(input);
     // Visible text: show the PMID
     var span = document.createElement('span');
-    span.className = 'form-control w-100'; // matches the input styling
-    span.style.border = '1px solid #d3d3d3';
-    span.style.marginLeft = '1px';
-    span.style.padding = '6px 12px';
-    span.style.background = '#fff'; // matches li background
+    span.className = 'list-field-display';
     span.textContent = pmid + " (" + title.slice(0, 70) + "..." + ")";
     li.appendChild(span);
     // Remove button
     var btn = document.createElement('button');
-    btn.className = 'btn btn-sm btn-danger ms-2; width: 2.5em;';
+    btn.className = 'btn btn-sm btn-danger ms-2';
+    btn.style = 'width: 2.5em;'
     btn.textContent = '-';
     btn.onclick = function () { li.remove(); };
     btn.title = 'Remove ' + pmid + ' from citation list';

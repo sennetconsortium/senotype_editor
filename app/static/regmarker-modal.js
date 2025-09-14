@@ -72,7 +72,8 @@ function addRegMarker(id, description, action) {
     // Remove button
     var btn = document.createElement('button');
     btn.type = 'button';
-    btn.className = 'btn btn-sm btn-danger ms-2; width: 2.5em;';
+    btn.className = 'btn btn-sm btn-danger ms-2';
+    btn.style = 'width: 2.5em;'
     btn.textContent = '-';
     btn.onclick = function () { removeRegMarker(btn); };
     btn.title = 'Remove ' + description + ' from regulating marker list';
