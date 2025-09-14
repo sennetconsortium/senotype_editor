@@ -31,6 +31,7 @@ Arguments:
     <strong>{{ form[field_name].label }}</strong>
     <div class="d-flex align-items-start">
         <ul id="{{ field_name }}-list" class="list-group mb-2 w-100" style="margin-bottom:0!important;">
+            <!-- Parse code from value provided by WTForms field. -->
             {% for field in form[field_name] %}
                 {% set full_value = field.data %}
 
@@ -43,15 +44,20 @@ Arguments:
                 {% set hidden_value = full_value.split(' ')[0] %}
 
                 <li class="list-group-item d-flex justify-content-between align-items-center w-100">
+                    <!-- Hidden input used to store value for post -->
                     <input name="{{ field.name }}" type="hidden" value="{{ hidden_value }}">
+                    <!-- Span for value displayed in list -->
                     <span class="list-field-display" style="padding-left:3px; padding-right:3px;" name="{{ field_name }}_field_display">{{ display_value }}</span>
+                    <!-- Button to remove this value from the list -->
                     <button type="button" class="btn btn-sm btn-danger ms-2" onclick="removeValue(this)"> - </button>
                 </li>
             {% endfor %}
+            <!-- Validation errors -->
             {% for error in form[field_name].errors %}
                 <div class="text-danger">{{ error }}</div>
             {% endfor %}
         </ul>
+        <!-- Button to add values to the list -->
         <button type="button"
                 title="Add {{ field_name }}"
                 aria-label="Add {{ field_name }}"
@@ -66,20 +72,26 @@ Arguments:
 {% endmacro %}
 
 <!--
-Renders the DOI field, similarly to the field lists.
+Renders the DOI textarea field, analogous to the field lists used for the categorical fields.
 -->
 {% macro render_textarea_section(form, field_name, modal_id, label_bg="#f5f5f5") %}
 <div style="background-color: {{ label_bg }};">
     <div class="d-flex align-items-center">
         <label for="{{ form[field_name].id }}" class="me-2 mb-0" style="white-space: nowrap;">
+            <!-- Parse the code from the value returned by the WTForms field. -->
+            {% set hidden_value = form[field_name].data.split(' ')[0] %}
+            <!-- Hidden input to store the DOI id for post. -->
+            <input name="{{ form[field_name].name }}" type="hidden" value="{{ hidden_value }}">
             <strong>{{ form[field_name].label.text }}</strong>
         </label>
+        <!-- Validation errors -->
         <div class="flex-grow-1 w-100">
             {{ form[field_name](class_="form-control", rows=2, style="resize: vertical; width: 100%;") }}
             {% for error in form[field_name].errors %}
                 <div class="text-danger">{{ error }}</div>
             {% endfor %}
         </div>
+        <!-- Button to add a DOI -->
         <button type="button"
                 title="Edit {{ field_name }}"
                 aria-label="Edit {{ field_name }}"
