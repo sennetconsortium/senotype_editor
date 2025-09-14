@@ -189,11 +189,29 @@
         {{ render_fieldlist_section(form, "dataset", "datasetSearchModal", is_external=True,  col_class="col-md-4") }}
     </div>
     <!-- Specified Markers/Regulating Markers -->
-    <div class="row">
-        <!-- SPECIFIED MARKERS  section -->
-        {{ render_marker_section(form, "markerSearchModal", "markerCsvModal") }}
-        <!-- REGULATING MARKERS section -->
-        {{ render_regmarker_section(form, "regmarkerSearchModal", "regmarkerCsvModal") }}
+    <div class="accordion" id="markerAccordion">
+      <div class="accordion-item">
+        <h3 class="accordion-header" id="headingMarkers">
+          <button
+            class="accordion-button w-100 text-center"
+            type="button"
+            data-bs-toggle="collapse"
+            data-bs-target="#collapseMarkers"
+            aria-expanded="true"
+            aria-controls="collapseMarkers"
+            style="background-color: #009999; color: #fff; justify-content: center; font-weight: bold;">
+        Markers
+      </button>
+        </h3>
+        <div id="collapseMarkers" class="accordion-collapse show" aria-labelledby="headingMarkers" data-bs-parent="#markerAccordion">
+          <div class="accordion-body">
+            <div class="row">
+              {{ render_marker_section(form, "markerSearchModal", "markerCsvModal") }}
+              {{ render_regmarker_section(form, "regmarkerSearchModal", "regmarkerCsvModal") }}
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 </form>
 
