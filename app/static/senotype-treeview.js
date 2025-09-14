@@ -54,19 +54,81 @@ document.addEventListener('DOMContentLoaded', function() {
       let nodeDom = data.instance.get_node(selectedId, true);
       let editable = nodeDom && nodeDom.find('.jstree-anchor').hasClass('editable');
 
+      // Patch: also update new-version-btn on initial load
+      updateNewVersionBtnState(nodeObj, data.instance);
+
       setSpinner(false);
 
       programmaticSelection = false;
     }, 10);
   });
 
+  // Utility to determine if any nodes (by id array) are editable
+  function anyEditable(nodeIds, treeInstance) {
+    if (!Array.isArray(nodeIds)) return false;
+    for (let id of nodeIds) {
+      let nodeDom = treeInstance.get_node(id, true);
+      if (nodeDom && nodeDom.find('.jstree-anchor').hasClass('editable')) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  function updateNewVersionBtnState(nodeObj, treeInstance) {
+    let newVersionBtn = document.getElementById('new-version-btn');
+    if (!newVersionBtn || !nodeObj) return;
+
+    // 1. If node id is "Senotype", always disable
+    if (nodeObj.id === "Senotype") {
+        newVersionBtn.disabled = true;
+        return;
+    }
+
+    // 2. If node id contains "rootwrap"
+    if (nodeObj.id && nodeObj.id.includes("rootwrap")) {
+        // If none of its children are editable, enable, else disable
+        if (Array.isArray(nodeObj.children) && !anyEditable(nodeObj.children, treeInstance)) {
+            newVersionBtn.disabled = false;
+        } else {
+            newVersionBtn.disabled = true;
+        }
+        return;
+    }
+
+    // 3. Otherwise: enable only if neither the node nor its siblings are editable
+    let nodeDom = treeInstance.get_node(nodeObj.id, true);
+    let nodeIsEditable = nodeDom && nodeDom.find('.jstree-anchor').hasClass('editable');
+
+    let parentId = nodeObj.parent;
+    let siblings = [];
+    if (parentId && parentId !== "#") {
+        let parentNode = treeInstance.get_node(parentId);
+        if (parentNode && parentNode.children) {
+        siblings = parentNode.children.filter(id => id !== nodeObj.id);
+        }
+    }
+
+    let siblingsEditable = anyEditable(siblings, treeInstance);
+
+    if (!nodeIsEditable && !siblingsEditable) {
+        newVersionBtn.disabled = false;
+    } else {
+        newVersionBtn.disabled = true;
+    }
+  }
+
   // On user select, handle state and submit if needed (with spinner)
   $('#senotype-tree').on('select_node.jstree', function(e, data) {
     let nodeObj = data.node;
     let icon = nodeObj.icon;
     let isFile = icon && (Array.isArray(icon) ? icon.includes('jstree-file') : icon === 'jstree-file');
-    let nodeDom = $('#senotype-tree').jstree(true).get_node(data.node.id, true);
+    let treeInstance = $('#senotype-tree').jstree(true);
+    let nodeDom = treeInstance.get_node(data.node.id, true);
     let editable = nodeDom && nodeDom.find('.jstree-anchor').hasClass('editable');
+
+    // Patch: update new-version-btn state on every selection
+    updateNewVersionBtnState(nodeObj, treeInstance);
 
     if (programmaticSelection) {
       programmaticSelection = false;
