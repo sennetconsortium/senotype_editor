@@ -22,7 +22,7 @@ Arguments:
 - label_bg: background color hex code
 
 -->
-{% macro render_marker_section(form, single_modal_id, csv_modal_id, label_bg="#F0FFFF") %}
+{% macro render_marker_section(form, single_modal_id, csv_modal_id, label_bg="#F0FDF4") %}
 <div class="col-md-6" style="background-color: {{ label_bg }}; border: 1px solid #ccc; border-radius: 5px; padding: 4px;">
     {# header #}
     <strong>{{ form.marker.label }}</strong>
@@ -34,7 +34,7 @@ Arguments:
                 <li class="list-group-item d-flex justify-content-between align-items-center">
                     <input type="hidden" name="{{ field.name }}" value="{{ marker_code }}">
                     <span class="list-field-display" name="{{ field_name }}_field_display">{{ full_value }}</span>
-                    <button type="button" class="btn btn-sm btn-danger ms-2" onclick="removeMarker(this)">-</button>
+                    <button type="button" class="btn btn-sm btn-danger ms-2" style="width: 2.5em;" onclick="removeMarker(this)">-</button>
                 </li>
             {% endfor %}
             {% for error in form.marker.errors %}
@@ -46,7 +46,7 @@ Arguments:
                     title="Add single specified marker"
                     aria-label="Add single specified marker"
                     class="btn btn-sm"
-                    style="background-color: #0d6efd; color: #fff; margin-top:8px;"
+                    style="background-color: #0d6efd; color: #fff; margin-top:8px; width: 2.5em;"
                     data-bs-toggle="modal"
                     data-bs-target="#{{ single_modal_id }}">
                 +
@@ -65,7 +65,7 @@ Arguments:
 </div>
 {% endmacro %}
 
-{% macro render_regmarker_section(form, single_modal_id, csv_modal_id, label_bg="#F0FFFF") %}
+{% macro render_regmarker_section(form, single_modal_id, csv_modal_id, label_bg="#F0FDF4") %}
 <div class="col-md-6" style="background-color: {{ label_bg }}; border: 1px solid #ccc; border-radius: 5px; padding: 4px;">
     <strong>{{ form.regmarker.label }}</strong>
     <div class="d-flex align-items-start">
@@ -90,7 +90,7 @@ Arguments:
                         {{ full_value }}
                         <span class="action-symbol" style="padding-left:2px; padding-right:2px;"> <strong>{{ action_symbol }}</strong></span>
                     </span>
-                    <button type="button" class="btn btn-sm btn-danger ms-2" onclick="removeMarker(this)">-</button>
+                    <button type="button" class="btn btn-sm btn-danger ms-2" style="width: 2.5em;" onclick="removeMarker(this)">-</button>
                 </li>
             {% endfor %}
             {% for error in form.regmarker.errors %}
@@ -102,7 +102,7 @@ Arguments:
                     title="Add single regulated marker"
                     aria-label="Add single regulated marker"
                     class="btn btn-sm"
-                    style="background-color: #0d6efd; color: #fff; margin-top:8px;"
+                    style="background-color: #0d6efd; color: #fff; margin-top:8px; width: 2.5em;"
                     data-bs-toggle="modal"
                     data-bs-target="#{{ single_modal_id }}">
                 +

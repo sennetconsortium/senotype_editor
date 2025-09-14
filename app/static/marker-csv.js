@@ -182,7 +182,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
             // Add removal button.
             let btn = document.createElement('button');
-            btn.className = 'btn btn-sm btn-danger ms-2';
+            btn.className = 'btn btn-sm btn-danger ms-2; width: 2.5em;';
             btn.textContent = '-';
             btn.onclick = function () { li.remove(); };
             li.appendChild(btn);

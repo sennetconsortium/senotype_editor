@@ -1,17 +1,13 @@
 // Features to support management of DataCite DOIs for Senotype submission.
 
-// Remove DOI from textarea and hidden input (if needed)
-function removeDoiReference(doiid) {
-    // Remove from textarea
+// Remove DOI from textarea and hidden input
+function clearAllDoiReferences() {
+    // Clear the textarea
     var textarea = document.getElementById('doi');
-    var lines = textarea.value.split('\n').filter(line => !line.includes(doiid));
-    textarea.value = lines.join('\n');
-    // Remove hidden input
+    if (textarea) textarea.value = '';
+    // Remove all hidden inputs
     var container = document.getElementById('doi-hidden-inputs');
-    if (container) {
-        var input = container.querySelector('input[value="' + doiid + '"]');
-        if (input) input.remove();
-    }
+    if (container) container.innerHTML = '';
 }
 
 // Add DOI from DataCite API result
@@ -38,6 +34,7 @@ function addDoiReference(doiid, title) {
     input.value = doiid;
     input.className = 'form-control d-none'; // Hidden but submitted
     container.appendChild(input);
+
 }
 
 // Modal search logic (fetching DOIs from DataCite)

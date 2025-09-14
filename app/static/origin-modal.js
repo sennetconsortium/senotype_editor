@@ -36,7 +36,7 @@ function addOrigin(rrid, description) {
 
     // Remove button
     var btn = document.createElement('button');
-    btn.className = 'btn btn-sm btn-danger ms-2';
+    btn.className = 'btn btn-sm btn-danger ms-2; width: 2.5em;';
     btn.textContent = '-';
     btn.onclick = function () { li.remove(); };
     btn.title = 'Remove ' + rrid + ' from origin list';
