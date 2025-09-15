@@ -49,8 +49,12 @@ Arguments:
                     <!-- Button to remove this value from the list -->
                     <button type="button" class="btn btn-sm btn-danger ms-2" style="width: 2.5em;" onclick="removeValue(this)"> - </button>
                     {% if field_name == "dataset" %}
-                    <!-- Placeholder for the dataset link button, id is unique per hidden_value -->
-                    <span class="dataset-link-placeholder ms-2" id="dataset-link-{{ hidden_value | e }}"></span>
+                        <!-- Placeholder for the dataset link button, id is unique per hidden_value -->
+                        <span class="dataset-link-placeholder ms-2" id="dataset-link-{{ hidden_value | e }}"></span>
+                    {% endif %}
+                    {% if field_name == "citation" %}
+                        <!-- Placeholder for the citation link button, id is unique per hidden_value -->
+                        <span class="citation-link-placeholder ms-2" id="citation-link-{{ hidden_value | e }}"></span>
                     {% endif %}
                 </li>
             {% endfor %}
@@ -80,6 +84,18 @@ Arguments:
                     '#dataset-list input[type="hidden"]',
                     'View dataset details',
                     '.dataset-link-placeholder'
+                );
+            });
+        </script>
+    {% elif field_name == "citation" %}
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                addLinkButtons(
+                    'https://pubmed.ncbi.nlm.nih.gov/',
+                    '#citation-list input[type="hidden"]',
+                    'View citation details',
+                    '.citation-link-placeholder',
+                    true
                 );
             });
         </script>
