@@ -14,7 +14,7 @@ function addOrigin(rrid, description) {
     var exists = Array.from(ul.querySelectorAll('input')).some(input => input.value === rrid);
     if (exists) return;
     var li = document.createElement('li');
-    li.className = 'list-group-item d-flex justify-content-between align-items-center';
+    li.className = 'list-group-item d-flex justify-content-between align-items-center w-100';
 
     // Hidden input for WTForms submission
     var input = document.createElement('input');
@@ -33,7 +33,7 @@ function addOrigin(rrid, description) {
     // Remove button
     var btn = document.createElement('button');
     btn.className = 'btn btn-sm btn-danger ms-2';
-    width: '2.5em;';
+    btn.style = 'width: 2.5em;'
     btn.textContent = '-';
     btn.onclick = function () { li.remove(); };
     btn.title = 'Remove ' + rrid + ' from origin list';

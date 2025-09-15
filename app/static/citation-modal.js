@@ -11,7 +11,7 @@ function removeCitation(btn) {
 function addCitation(pmid, title) {
     var ul = document.getElementById('citation-list');
     var li = document.createElement('li');
-    li.className = 'list-group-item d-flex justify-content-between align-items-center';
+    li.className = 'list-group-item d-flex justify-content-between align-items-center w-100';
     // Hidden input for WTForms submission
     var input = document.createElement('input');
     input.type = 'text';

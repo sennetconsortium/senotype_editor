@@ -30,7 +30,7 @@ $(function() {
       if (el.id === 'selected_node_id') return;
 
       // Readonly controls are always disabled.
-      var readonly = ['senotypeid'];
+      var readonly = ['senotypeid','doi'];
       if (readonly.includes(el.id)) {
         el.disabled = true;
         el.style.backgroundColor = '#e5e5e5';
@@ -69,11 +69,9 @@ $(function() {
     });
 
     /* Update button:
-       1. Enable only if the selected node is editable.
-       2. Label should be "Create" if "new" was selected, elss "Update".
+       Label should be "Create" if "new" was selected, elss "Update".
     */
     if(update_btn) {
-        //update_btn.disabled = !isEditable;
         update_btn.textContent = (nodeid === "new") ? "Create" : "Update";
     }
 
