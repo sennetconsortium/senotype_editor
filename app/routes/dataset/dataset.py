@@ -1,7 +1,8 @@
-from flask import redirect, session, Blueprint
+from flask import redirect, session, Blueprint, Response
 import requests
 
 dataset_blueprint = Blueprint('dataset', __name__, url_prefix='/dataset')
+
 
 @dataset_blueprint.route('/portal/<entity_id>', methods=['GET'])
 def get_dataset(entity_id):

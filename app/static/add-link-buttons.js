@@ -20,7 +20,7 @@ function addLinkButtons(url_base, hidden_input_selector, link_title, target_sele
 
         if (placeholder) {
             var link = document.createElement('a');
-            link.className = 'btn btn-sm btn-secondary ms-2';
+            link.className = 'btn btn-sm btn-outline-primary ms-2';
             link.style.width = '2.5em';
             link.href = url_base + encodeURIComponent(hiddenValue);
             link.target = '_blank';

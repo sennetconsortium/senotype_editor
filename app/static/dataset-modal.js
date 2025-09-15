@@ -32,7 +32,7 @@ function addDataset(id, uuid, description, ) {
 
     // Link button
     var link = document.createElement('a');
-    link.className = 'btn btn-sm btn-secondary ms-2';
+    link.className = 'btn btn-sm btn-outline-primary ms-2';
     link.style.width = '2.5em';
     link.href = 'https://data.sennetconsortium.org/dataset?uuid=' + encodeURIComponent(uuid);
     link.target = '_blank';
