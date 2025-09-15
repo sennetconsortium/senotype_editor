@@ -56,6 +56,11 @@ Arguments:
                         <!-- Placeholder for the citation link button, id is unique per hidden_value -->
                         <span class="citation-link-placeholder ms-2" id="citation-link-{{ hidden_value | e }}"></span>
                     {% endif %}
+                    {% if field_name == "origin" %}
+                        <!-- Placeholder for the origin link button, id is unique per hidden_value -->
+                        <span class="origin-link-placeholder ms-2" id="origin-link-{{ hidden_value | e }}"></span>
+                    {% endif %}
+
                 </li>
             {% endfor %}
             <!-- Validation errors -->
@@ -96,6 +101,17 @@ Arguments:
                     'View citation details',
                     '.citation-link-placeholder',
                     true
+                );
+            });
+        </script>
+    {% elif field_name == "origin" %}
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                addLinkButtons(
+                    'https://scicrunch.org/resolver/',
+                    '#origin-list input[type="hidden"]',
+                    'View origin details',
+                    '.origin-link-placeholder'
                 );
             });
         </script>

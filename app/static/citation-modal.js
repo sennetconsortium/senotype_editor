@@ -34,7 +34,7 @@ function addCitation(pmid, title) {
     code = pmid.split(":")[1];
     link.href = 'https://pubmed.ncbi.nlm.nih.gov/' + encodeURIComponent(code);
     link.target = '_blank';
-    link.title = 'View dataset details';
+    link.title = 'View citation details';
     link.textContent = '🔗';
     li.appendChild(link);
 

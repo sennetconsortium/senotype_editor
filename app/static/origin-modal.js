@@ -30,6 +30,16 @@ function addOrigin(rrid, description) {
     span.textContent = rrid + " (" + description.slice(0, 70) + "..." + ")";
     li.appendChild(span);
 
+    // Link button
+    var link = document.createElement('a');
+    link.className = 'btn btn-sm btn-outline-primary ms-2';
+    link.style.width = '2.5em';
+    link.href = 'https://scicrunch.org/resolver/' + encodeURIComponent(rrid);
+    link.target = '_blank';
+    link.title = 'View origin details';
+    link.textContent = '🔗';
+    li.appendChild(link);
+
     // Remove button
     var btn = document.createElement('button');
     btn.className = 'btn btn-sm btn-danger ms-2';
@@ -38,6 +48,12 @@ function addOrigin(rrid, description) {
     btn.onclick = function () { li.remove(); };
     btn.title = 'Remove ' + rrid + ' from origin list';
     li.appendChild(btn);
+
+    // Placeholder for consistency (optional)
+    var placeholder = document.createElement('span');
+    placeholder.className = 'origin-link-placeholder ms-2';
+    placeholder.id = 'origin-link-' + rrid;
+    li.appendChild(placeholder);
 
     ul.appendChild(li);
 }
