@@ -12,6 +12,7 @@ function addCitation(pmid, title) {
     var ul = document.getElementById('citation-list');
     var li = document.createElement('li');
     li.className = 'list-group-item d-flex justify-content-between align-items-center w-100';
+
     // Hidden input for WTForms submission
     var input = document.createElement('input');
     input.type = 'text';
@@ -19,11 +20,24 @@ function addCitation(pmid, title) {
     input.value = pmid;
     input.className = 'form-control d-none'; // Hidden but submitted
     li.appendChild(input);
+
     // Visible text: show the PMID
     var span = document.createElement('span');
     span.className = 'list-field-display';
-    span.textContent = pmid + " (" + title.slice(0, 70) + "..." + ")";
+    span.textContent = pmid + " (" + title.slice(0, 40) + "..." + ")";
     li.appendChild(span);
+
+    // Link button
+    var link = document.createElement('a');
+    link.className = 'btn btn-sm btn-outline-primary ms-2';
+    link.style.width = '2.5em';
+    code = pmid.split(":")[1];
+    link.href = 'https://pubmed.ncbi.nlm.nih.gov/' + encodeURIComponent(code);
+    link.target = '_blank';
+    link.title = 'View dataset details';
+    link.textContent = '🔗';
+    li.appendChild(link);
+
     // Remove button
     var btn = document.createElement('button');
     btn.className = 'btn btn-sm btn-danger ms-2';
@@ -33,6 +47,12 @@ function addCitation(pmid, title) {
     btn.title = 'Remove ' + pmid + ' from citation list';
     li.appendChild(btn);
     ul.appendChild(li);
+
+    // Placeholder for consistency (optional)
+    var placeholder = document.createElement('span');
+    placeholder.className = 'citation-link-placeholder ms-2';
+    placeholder.id = 'citation-link-' + pmid;
+    li.appendChild(placeholder);
 }
 
 // Modal search logic (fetching PMIDs, then their titles)
