@@ -8,17 +8,17 @@ function removeDataset(btn) {
 }
 
 // Add dataset from API result: Only add ID if not already present, but display description in the list
-function addDataset(id, description) {
+function addDataset(id, uuid, description, ) {
     var ul = document.getElementById('dataset-list');
     // Prevent duplicates
     var exists = Array.from(ul.querySelectorAll('input')).some(input => input.value === id);
     if (exists) return;
     var li = document.createElement('li');
-    li.className = 'list-group-item d-flex justify-content-between align-items-center';
+    li.className = 'list-group-item d-flex justify-content-between align-items-center w-100';
 
     // Hidden input for WTForms submission
     var input = document.createElement('input');
-    input.type = 'text';
+    input.type = 'hidden';
     input.name = 'dataset-' + ul.children.length; // WTForms FieldList expects this pattern
     input.value = id;
     input.className = 'form-control d-none'; // Hidden but submitted
@@ -27,8 +27,18 @@ function addDataset(id, description) {
     // Visible text: show the description instead of the ID
     var span = document.createElement('span');
     span.className = 'list-field-display';
-    span.textContent = id + " (" + description.slice(0, 70) + "..." + ")";
+    span.textContent = id + " (" + description.slice(0, 40) + "..." + ")";
     li.appendChild(span);
+
+    // Link button
+    var link = document.createElement('a');
+    link.className = 'btn btn-sm btn-secondary ms-2';
+    link.style.width = '2.5em';
+    link.href = 'https://data.sennetconsortium.org/dataset?uuid=' + encodeURIComponent(uuid);
+    link.target = '_blank';
+    link.title = 'View dataset details';
+    link.textContent = '🔗';
+    li.appendChild(link);
 
     // Remove button
     var btn = document.createElement('button');
@@ -38,6 +48,13 @@ function addDataset(id, description) {
     btn.onclick = function () { li.remove(); };
     btn.title = 'Remove ' + id + ' from dataset list'
     li.appendChild(btn);
+
+    // Placeholder for consistency (optional)
+    var placeholder = document.createElement('span');
+    placeholder.className = 'dataset-link-placeholder ms-2';
+    placeholder.id = 'dataset-link-' + id;
+    li.appendChild(placeholder);
+
 
     ul.appendChild(li);
 }
@@ -68,12 +85,13 @@ document.addEventListener('DOMContentLoaded', function () {
                 })
                 .then(data => {
                     var id = data.sennetid || query;
+                    var uuid = data.uuid;
                     var description = data.title || data.name || id;
                     var btn = document.createElement('button');
                     btn.className = 'btn btn-link text-start w-100 mb-1';
                     btn.textContent = description;
                     btn.onclick = function () {
-                        addDataset(id, description); // Pass description for visible text
+                        addDataset(id, uuid, description); // Pass description for visible text
                         // Hide modal with Bootstrap 5
                         var modalEl = document.getElementById('datasetSearchModal');
                         var modal = bootstrap.Modal.getInstance(modalEl);

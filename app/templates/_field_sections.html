@@ -25,7 +25,7 @@ Arguments:
 - col_class - Bootstrap column class to use
 -->
 
-{% macro render_fieldlist_section(form, field_name, modal_id, label_bg="#FEF2F2", is_external=False, col_class="col-md-4") %}
+{% macro render_fieldlist_section(form, field_name, modal_id, label_bg="#FEF2F2", is_external=False, col_class="col-md-4", groups_token=None) %}
 <div class="{{ col_class }}" style="background-color: {{ label_bg }}; border: 1px solid #ccc; border-radius: 5px; padding: 3px;">
     {# header #}
     <strong>{{ form[field_name].label }}</strong>
@@ -34,8 +34,6 @@ Arguments:
             <!-- Parse code from value provided by WTForms field. -->
             {% for field in form[field_name] %}
                 {% set full_value = field.data %}
-
-                {# If the field is externally linked, display full value; otherwise, display parsed value #}
                 {% if is_external %}
                     {% set display_value = full_value %}
                 {% else %}
@@ -50,6 +48,10 @@ Arguments:
                     <span class="list-field-display" style="padding-left:3px; padding-right:3px;" name="{{ field_name }}_field_display">{{ display_value }}</span>
                     <!-- Button to remove this value from the list -->
                     <button type="button" class="btn btn-sm btn-danger ms-2" style="width: 2.5em;" onclick="removeValue(this)"> - </button>
+                    {% if field_name == "dataset" %}
+                    <!-- Placeholder for the dataset link button, id is unique per hidden_value -->
+                    <span class="dataset-link-placeholder ms-2" id="dataset-link-{{ hidden_value | e }}"></span>
+                    {% endif %}
                 </li>
             {% endfor %}
             <!-- Validation errors -->
@@ -69,6 +71,19 @@ Arguments:
         </button>
     </div>
 </div>
+    <!-- Add external link button where appropriate. -->
+    {% if field_name == "dataset" %}
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                addLinkButtons(
+                    '/dataset/portal/',
+                    '#dataset-list input[type="hidden"]',
+                    'View dataset details',
+                    '.dataset-link-placeholder'
+                );
+            });
+        </script>
+    {% endif %}
 {% endmacro %}
 
 <!--
