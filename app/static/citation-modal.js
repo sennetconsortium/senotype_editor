@@ -10,6 +10,11 @@ function removeCitation(btn) {
 // Add citation from API result
 function addCitation(pmid, title) {
     var ul = document.getElementById('citation-list');
+
+    // Prevent duplicates
+    var exists = Array.from(ul.querySelectorAll('input')).some(input => input.value === pmid);
+    if (exists) return;
+
     var li = document.createElement('li');
     li.className = 'list-group-item d-flex justify-content-between align-items-center w-100';
 
@@ -27,16 +32,23 @@ function addCitation(pmid, title) {
     span.textContent = pmid + " (" + title.slice(0, 40) + "..." + ")";
     li.appendChild(span);
 
+    // Placeholder for the link button
+    var placeholder = document.createElement('span');
+    placeholder.className = 'citation-link-placeholder ms-2';
+    placeholder.id = 'citation-link-' + pmid;
+
     // Link button
     var link = document.createElement('a');
     link.className = 'btn btn-sm btn-outline-primary ms-2';
     link.style.width = '2.5em';
-    code = pmid.split(":")[1];
+    var code = pmid.split(":")[1];
     link.href = 'https://pubmed.ncbi.nlm.nih.gov/' + encodeURIComponent(code);
     link.target = '_blank';
     link.title = 'View citation details';
     link.textContent = '🔗';
-    li.appendChild(link);
+    placeholder.appendChild(link);
+
+    li.appendChild(placeholder);
 
     // Remove button
     var btn = document.createElement('button');
@@ -46,13 +58,8 @@ function addCitation(pmid, title) {
     btn.onclick = function () { li.remove(); };
     btn.title = 'Remove ' + pmid + ' from citation list';
     li.appendChild(btn);
-    ul.appendChild(li);
 
-    // Placeholder for consistency (optional)
-    var placeholder = document.createElement('span');
-    placeholder.className = 'citation-link-placeholder ms-2';
-    placeholder.id = 'citation-link-' + pmid;
-    li.appendChild(placeholder);
+    ul.appendChild(li);
 }
 
 // Modal search logic (fetching PMIDs, then their titles)

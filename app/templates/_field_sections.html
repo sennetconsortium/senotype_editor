@@ -46,8 +46,7 @@ Arguments:
                     <input name="{{ field.name }}" type="hidden" value="{{ hidden_value }}">
                     <!-- Span for value displayed in list -->
                     <span class="list-field-display" style="padding-left:3px; padding-right:3px;" name="{{ field_name }}_field_display">{{ display_value }}</span>
-                    <!-- Button to remove this value from the list -->
-                    <button type="button" class="btn btn-sm btn-danger ms-2" style="width: 2.5em;" onclick="removeValue(this)"> - </button>
+                    <!-- For fields with external links, create a placeholder for the link button created via Javascript. -->
                     {% if field_name == "dataset" %}
                         <!-- Placeholder for the dataset link button, id is unique per hidden_value -->
                         <span class="dataset-link-placeholder ms-2" id="dataset-link-{{ hidden_value | e }}"></span>
@@ -60,6 +59,8 @@ Arguments:
                         <!-- Placeholder for the origin link button, id is unique per hidden_value -->
                         <span class="origin-link-placeholder ms-2" id="origin-link-{{ hidden_value | e }}"></span>
                     {% endif %}
+                    <!-- Button to remove this value from the list -->
+                    <button type="button" class="btn btn-sm btn-danger ms-2" style="width: 2.5em;" onclick="removeValue(this)"> - </button>
 
                 </li>
             {% endfor %}

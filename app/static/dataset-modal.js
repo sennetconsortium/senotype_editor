@@ -30,6 +30,11 @@ function addDataset(id, uuid, description, ) {
     span.textContent = id + " (" + description.slice(0, 40) + "..." + ")";
     li.appendChild(span);
 
+    // Placeholder for link button
+    var placeholder = document.createElement('span');
+    placeholder.className = 'dataset-link-placeholder ms-2';
+    placeholder.id = 'dataset-link-' + id;
+
     // Link button
     var link = document.createElement('a');
     link.className = 'btn btn-sm btn-outline-primary ms-2';
@@ -38,7 +43,9 @@ function addDataset(id, uuid, description, ) {
     link.target = '_blank';
     link.title = 'View dataset details';
     link.textContent = '🔗';
-    li.appendChild(link);
+    placeholder.appendChild(link);
+
+    li.appendChild(placeholder);
 
     // Remove button
     var btn = document.createElement('button');
@@ -48,13 +55,6 @@ function addDataset(id, uuid, description, ) {
     btn.onclick = function () { li.remove(); };
     btn.title = 'Remove ' + id + ' from dataset list'
     li.appendChild(btn);
-
-    // Placeholder for consistency (optional)
-    var placeholder = document.createElement('span');
-    placeholder.className = 'dataset-link-placeholder ms-2';
-    placeholder.id = 'dataset-link-' + id;
-    li.appendChild(placeholder);
-
 
     ul.appendChild(li);
 }

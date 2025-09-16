@@ -10,9 +10,11 @@ function removeOrigin(btn) {
 // Add origin from API result: Only add RRID if not already present, but display description in the list
 function addOrigin(rrid, description) {
     var ul = document.getElementById('origin-list');
+
     // Prevent duplicates
     var exists = Array.from(ul.querySelectorAll('input')).some(input => input.value === rrid);
     if (exists) return;
+
     var li = document.createElement('li');
     li.className = 'list-group-item d-flex justify-content-between align-items-center w-100';
 
@@ -30,6 +32,11 @@ function addOrigin(rrid, description) {
     span.textContent = rrid + " (" + description.slice(0, 70) + "..." + ")";
     li.appendChild(span);
 
+    // Placeholder for the link button
+    var placeholder = document.createElement('span');
+    placeholder.className = 'origin-link-placeholder ms-2';
+    placeholder.id = 'origin-link-' + rrid;
+
     // Link button
     var link = document.createElement('a');
     link.className = 'btn btn-sm btn-outline-primary ms-2';
@@ -38,7 +45,9 @@ function addOrigin(rrid, description) {
     link.target = '_blank';
     link.title = 'View origin details';
     link.textContent = '🔗';
-    li.appendChild(link);
+    placeholder.appendChild(link);
+
+    li.appendChild(placeholder);
 
     // Remove button
     var btn = document.createElement('button');
@@ -48,12 +57,6 @@ function addOrigin(rrid, description) {
     btn.onclick = function () { li.remove(); };
     btn.title = 'Remove ' + rrid + ' from origin list';
     li.appendChild(btn);
-
-    // Placeholder for consistency (optional)
-    var placeholder = document.createElement('span');
-    placeholder.className = 'origin-link-placeholder ms-2';
-    placeholder.id = 'origin-link-' + rrid;
-    li.appendChild(placeholder);
 
     ul.appendChild(li);
 }
