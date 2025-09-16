@@ -35,6 +35,16 @@ function addDoiReference(doiid, title) {
     input.className = 'form-control d-none'; // Hidden but submitted
     container.appendChild(input);
 
+    // Link button
+    var link = document.createElement('a');
+    link.className = 'btn btn-sm btn-outline-primary ms-2';
+    link.style.width = '2.5em';
+    link.href = 'https://commons.datacite.org/doi.org/10.6084/' + encodeURIComponent(doiid);
+    link.target = '_blank';
+    link.title = 'View DOI details';
+    link.textContent = '🔗';
+    li.appendChild(link);
+
 }
 
 // Modal search logic (fetching DOIs from DataCite)

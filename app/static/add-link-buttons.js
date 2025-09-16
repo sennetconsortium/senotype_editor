@@ -15,15 +15,11 @@ function addLinkButtons(url_base, hidden_input_selector, link_title, target_sele
             code = hiddenValue.split(':')[1];
         }
 
-        // Find the container <li>
-        var containerLi = hiddenInput.closest('li');
-        if (!containerLi) return;
+        // For textarea, parent container is not <li>
+        var parent = hiddenInput.closest('.d-flex') || hiddenInput.parentElement;
+        if (!parent) return;
 
-        // Find the remove button in this <li>
-        var removeBtn = containerLi.querySelector('button.btn-danger');
-        // Find the placeholder span in this <li>
-        var placeholder = containerLi.querySelector(target_selector);
-
+        var placeholder = parent.querySelector(target_selector);
         if (placeholder) {
             var link = document.createElement('a');
             link.className = 'btn btn-sm btn-outline-primary ms-2';
@@ -32,13 +28,8 @@ function addLinkButtons(url_base, hidden_input_selector, link_title, target_sele
             link.target = '_blank';
             link.title = link_title;
             link.textContent = '🔗';
-
-            // Insert the link before the remove button
-            if (removeBtn) {
-                containerLi.insertBefore(link, removeBtn);
-            } else {
-                placeholder.appendChild(link);
-            }
+            placeholder.innerHTML = '';
+            placeholder.appendChild(link);
         }
     });
 }

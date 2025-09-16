@@ -119,44 +119,60 @@ Arguments:
 {% endmacro %}
 
 <!--
-Renders the DOI textarea field, analogous to the field lists used for the categorical fields.
+Renders a textarea field, analogous to the field lists used for the categorical fields.
+Use case: DOI field
 -->
-{% macro render_textarea_section(form, field_name, modal_id, label_bg="#f5f5f5") %}
+{% macro render_textarea_section(form, field_name, modal_id, label_bg="#f5f5f5", link_base_url=None, link_title=None, parse_code=False) %}
 <div style="background-color: {{ label_bg }};">
-    <div class="d-flex align-items-center">
+    <div class="d-flex align-items-center" id="{{ field_name }}-row">
         <label for="{{ form[field_name].id }}" class="me-2 mb-0" style="white-space: nowrap;">
-            <!-- Parse the code from the value returned by the WTForms field. -->
             {% set hidden_value = form[field_name].data.split(' ')[0] %}
-            <!-- Hidden input to store the DOI id for post. -->
-            <input name="{{ form[field_name].name }}" type="hidden" value="{{ hidden_value }}">
+            <input name="{{ form[field_name].name }}" type="hidden" id="{{ field_name }}-hidden-input" value="{{ hidden_value }}">
             <strong>{{ form[field_name].label.text }}</strong>
         </label>
-        <!-- Validation errors -->
-        <div class="flex-grow-1 w-100">
+        <div class="d-flex align-items-start w-100">
             {{ form[field_name](class_="form-control", rows=2, style="resize: vertical; width: 100%;") }}
             {% for error in form[field_name].errors %}
                 <div class="text-danger">{{ error }}</div>
             {% endfor %}
+            <span id="{{ field_name }}-link-placeholder" class="ms-2"></span>
         </div>
-        <!-- Button to add a DOI -->
+        <button type="button"
+                title="Remove {{ field_name }}"
+                aria-label="Remove {{ field_name }}"
+                class="btn btn-sm btn-danger ms-2 align-self-start"
+                style="margin-left: 8px; margin-top:8px; width: 2.5em;"
+                onclick="clearAll{{ field_name | capitalize }}References()">
+            -
+        </button>
         <button type="button"
                 title="Edit {{ field_name }}"
                 aria-label="Edit {{ field_name }}"
-                class="btn btn-sm ms-2"
+                class="btn btn-sm ms-2 align-self-start"
                 style="background-color: #0d6efd; color: #fff; margin-left: 8px; margin-top:8px; width: 2.5em;"
                 data-bs-toggle="modal"
                 data-bs-target="#{{ modal_id }}">
             +
         </button>
-        <!-- Button to clear all DOIs -->
-        <button type="button"
-                title="Remove DOI"
-                aria-label="Remove DOI"
-                class="btn btn-sm btn-danger ms-2"
-                style="margin-left: 8px; margin-top:8px; width: 2.5em;"
-                onclick="clearAllDoiReferences()">
-            -
-        </button>
+        <span class="{{ field_name }}-link-placeholder ms-2 align-self-start"
+              id="{{ field_name }}-link-{{ hidden_value | e }}"
+              style="margin-top:8px;"></span>
+        {% if link_base_url %}
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                var hiddenInput = document.getElementById('{{ field_name }}-hidden-input');
+                if (hiddenInput && hiddenInput.value && hiddenInput.value.trim() !== "") {
+                    addLinkButtons(
+                        '{{ link_base_url }}',
+                        '#{{ field_name }}-hidden-input',
+                        '{{ link_title if link_title else "View details" }}',
+                        '.{{ field_name }}-link-placeholder',
+                        {{ "true" if parse_code else "false" }}
+                    );
+                }
+            });
+        </script>
+        {% endif %}
     </div>
 </div>
 {% endmacro %}
