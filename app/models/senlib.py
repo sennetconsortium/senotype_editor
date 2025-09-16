@@ -1,12 +1,13 @@
 """
-Class for working with Senotype submission JSON files in the senlib repository.
+Class for working with Senotype submission JSON files in the senlib data source.
 """
 import logging
 import pandas as pd
-from io import StringIO
-import json
 
-from models.requestretry import RequestRetry
+# Application configuration object
+from models.appconfig import AppConfig
+# Interface to GitHub repo
+from models.senlib_github import SenLibGitHub
 
 # Configure consistent logging. This is done at the beginning of each module instead of with a superclass of
 # logger to avoid the need to overload function calls to logger.
@@ -16,55 +17,6 @@ logger = logging.getLogger(__name__)
 
 
 class SenLib:
-
-    def _getsenlibrepolist(self) -> list:
-        """
-        Obtains list of files in the senlib repo.
-        """
-        return self.request.getresponse(url=self.senliburl,
-                                        format='json',
-                                        headers = self.github_header)
-
-    def _getsenotypeids(self) -> list:
-        """
-        Obtains the ids of all Senotype submissions in the senlib repo.
-        :return: list of Senotype ids
-        """
-
-        listdir = self._getsenlibrepolist()
-        listids = []
-
-        # The latest version of a Senotype will not have a successor.
-        for entry in listdir:
-            filename = entry.get('name')
-            senotypeid = filename.split('.json')[0]
-            senotypejson = self.getsenlibjson(senotypeid)
-            senotype = senotypejson.get('senotype')
-            provenance = senotype.get('provenance')
-            successor = provenance.get('successor')
-            name = senotype.get('name', '')
-            if len(name) >= 50:
-                name = f'{name[0:47]}...'
-
-            listids.append(f'{senotypeid} ({name})')
-
-        return listids
-
-    def _getallsenotypejsons(self) -> dict:
-        """
-        Obtains a list of all senotype jsons.
-        """
-        listdir = self._getsenlibrepolist()
-
-        # First, get the latest versions of each senotype.
-        # The latest version of a senotype will not have a successor.
-        listjson = []
-        for entry in listdir:
-            filename = entry.get('name')
-            senotypeid = filename.split('.json')[0]
-            listjson.append(self.getsenlibjson(senotypeid))
-
-        return listjson
 
     def _getsenotypejtree(self) -> dict:
         """
@@ -119,7 +71,7 @@ class SenLib:
         """
 
         # Obtain an (unordered) list of of all sentotype jsons.
-        senotype_jsons = self._getallsenotypejsons()
+        senotype_jsons = self.database._getallsenotypejsons()
 
         # Build maps used to organize senotypes by version:
         # All senotype IDs
@@ -131,7 +83,7 @@ class SenLib:
         # Names by ID
         name_map = {}
 
-        # Map every json in terms of provenanc.
+        # Map every json in terms of provenance.
         # A provenance map element has key=ID of a JSON and value=ID of the predecessor
         # or successor--thus, "A":"B" in the successor map means that B precedes A.
         for obj in senotype_jsons:
@@ -253,43 +205,8 @@ class SenLib:
         return [senotype_parent]
 
     def getsenlibjson(self, id: str) -> dict:
-        """
-        Get a single senotype JSON.
-        :param id: id of the senotype, corresponding to the file name in the data
-                   source.
-        :return: the senotype json
-        """
-        url = f'{self.jsonurl}/{id}.json'
-        return self.request.getresponse(url=url, format='json')
 
-    def _getsenlibvaluesets(self) -> pd.DataFrame:
-        """
-        Get the Senotype Editor valueset from the senlib repo as a Pandas DataFrame.
-        :return:
-        """
-
-        # Get the text stream from GitHub.
-        stream=self.request.getresponse(url=self.valueseturl, format='csv')
-        # Convert to a string.
-        csv_data = StringIO(stream)
-        # Read into Pandas.
-        return pd.read_csv(csv_data)
-
-    def __init__(self, senliburl: str, valueseturl: str, jsonurl: str, github_token: str):
-
-        self.request = RequestRetry()
-
-        # Obtain list of senlib JSONs.
-        self.senliburl = senliburl
-        self.valueseturl = valueseturl
-        self.jsonurl = jsonurl
-        self.github_header = {
-            'Authorization': f'token {github_token}',
-            'Accept': 'application/vnd.github.v3+json'
-        }
-        self.senlibjsonids = self._getsenotypeids()
-        self.senlibvaluesets = self._getsenlibvaluesets()
-        self.senotypetree = self._getsenotypejtree()
+        return self.database.getsenlibjson(id=id)
 
     def getsenlibvalueset(self, predicate: str) -> pd.DataFrame:
         """
@@ -321,3 +238,23 @@ class SenLib:
         term = matched.iloc[0] if not matched.empty else None
 
         return term
+
+    def __init__(self, cfg: AppConfig):
+
+        """
+        param cfg: AppConfig object representing the app.cfg file.
+
+        """
+
+        # Connect to the senlib repo.
+        # (Will change to MySql.)
+        self.database = SenLibGitHub(cfg)
+
+        # Connect to the senlib database.
+        # self.db = self._getConnection(cfg = cfg)
+
+        # SenLib valuesets
+        self.senlibvaluesets = self.database.senlibvaluesets
+
+        # JSON for the senotype jstree
+        self.senotypetree = self._getsenotypejtree()

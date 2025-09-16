@@ -687,16 +687,18 @@ def edit():
     # Get IDs for existing Senotype submissions.
     # Get the URLs to the senlib repo.
     # Base URL for the repo
-    senlib_url = cfg.getfield(key='SENOTYPE_URL')
+    # senlib_url = cfg.getfield(key='SENOTYPE_URL')
     # URL to the Senotype Editor valueset CSV, stored in the senlib repo
-    valueset_url = cfg.getfield(key='VALUESET_URL')
+    # valueset_url = cfg.getfield(key='VALUESET_URL')
     # URL to the folder for Senotype Submissions in the senlib repo
-    json_url = cfg.getfield(key='JSON_URL')
+    # json_url = cfg.getfield(key='JSON_URL')
     # Github personal access token for authorized calls
-    github_token = cfg.getfield(key='GITHUB_TOKEN')
+    # github_token = cfg.getfield(key='GITHUB_TOKEN')
+
 
     # Senlib interface
-    senlib = SenLib(senlib_url, valueset_url, json_url, github_token)
+    #senlib = SenLib(senlib_url, valueset_url, json_url, github_token)
+    senlib = SenLib(cfg=cfg)
 
     # Check if we have session data for the form.
     # Session data will correspond to the state of the form at the time of

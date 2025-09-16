@@ -14,17 +14,8 @@ valueset_blueprint = Blueprint('valueset', __name__, url_prefix='/valueset')
 def valueset():
     # Read the app.cfg file outside the Flask application context.
     cfg = AppConfig()
-
-    # Get IDs for existing Senotype submissions.
-    # Get the URLs to the senlib repo.
-    senlib_url = cfg.getfield(key='SENOTYPE_URL')
-    valueset_url = cfg.getfield(key='VALUESET_URL')
-    json_url = cfg.getfield(key='JSON_URL')
-    # Github personal access token for authorized calls
-    github_token = cfg.getfield(key='GITHUB_TOKEN')
-
     # Senlib interface
-    senlib = SenLib(senlib_url, valueset_url, json_url, github_token)
+    senlib = SenLib(cfg)
 
     # Get the assertion predicate.
     predicate = request.args.get('predicate')
@@ -34,6 +25,5 @@ def valueset():
         {'id': row['valueset_code'], 'label': row['valueset_term']}
         for _, row in senlib.getsenlibvalueset(predicate=predicate).iterrows()
     ]
-
 
     return jsonify(listret)
