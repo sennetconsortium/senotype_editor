@@ -10,7 +10,25 @@ Usage:
 - FieldList pattern: `${type}-<index>`
 */
 
-// --- Type-specific config ---
+/*
+EXTERNAL_CONFIG
+is an object that centralizes all type-specific logic for handling
+external assertions (datasets, citations, origins) in a Senotype.
+
+The first-level key corresponds to a type of
+external assertion (e.g., dataset).
+
+Each assertion object contains keys that correspond to functions in the
+add modal:
+1. apiSearch: an endpoint for the API from which to obtain information
+              specific to the type of assertion
+2. parseApiReult: a function that parses the API response to obtain a display
+                  of information specific to the type of assertion
+3. link: a set of properties to be used in the link button associated with the
+         assertion object
+4. displayText: used in the display of the link button
+
+*/
 const EXTERNAL_CONFIG = {
     dataset: {
         apiSearch: query => `https://entity.api.sennetconsortium.org/entities/${encodeURIComponent(query)}`,
