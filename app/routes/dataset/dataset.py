@@ -3,12 +3,11 @@ import requests
 
 dataset_blueprint = Blueprint('dataset', __name__, url_prefix='/dataset')
 
-
-@dataset_blueprint.route('/portal/<entity_id>', methods=['GET'])
-def get_dataset(entity_id):
+@dataset_blueprint.route('/<entity_id>', methods=['GET'])
+def get_dataset_api(entity_id):
     """
-    Redirects the user to the Data Portal dataset page for the given SenNet ID.
-    param entity_id: SenNet ID
+    Obtains dataset from the entity-api.
+
     """
     token = session["groups_token"]
     headers = {"Authorization": f"Bearer {token}"}
@@ -20,8 +19,20 @@ def get_dataset(entity_id):
         # Optionally handle error (e.g. flash message, abort, etc.)
         return "SenNet ID not found", 404
 
-    respjson = resp.json()
-    uuid = respjson.get('uuid')
+    return resp.json()
+
+@dataset_blueprint.route('/portal/<entity_id>', methods=['GET'])
+def get_dataset_portal(entity_id):
+    """
+    Redirects the user to the Data Portal dataset page for the given SenNet ID.
+    param entity_id: SenNet ID
+    """
+
+    # First, call the API to get the uuid for the entity.
+    respjson = get_dataset_api(entity_id=entity_id)
+
+    if respjson is not None:
+        uuid = respjson.get('uuid')
     if not uuid:
         return "UUID not found", 404
 

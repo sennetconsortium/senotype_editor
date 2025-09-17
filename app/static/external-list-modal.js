@@ -29,69 +29,96 @@ add modal:
 4. displayText: used in the display of the link button
 
 */
-const EXTERNAL_CONFIG = {
-    dataset: {
-        apiSearch: query => `https://entity.api.sennetconsortium.org/entities/${encodeURIComponent(query)}`,
-        parseApiResult: (data, query) => {
-            const sennetid = data.sennetid || query;
-            const uuid = data.uuid || '';
-            const description = data.title || data.name || sennetid || '';
-            if (!sennetid) return [];
-            return [{
-                id: sennetid,      // Consistent with citation/origin
-                uuid,
-                description
-            }];
-        },
-        link: info => ({
-            href: `https://data.sennetconsortium.org/dataset?uuid=${encodeURIComponent(info.uuid)}`,
-            title: 'View dataset details'
-        }),
-        displayText: info => `${info.id} (${info.description})`
-    },
-    citation: {
-        apiSearch: query =>
-            `https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&retmode=json&term=${encodeURIComponent(query)}`,
-        parseApiResult: async (data) => {
-            const pmids = data.esearchresult?.idlist || [];
-            if (pmids.length === 0) return [];
-            const summaryRes = await fetch(
-                `https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&retmode=json&id=${pmids.join(',')}`
-            );
-            const summaryData = await summaryRes.json();
-            return pmids.map(pmid => ({
-                id: `PMID:${pmid}`,
-                description: summaryData.result[pmid]?.title || pmid
-            }));
-        },
-        link: info => ({
-            href: `https://pubmed.ncbi.nlm.nih.gov/${encodeURIComponent(info.id.split(':')[1])}`,
-            title: 'View citation details'
-        }),
-        displayText: info => `${info.id} (${info.description.slice(0, 40)}...)`
-    },
-    origin: {
-        apiSearch: query =>
-            `https://scicrunch.org/resolver/${encodeURIComponent(query)}.json`,
-        parseApiResult: data => {
-            let items = [];
-            if (data.hits && Array.isArray(data.hits.hits)) {
-                items = data.hits.hits.map(hit => hit._source.item);
-            } else if (data.identifier || (data.item && data.item.identifier)) {
-                items = [data.item || data];
+
+// Factory function to create EXTERNAL_CONFIG with a parameterized length for
+// truncating the display string.
+function createExternalConfig(trunclength = 40) {
+    return {
+        dataset: {
+            apiSearch: query => `/dataset/${encodeURIComponent(query)}`,
+            parseApiResult: (data, query) => {
+                const sennetid = data.sennetid || query;
+                const uuid = data.uuid || '';
+                const description = data.title || data.name || sennetid || '';
+                if (!sennetid) return [];
+                return [{
+                    id: sennetid,
+                    uuid,
+                    description
+                }];
+            },
+            link: info => ({
+                href: `https://data.sennetconsortium.org/dataset?uuid=${encodeURIComponent(info.uuid)}`,
+                title: 'View dataset details'
+            }),
+            displayText: info => {
+                const desc = info.description || '';
+                if (desc.length > trunclength - 3) {
+                    return `${info.id} (${desc.slice(0, trunclength - 3)}...)`;
+                }
+                return `${info.id} (${desc})`;
             }
-            return items.map(item => ({
-                id: `RRID:${item.identifier || data.identifier || ''}`.replace(/^RRID:RRID:/, 'RRID:'),
-                description: item.description || item.name || item.identifier || data.identifier || ''
-            }));
         },
-        link: info => ({
-            href: `https://scicrunch.org/resolver/${encodeURIComponent(info.id.replace(/^RRID:/, ''))}`,
-            title: 'View origin details'
-        }),
-        displayText: info => `${info.id} (${info.description.slice(0, 40)}...)`
-    }
-};
+        citation: {
+            apiSearch: query =>
+                `https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&retmode=json&term=${encodeURIComponent(query)}`,
+            parseApiResult: async (data) => {
+                const pmids = data.esearchresult?.idlist || [];
+                if (pmids.length === 0) return [];
+                const summaryRes = await fetch(
+                    `https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&retmode=json&id=${pmids.join(',')}`
+                );
+                const summaryData = await summaryRes.json();
+                return pmids.map(pmid => ({
+                    id: `PMID:${pmid}`,
+                    description: summaryData.result[pmid]?.title || pmid
+                }));
+            },
+            link: info => ({
+                href: `https://pubmed.ncbi.nlm.nih.gov/${encodeURIComponent(info.id.split(':')[1])}`,
+                title: 'View citation details'
+            }),
+            displayText: info => {
+                const desc = info.description || '';
+                if (desc.length > trunclength - 3) {
+                    return `${info.id} (${desc.slice(0, trunclength - 3)}...)`;
+                }
+                return `${info.id} (${desc})`;
+            }
+        },
+        origin: {
+            apiSearch: query =>
+                `https://scicrunch.org/resolver/${encodeURIComponent(query)}.json`,
+            parseApiResult: data => {
+                let items = [];
+                if (data.hits && Array.isArray(data.hits.hits)) {
+                    items = data.hits.hits.map(hit => hit._source.item);
+                } else if (data.identifier || (data.item && data.item.identifier)) {
+                    items = [data.item || data];
+                }
+                return items.map(item => ({
+                    id: `RRID:${item.identifier || data.identifier || ''}`.replace(/^RRID:RRID:/, 'RRID:'),
+                    description: item.description || item.name || item.identifier || data.identifier || ''
+                }));
+            },
+            link: info => ({
+                href: `https://scicrunch.org/resolver/${encodeURIComponent(info.id.replace(/^RRID:/, ''))}`,
+                title: 'View origin details'
+            }),
+            displayText: info => {
+                const desc = info.description || '';
+                if (desc.length > trunclength - 3) {
+                    return `${info.id} (${desc.slice(0, trunclength - 3)}...)`;
+                }
+                return `${info.id} (${desc})`;
+            }
+        }
+    };
+}
+
+//Initialize the configuration.
+const trunclength = 40;
+const EXTERNAL_CONFIG = createExternalConfig(trunclength);
 
 // --- Add, Remove, and EventListener Functions ---
 
@@ -100,6 +127,8 @@ function removeExternal(type, btn) {
 }
 
 function addExternal(type, info) {
+
+    // Obtain configuration information for the assertion type.
     const config = EXTERNAL_CONFIG[type];
     const ul = document.getElementById(`${type}-list`);
     if (!ul) return;
@@ -155,7 +184,10 @@ function addExternal(type, info) {
 }
 
 function setupExternalModalSearch(type) {
+
+    // Obtain the configuration for the assertion type.
     const config = EXTERNAL_CONFIG[type];
+
     let lastSearch = '';
     const searchInput = document.getElementById(`${type}-search-input`);
     const resultsDiv = document.getElementById(`${type}-search-results`);
