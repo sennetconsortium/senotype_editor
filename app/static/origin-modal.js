@@ -1,24 +1,42 @@
-// Features to support management of RRID origins for Senotype submission.
-// Assume a list that is initially populated via Flask/WTForms.
-// Called by the edit.html template.
+/*
+Features to support addition and removal of RRIDs for Senotype submission.
+Assumes a list that is initially populated via Flask/WTForms.
+Called by the edit.html template:
+1. The originSearchModal modal div loads when the user clicks the "+" button next to the
+   origin list. The addEventListener function in this script populates the modal's list
+   with information from the SciCrunch Resolver API, including a link that describes the
+   origin.
+2. The removeOrigin function is executed by the "-" button associated with each origin
+   in a list.
+3. The addOrigin function is executed by the link in the originSearchmodal.
+   The function creates a list element that combines:
+   a. a hidden input used for submission to the update route
+   b. a display span
+   c. a placeholder span
+   d. a link button
+*/
 
-// Remove origin from list (for client UX, WTForms update is handled on submit)
+// Remove origin from list. An origin in the list will feature a button that executes
+// this function.
 function removeOrigin(btn) {
     btn.parentNode.remove();
 }
 
-// Add origin from API result: Only add RRID if not already present, but display description in the list
+// Add origin to the list.
+// Only add ID if not already present.
+// Display description obtained from API call with the ID in the list.
 function addOrigin(rrid, description) {
     var ul = document.getElementById('origin-list');
 
-    // Prevent duplicates
+    // Prevent duplicates.
     var exists = Array.from(ul.querySelectorAll('input')).some(input => input.value === rrid);
     if (exists) return;
 
+    // Build the list element for the new origin.
     var li = document.createElement('li');
     li.className = 'list-group-item d-flex justify-content-between align-items-center w-100';
 
-    // Hidden input for WTForms submission
+    // Build the hidden input for WTForms submission.
     var input = document.createElement('input');
     input.type = 'text';
     input.name = 'origin-' + ul.children.length; // WTForms FieldList expects this pattern
@@ -26,18 +44,20 @@ function addOrigin(rrid, description) {
     input.className = 'form-control d-none'; // Hidden but submitted
     li.appendChild(input);
 
-    // Visible text: RRID (description)
+    // Build the display span in format
+    // RRID (truncated description)
     var span = document.createElement('span');
     span.className = 'list-field-display';
-    span.textContent = rrid + " (" + description.slice(0, 70) + "..." + ")";
+    span.textContent = rrid + " (" + description.slice(0, 40) + "..." + ")";
     li.appendChild(span);
 
-    // Placeholder for the link button
+    // Add placeholder span for link button.
     var placeholder = document.createElement('span');
     placeholder.className = 'origin-link-placeholder ms-2';
     placeholder.id = 'origin-link-' + rrid;
 
-    // Link button
+    // Build link button with href that loads the SenNet Data Portal search detail
+    // for the origin, using the RRID.
     var link = document.createElement('a');
     link.className = 'btn btn-sm btn-outline-primary ms-2';
     link.style.width = '2.5em';
@@ -62,8 +82,11 @@ function addOrigin(rrid, description) {
 }
 
 // Modal search logic (fetching RRIDs, then their descriptions)
-let lastOriginSearch = '';
+
 document.getElementById('origin-search-input').addEventListener('input', function () {
+
+    let lastOriginSearch = '';
+
     var query = this.value.trim();
     var resultsDiv = document.getElementById('origin-search-results');
     resultsDiv.innerHTML = '';

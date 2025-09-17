@@ -1,24 +1,43 @@
-// Features to support management of citations for Senotype submission.
-// Assume a list that is initially populated via Flask/WTForms.
-// Called by the edit.html template.
+/*
+Features to support addition and removal of PubMed citations for Senotype submission.
+Assumes a list that is initially populated via Flask/WTForms.
+Called by the edit.html template:
+1. The citationSearchModal modal div loads when the user clicks the "+" button next to the
+   citation list. The addEventListener function in this script populates the modal's list
+   with information from the NCBI EUtils API, including a link that describes the
+   citation.
+2. The removeCitation function is executed by the "-" button associated with each citation
+   in a list.
+3. The addCitation function is executed by the link in the citationSearchmodal.
+   The function creates a list element that combines:
+   a. a hidden input used for submission to the update route
+   b. a display span
+   c. a placeholder span
+   d. a link button
+*/
 
-// Remove citation from list (for client UX, WTForms update is handled on submit)
+// Remove citation from list. A dataset in the list will feature a button that executes
+// this function.
 function removeCitation(btn) {
     btn.parentNode.remove();
 }
 
-// Add citation from API result
+// Add citation to the list.
+// Only add ID if not already present.
+// Display description obtained from API call with the ID in the list.
 function addCitation(pmid, title) {
+
     var ul = document.getElementById('citation-list');
 
-    // Prevent duplicates
+    // Prevent duplicates.
     var exists = Array.from(ul.querySelectorAll('input')).some(input => input.value === pmid);
     if (exists) return;
 
+    // Build the list element for the new citation.
     var li = document.createElement('li');
     li.className = 'list-group-item d-flex justify-content-between align-items-center w-100';
 
-    // Hidden input for WTForms submission
+    // Build the hidden input for WTForms submission.
     var input = document.createElement('input');
     input.type = 'text';
     input.name = 'citation-' + ul.children.length; // WTForms FieldList expects this pattern
@@ -26,21 +45,24 @@ function addCitation(pmid, title) {
     input.className = 'form-control d-none'; // Hidden but submitted
     li.appendChild(input);
 
-    // Visible text: show the PMID
+    // Build the display span in format
+    // PMID (truncated title)
     var span = document.createElement('span');
     span.className = 'list-field-display';
     span.textContent = pmid + " (" + title.slice(0, 40) + "..." + ")";
     li.appendChild(span);
 
-    // Placeholder for the link button
+    // Add placeholder span for link button.
     var placeholder = document.createElement('span');
     placeholder.className = 'citation-link-placeholder ms-2';
     placeholder.id = 'citation-link-' + pmid;
 
-    // Link button
+    // Build link button with href that loads the PubMed detail
+    // for the citation, using the PMID.
     var link = document.createElement('a');
     link.className = 'btn btn-sm btn-outline-primary ms-2';
     link.style.width = '2.5em';
+    // Parse the PMID from the full id.
     var code = pmid.split(":")[1];
     link.href = 'https://pubmed.ncbi.nlm.nih.gov/' + encodeURIComponent(code);
     link.target = '_blank';
@@ -50,7 +72,7 @@ function addCitation(pmid, title) {
 
     li.appendChild(placeholder);
 
-    // Remove button
+    // Build remove button.
     var btn = document.createElement('button');
     btn.className = 'btn btn-sm btn-danger ms-2';
     btn.style = 'width: 2.5em;'
@@ -62,7 +84,9 @@ function addCitation(pmid, title) {
     ul.appendChild(li);
 }
 
-// Modal search logic (fetching PMIDs, then their titles)
+// Search logic executed by the citationSearchModal modal form that is loaded
+// in response to the add button in the citation list.
+// Calls the NCBI EUtils API to fetch citation information.
 let lastCitationSearch = '';
 document.getElementById('citation-search-input').addEventListener('input', function () {
     var query = this.value.trim();

@@ -119,7 +119,7 @@
         <!-- DOI -->
         <div class="row mb-1">
           <div class="col-md-8">
-              {{ render_textarea_section(form, 'doi', 'doi-modal', '#f5f5f5', link_base_url='https://api.datacite.org/dois/', link_title='View DOI details', parse_code=False ) }}
+              {{ render_textarea_section(form, 'doi', 'doiSearchModal', '#f5f5f5', link_base_url='https://api.datacite.org/dois/', link_title='View DOI details', parse_code=False ) }}
             <!--{{ render_textarea_section(form, "doi", "doiSearchModal") }}-->
           </div>
           <div class="col-md-4">
@@ -642,9 +642,10 @@
 <script src="{{ url_for('static', filename='add-link-buttons.js') }}"></script>
 <!-- Scripts to manage modals related to the add and remove buttons-->
 <script src="{{ url_for('static', filename='valueset-modal.js') }}"></script>
-<script src="{{ url_for('static', filename='citation-modal.js') }}"></script>
+<!-- <script src="{{ url_for('static', filename='citation-modal.js') }}"></script>
 <script src="{{ url_for('static', filename='origin-modal.js') }}"></script>
-<script src="{{ url_for('static', filename='dataset-modal.js') }}"></script>
+<script src="{{ url_for('static', filename='dataset-modal.js') }}"></script> -->
+<script src="{{ url_for('static', filename='external-list-modal.js') }}"></script>
 <script src="{{ url_for('static', filename='marker-modal.js') }}"></script>
 <script src="{{ url_for('static', filename='marker-csv.js') }}"></script>
 <script src="{{ url_for('static', filename='regmarker-modal.js') }}"></script>
