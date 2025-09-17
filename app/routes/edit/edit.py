@@ -461,7 +461,7 @@ def loadexistingdata(id: str, senlib: SenLib, form: EditForm):
             ]
         )
     else:
-        form.regmarker.process(None, [])
+        form.regmarker.process(None, [''])
 
 
 def build_session_list(senlib: SenLib, form_data: dict, listkey: str):
@@ -659,6 +659,7 @@ def getsessiondata(senlib: SenLib, form:EditForm, form_data: dict):
     # Regulating markers. The field processing is different because regmarker is a
     # FieldList(FormField) instead of a simple FieldList.
     regmarkerlist = build_session_regmarkerlist(form_data=form_data)
+    print('regmarkerlist',regmarkerlist)
     if len(regmarkerlist) > 0:
         form.regmarker.process(
             None,
@@ -671,7 +672,8 @@ def getsessiondata(senlib: SenLib, form:EditForm, form_data: dict):
             ]
         )
     else:
-        form.regmarker.process(None, [''])
+
+        form.regmarker.process(None,[])
 
 @edit_blueprint.route('', methods=['POST', 'GET'])
 def edit():
@@ -695,9 +697,7 @@ def edit():
     # Github personal access token for authorized calls
     # github_token = cfg.getfield(key='GITHUB_TOKEN')
 
-
     # Senlib interface
-    #senlib = SenLib(senlib_url, valueset_url, json_url, github_token)
     senlib = SenLib(cfg=cfg)
 
     # Check if we have session data for the form.

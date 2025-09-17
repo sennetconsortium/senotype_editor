@@ -8,6 +8,9 @@ import pandas as pd
 from models.appconfig import AppConfig
 # Interface to GitHub repo
 from models.senlib_github import SenLibGitHub
+# Interface to MySql database
+from models.senlib_mysql import SenLibMySql
+
 
 # Configure consistent logging. This is done at the beginning of each module instead of with a superclass of
 # logger to avoid the need to overload function calls to logger.
@@ -248,7 +251,8 @@ class SenLib:
 
         # Connect to the senlib repo.
         # (Will change to MySql.)
-        self.database = SenLibGitHub(cfg)
+        # self.database = SenLibGitHub(cfg)
+        self.database = SenLibMySql(cfg)
 
         # Connect to the senlib database.
         # self.db = self._getConnection(cfg = cfg)
