@@ -65,14 +65,15 @@ def writesubmission():
 
     # Get IDs for existing Senotype submissions.
     # Get the URLs to the senlib repo.
-    senlib_url = cfg.getfield(key='SENOTYPE_URL')
-    valueset_url = cfg.getfield(key='VALUESET_URL')
-    json_url = cfg.getfield(key='JSON_URL')
+    # senlib_url = cfg.getfield(key='SENOTYPE_URL')
+    # valueset_url = cfg.getfield(key='VALUESET_URL')
+    # json_url = cfg.getfield(key='JSON_URL')
     # Github personal access token for authorized calls
-    github_token = cfg.getfield(key='GITHUB_TOKEN')
-
+    # github_token = cfg.getfield(key='GITHUB_TOKEN')
     # Senlib interface
-    senlib = SenLib(senlib_url, valueset_url, json_url, github_token)
+    # senlib = SenLib(senlib_url, valueset_url, json_url, github_token)
+
+    senlib = SenLib(cfg)
 
 
 def remove_duplicates_from_multidict(md: MultiDict, prefix_list: list) -> MultiDict:
@@ -149,6 +150,9 @@ def update():
     Receives POST from the update_form, which has all edit_form fields as hidden inputs (cloned by JS).
     Validates using WTForms and acts on result.
     """
+    # Get the node that the user is attempting to create or update.
+
+    selected_node_id = request.form.get('selected_node_id') or request.args.get('selected_node_id')
 
     # Get IDs for existing Senotype submissions and URLs
     cfg = AppConfig()
@@ -197,7 +201,6 @@ def update():
         dictsenotype = buildsubmission(form_data=deduped_form_data, uuid_base_url=uuid_base_url)
         writesubmission()
         flash('Success!')
-        return redirect('/edit')
     else:
         # Inject custom errors into standard WTForms validation errors, avoiding duplicates.
         for field_name, custom_field_errors in custom_errors.items():
@@ -212,4 +215,7 @@ def update():
         # to a reload of the form.
         session['form_errors'] = form.errors
         session['form_data'] = form.data
-        return redirect(url_for('edit.edit'))
+
+    # Redirect to the edit form, which will set the focus of the treeview back
+    # to the original node.
+    return redirect(url_for('edit.edit', selected_node_id=selected_node_id))

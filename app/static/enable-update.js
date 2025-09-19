@@ -1,6 +1,9 @@
-// Enable the update button only if there is a change in input.
-
+// Enable the update button only if there is a change in input
+// or
+// if there was an error during update/create.
+console.log('enable-update.js loaded after redirect');
 document.addEventListener('DOMContentLoaded', function() {
+  console.log('DOMContentLoaded');
   const editForm = document.getElementById('edit_form');
   const updateBtn = document.getElementById('update_btn');
 
@@ -9,18 +12,38 @@ document.addEventListener('DOMContentLoaded', function() {
   let initialSerialized = serializeFormData(initialData);
 
   // Listen for any input, change, or textarea event in the edit form
-  editForm.addEventListener('input', checkForChange);
-  editForm.addEventListener('change', checkForChange);
+  editForm.addEventListener('input', checkForEnabled);
+  editForm.addEventListener('change', checkForEnabled);
+
+  checkForEnabled();
 
   function checkForChange() {
+    console.log('checkForChange');
     const currentData = new FormData(editForm);
     const currentSerialized = serializeFormData(currentData);
-    updateBtn.disabled = (currentSerialized === initialSerialized);
+    return currentSerialized !== initialSerialized;
   }
 
-  // Helper function to serialize FormData for comparison
+  function checkForErrors() {
+        console.log('checkForErrors');
+        // Select all div elements with the class "text-danger"
+        const errorDivs = document.querySelectorAll('div.text-danger');
+        console.log(errorDivs);
+        // Return true if any such div exists
+        return errorDivs.length > 0;
+  }
+
+    // This function controls enabling/disabling the update button
+  function checkForEnabled() {
+    console.log('checkForEnabled');
+    const hasChange = checkForChange();
+    const hasError = checkForErrors();
+    console.log(hasError);
+    updateBtn.disabled = !(hasChange || hasError);
+  }
+
   function serializeFormData(formData) {
-    // FormData is not directly comparable, so we convert it to a sorted query string
+    console.log('serializeFormData');
     return Array.from(formData.entries())
       .map(([key, value]) => encodeURIComponent(key) + '=' + encodeURIComponent(value))
       .sort()

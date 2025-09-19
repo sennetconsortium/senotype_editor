@@ -673,7 +673,8 @@ def getsessiondata(senlib: SenLib, form:EditForm, form_data: dict):
         )
     else:
 
-        form.regmarker.process(None,[])
+        form.regmarker.process(None, [''])
+
 
 @edit_blueprint.route('', methods=['POST', 'GET'])
 def edit():
@@ -687,6 +688,8 @@ def edit():
     cfg = AppConfig()
 
     # Get IDs for existing Senotype submissions.
+
+    # Logic for using the senlib GitHub repo. (Deprecated)
     # Get the URLs to the senlib repo.
     # Base URL for the repo
     # senlib_url = cfg.getfield(key='SENOTYPE_URL')

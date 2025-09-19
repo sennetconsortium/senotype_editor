@@ -249,13 +249,10 @@ class SenLib:
 
         """
 
-        # Connect to the senlib repo.
-        # (Will change to MySql.)
+        # Connect to the senlib database.
+        # GitHub repo as a database has been deprecated.
         # self.database = SenLibGitHub(cfg)
         self.database = SenLibMySql(cfg)
-
-        # Connect to the senlib database.
-        # self.db = self._getConnection(cfg = cfg)
 
         # SenLib valuesets
         self.senlibvaluesets = self.database.senlibvaluesets

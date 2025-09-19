@@ -10,7 +10,7 @@ $(function() {
     var tree = $('#senotype-tree').jstree(true);
     var isEditable = false;
 
-    //.. check for an editable class on the selected node. (The class is set by Flask.)
+    //... check for an editable class on the selected node. (The class is set by Flask.)
     if (nodeid) {
       var nodeDom = tree.get_node(nodeid, true);
       if (nodeDom && nodeDom.length) {
@@ -69,12 +69,11 @@ $(function() {
     });
 
     /* Update button:
-       Label should be "Create" if "new" was selected, elss "Update".
+       Label should be "Create" if "new" was selected, else "Update".
     */
     if(update_btn) {
         update_btn.textContent = (nodeid === "new") ? "Create" : "Update";
     }
-
 
   });
 });

@@ -1,3 +1,9 @@
+/*
+Update script.
+1. Collects state of inputs in edit form.
+2. Writes state to hidden inputs.
+3. Submits hidden inputs to update route.
+*/
 document.addEventListener("DOMContentLoaded", function () {
     const editForm = document.getElementById("edit_form");
     const updateForm = document.getElementById("update_form");
@@ -80,10 +86,6 @@ document.addEventListener("DOMContentLoaded", function () {
             updateForm.appendChild(hidden);
         });
 
-        // Debug: Log all cloned inputs
-        //Array.from(updateForm.querySelectorAll(".cloned-edit-input")).forEach(el => {
-             //console.log("CLONED:", el.name, el.value);
-         //});
         // Submit proceeds
     });
 });
