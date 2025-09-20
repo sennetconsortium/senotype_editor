@@ -19,6 +19,12 @@ function addDoiReference(doiid, title) {
     }
     textarea.value += doiid + ' (' + (title ? (title.length > 70 ? title.slice(0, 70) + '...' : title) : '') + ')';
 
+    // Because the DOI input is disabled for direct entry (via typing inside the textarea
+    // itself, change events are not triggered. Trigger the change event manually via
+    // a custom dispatch.
+    const event = new Event('input', { bubbles: true });
+    textarea.dispatchEvent(event);
+
     // Add hidden input for WTForms (FieldList style)
     var container = document.getElementById('doi-hidden-inputs');
     if (!container) {
@@ -43,7 +49,7 @@ function addDoiReference(doiid, title) {
     link.target = '_blank';
     link.title = 'View DOI details';
     link.textContent = '🔗';
-    li.appendChild(link);
+    container.appendChild(link);
 
 }
 

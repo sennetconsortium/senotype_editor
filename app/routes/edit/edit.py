@@ -530,6 +530,7 @@ def build_session_markerlist(form_data: dict) -> list:
     objects = getmarkerobjects(rawobjects=rawobjects)
     return objects
 
+
 def build_session_regmarkerlist(form_data: dict) -> list:
     """
     Builds content for the regulating marker list on the Edit Form based on session data.
@@ -549,6 +550,7 @@ def build_session_regmarkerlist(form_data: dict) -> list:
 
     return regmarkerlist
 
+
 def getsessiondata(senlib: SenLib, form:EditForm, form_data: dict):
     """
     Populates list inputs (categorical assertions; citations; origins; datasets; and markers)
@@ -562,6 +564,16 @@ def getsessiondata(senlib: SenLib, form:EditForm, form_data: dict):
     :param form: the Edit form
     :param form_data: the session data for the form inputs
     """
+
+    # Senotype data
+    form.senotypename.data = form_data['senotypename']
+    form.senotypedescription.data = form_data['senotypedescription']
+    form.doi.data = form_data['doi']
+
+    # Submitter data
+    form.submitterfirst.data = form_data['submitterfirst']
+    form.submitterlast.data = form_data['submitterlast']
+    form.submitteremail.data = form_data['submitteremail']
 
     # build_session_list returns a list of objects in format {"code":code, "term": term}.
     # Pass to WTForms process a string in format code (term), which matches what is obtained
@@ -659,7 +671,6 @@ def getsessiondata(senlib: SenLib, form:EditForm, form_data: dict):
     # Regulating markers. The field processing is different because regmarker is a
     # FieldList(FormField) instead of a simple FieldList.
     regmarkerlist = build_session_regmarkerlist(form_data=form_data)
-    print('regmarkerlist',regmarkerlist)
     if len(regmarkerlist) > 0:
         form.regmarker.process(
             None,

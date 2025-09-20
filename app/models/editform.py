@@ -25,6 +25,9 @@ def validate_age(form, field):
     """
 
     age = field.data
+    if age is None:
+        return
+
     if age.strip() == '':
         return
 
@@ -49,6 +52,9 @@ def validate_number(field):
     """
 
     valuetotest = field.data
+    if valuetotest is None:
+        return
+
     test = stringisintegerorfloat(valuetotest)
 
     if test == "not a number":
@@ -63,6 +69,9 @@ def validate_integer(field):
     """
 
     valuetotest = field.data
+    if valuetotest is None:
+        return
+
     test = stringisintegerorfloat(valuetotest)
 
     if test != "integer":

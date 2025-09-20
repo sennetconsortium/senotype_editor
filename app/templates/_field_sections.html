@@ -39,7 +39,7 @@ Arguments:
                 {% else %}
                     {% set display_value = full_value.split('(')[1][0:-1] if '(' in full_value else full_value %}
                 {% endif %}
-                {% set hidden_value = full_value.split(' ')[0] %}
+                {% set hidden_value = (full_value or '').split(' ')[0] %}
 
                 <li class="list-group-item d-flex justify-content-between align-items-center w-100">
                     <!-- Hidden input used to store value for post -->
@@ -127,7 +127,7 @@ Use case: DOI field
 <div style="background-color: {{ label_bg }};">
     <div class="d-flex align-items-center" id="{{ field_name }}-row">
         <label for="{{ form[field_name].id }}" class="me-2 mb-0" style="white-space: nowrap;">
-            {% set hidden_value = form[field_name].data.split(' ')[0] %}
+            {% set hidden_value = (form[field_name].data or '').split(' ')[0] %}
             <input name="{{ form[field_name].name }}" type="hidden" id="{{ field_name }}-hidden-input" value="{{ hidden_value }}">
             <strong>{{ form[field_name].label.text }}</strong>
         </label>

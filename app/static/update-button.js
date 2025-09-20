@@ -64,7 +64,7 @@ document.addEventListener("DOMContentLoaded", function () {
         if (spinner) spinner.style.display = 'inline-block';
         if (spinnerLabel) spinnerLabel.style.display = 'inline-block';
 
-        //e.preventDefault();
+        // e.preventDefault();
         // Remove previously added hidden inputs
         Array.from(updateForm.querySelectorAll(".cloned-edit-input")).forEach(el => el.remove());
 

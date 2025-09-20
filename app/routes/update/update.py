@@ -81,6 +81,7 @@ def remove_duplicates_from_multidict(md: MultiDict, prefix_list: list) -> MultiD
     Remove duplicate values for keys that start with any prefix in prefix_list.
     Keeps only unique values per prefix+value.
     """
+
     new_items = []
     seen = {}
     for key, value in md.items(multi=True):
@@ -96,7 +97,29 @@ def remove_duplicates_from_multidict(md: MultiDict, prefix_list: list) -> MultiD
         # If not break (i.e., not duplicate), save it
         if not (prefix, value) in seen:
             new_items.append((key, value))
+
     return MultiDict(new_items)
+
+
+def normalize_multidict(md: MultiDict) -> MultiDict:
+    """
+    Normalizes each field in a MultiDict:
+    - For fields with multiple values: return a list of non-empty, stripped strings, excluding 'None' (string).
+    - For fields with a single value: return the stripped string, not None.
+    - Values of string 'None' or blank/whitespace are skipped.
+    Returns a MultiDict (so .getlist() works).
+    """
+
+    normalized = MultiDict()
+    for key in md.keys():
+        values = md.getlist(key)
+        # Remove empty strings, whitespace, and string 'None'
+        cleaned = [v.strip() for v in values if v and v.strip() and v.strip() != 'None']
+        if cleaned:
+            for entry in cleaned:
+                normalized.add(key, entry)
+
+    return normalized
 
 
 def validate_form(form, fieldlist_prefixes):
@@ -184,7 +207,11 @@ def update():
 
     deduped_form_data = remove_duplicates_from_multidict(request.form, fieldlist_prefixes)
 
-    form = EditForm(deduped_form_data)  # Use POSTed form data
+    # Normalize form data values of [''] and ['None'] to [].
+    normalized_deduped_form_data = normalize_multidict(deduped_form_data)
+
+    # Load the edit form with the deduplicated, normalized form data.
+    form = EditForm(normalized_deduped_form_data)
 
     # Set selected value for senotypeid (to preserve selection)
     prior_senotypeid = request.form.get('senotypeid', 'new')
@@ -198,10 +225,28 @@ def update():
     custom_errors = validate_form(form=form, fieldlist_prefixes=fieldlist_prefixes)
     if len(custom_errors) == 0:
         # Handle successful update (save to database, etc.)
-        dictsenotype = buildsubmission(form_data=deduped_form_data, uuid_base_url=uuid_base_url)
+        dictsenotype = buildsubmission(form_data=normalized_deduped_form_data, uuid_base_url=uuid_base_url)
         writesubmission()
         flash('Success!')
-    else:
+
+        # Trigger a reload of the edit form that refreshes with updated data.
+
+        # Dev note
+        # This will require refactoring the loadexistingdata function in edit.py so that
+        # it is common to both the edit and update routes.
+        # After successful update
+        #form = EditForm(normalized_deduped_form_data)
+        # refresh senlib object
+        #tree_data = senlib.get_tree_data()  # Assuming senlib can do this
+
+        #return render_template(
+            #"edit.html",
+            #form=form,
+            #tree_data=tree_data,
+            #selected_node_id=selected_node_id,
+        #)
+        return redirect(url_for('edit.edit', selected_node_id=selected_node_id))
+     else:
         # Inject custom errors into standard WTForms validation errors, avoiding duplicates.
         for field_name, custom_field_errors in custom_errors.items():
             if hasattr(form, field_name):
@@ -216,6 +261,6 @@ def update():
         session['form_errors'] = form.errors
         session['form_data'] = form.data
 
-    # Redirect to the edit form, which will set the focus of the treeview back
-    # to the original node.
-    return redirect(url_for('edit.edit', selected_node_id=selected_node_id))
+        # Redirect to the edit form, which will set the focus of the treeview back
+        # to the original node.
+        return redirect(url_for('edit.edit', selected_node_id=selected_node_id))
