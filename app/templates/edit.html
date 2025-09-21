@@ -14,6 +14,8 @@
 <!-- Renders sections for specified and regulating markers, with add buttons and error display -->
 {% from "_marker_lists.html" import render_marker_section %}
 {% from "_marker_lists.html" import render_regmarker_section %}
+<!-- Renders "search modals"--i.e., modals that call external APIs -->
+{% from "_search_modal_macro.html" import search_modal %}
 <!-- START OF PAGE -->
 <div class="d-flex align-items-end mb-1 p-1" style="background-color: #F0FDF4; border: 1px solid #ccc; border-radius: 5px;">
     <img src="static/editor.png" width="80" height="76" alt="Senotype Editor" style="border: 1px solid #ccc;">
@@ -215,123 +217,44 @@
     </div>
 </form>
 
-<!--MODAL DIVS -->
+<!-- MODAL DIVS -->
+<!-- Search modals for external API searches -->
 <!-- Modal for external API search for PubMed citation-->
-<div class="modal fade" id="citationSearchModal" tabindex="-1" aria-labelledby="citationSearchModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="citationSearchModalLabel">Search PubMed for PMID</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <div class="input-group mb-2">
-                    <input type="text" id="citation-search-input" class="form-control" placeholder="Enter query...">
-                    <!-- PubMed Explore Button -->
-                    <a class="btn btn-sm btn-outline-primary ms-2 mb-2"
-                        style="width: 2.5em;"
-                        href="https://pubmed.ncbi.nlm.nih.gov/"
-                        target="_blank"
-                        title="Explore PubMed"
-                        aria-label="Explore PubMed">
-                        <!-- Magnifying glass Unicode icon -->
-                        🔍
-                    </a>
-                </div>
-                <div id="citation-search-results" class="mt-3">
-                    <!-- Search results from API appear here -->
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+{{ search_modal(
+    modal_id="citationSearchModal",
+    modal_label="Search PubMed for PMID",
+    input_id="citation-search-input",
+    explore_url="https://pubmed.ncbi.nlm.nih.gov/",
+    explore_text="Explore PubMed",
+    results_id="citation-search-results"
+) }}
 <!-- Modal for external API search for RRID origin-->
-<div class="modal fade" id="originSearchModal" tabindex="-1" aria-labelledby="originSearchModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="originSearchModalLabel">Search SciCrunch for RRID</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <div class="input-group mb-2">
-                    <input type="text" id="origin-search-input" class="form-control" placeholder="Enter query...">
-                    <!-- PubMed Explore Button -->
-                    <a class="btn btn-sm btn-outline-primary ms-2 mb-2"
-                        style="width: 2.5em;"
-                        href="https://scicrunch.org/resolver/"
-                        target="_blank"
-                        title="Explore SciCrunch Resolver"
-                        aria-label="Explore SciCrunch Resolver">
-                        <!-- Magnifying glass Unicode icon -->
-                            🔍
-                    </a>
-                    <div id="origin-search-results" class="mt-3">
-                        <!-- Search results from API appear here -->
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+{{ search_modal(
+    modal_id="originSearchModal",
+    modal_label="Search SciCrunch for RRID",
+    input_id="origin-search-input",
+    explore_url="https://scicrunch.org/resolver/",
+    explore_text="Explore SciCrunch",
+    results_id="origin-search-results"
+) }}
 <!-- Modal for external SenNet entity-api search for dataset-->
-<div class="modal fade" id="datasetSearchModal" tabindex="-1" aria-labelledby="datasetSearchModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="datasetSearchModalLabel">Search SenNet for dataset</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <div class="input-group mb-2">
-                    <input type="text" id="dataset-search-input" class="form-control" placeholder="Enter query...">
-                    <!-- Data Portal Explore Button -->
-                    <a class="btn btn-sm btn-outline-primary ms-2 mb-2"
-                        style="width: 2.5em;"
-                        href="https://data.sennetconsortium.org"
-                        target="_blank"
-                        title="Explore SenNet Datasets"
-                        aria-label="Explore SenNet Datasets">
-                        <!-- Magnifying glass Unicode icon -->
-                            🔍
-                    </a>
-                    <div id="dataset-search-results" class="mt-3">
-                        <!-- Search results from API appear here -->
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+{{ search_modal(
+    modal_id="datasetSearchModal",
+    modal_label="Search SenNet Data Portal for dataset",
+    input_id="dataset-search-input",
+    explore_url="https://data.sennetconsortium.org",
+    explore_text="Explore SenNet Data Portal",
+    results_id="dataset-search-results"
+) }}
 <!-- Modal for external DataCite API search for DOI -->
-<div class="modal fade" id="doiSearchModal" tabindex="-1" aria-labelledby="doiSearchModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="doiSearchModalLabel">Search DataCite for DOI</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <div class="input-group mb-2">
-                    <input type="text" id="doi-search-input" class="form-control" placeholder="Enter query...">
-                    <!-- DataCite Explore Button -->
-                    <a class="btn btn-sm btn-outline-primary ms-2 mb-2"
-                        style="width: 2.5em;"
-                        href="https://commons.datacite.org/"
-                        target="_blank"
-                        title="Explore DataCite Commons"
-                        aria-label="Explore DataCite Commons">
-                        <!-- Magnifying glass Unicode icon -->
-                            🔍
-                    </a>
-                    <div id="doi-search-results" class="mt-3">
-                        <!-- Search results from API appear here -->
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+{{ search_modal(
+    modal_id="doiSearchModal",
+    modal_label="Search DataCite for DOI",
+    input_id="doi-search-input",
+    explore_url="https://commons.datacite.org/",
+    explore_text="Explore DataCite Commons",
+    results_id="doi-search-results"
+) }}
 <!-- Modal for external ubkg-api search for specified marker-->
 <div class="modal fade" id="markerSearchModal" tabindex="-1" aria-labelledby="markerSearchModalLabel" aria-hidden="true">
     <div class="modal-dialog">
