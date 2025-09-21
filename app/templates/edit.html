@@ -634,16 +634,13 @@
 <!-- Script to enable/disable controls based on whether the selected id is editable -->
 <script src="{{ url_for('static', filename='enable-based-on-selection.js') }}"></script>
 <!-- Script to enable the update button only if a change in input -->
-<!--<script src="{{ url_for('static', filename='enable-update.js') }}"></script>-->
+<!--<script src="{{ url_for('static', filename='input-changes.js') }}"></script>-->
 <!-- Script behind the update button-->
 <script src="{{ url_for('static', filename='update-button.js') }}"></script>
 <!-- Script to add external link buttons -->
 <script src="{{ url_for('static', filename='add-link-buttons.js') }}"></script>
 <!-- Scripts to manage modals related to the add and remove buttons-->
 <script src="{{ url_for('static', filename='valueset-modal.js') }}"></script>
-<!-- <script src="{{ url_for('static', filename='citation-modal.js') }}"></script>
-<script src="{{ url_for('static', filename='origin-modal.js') }}"></script>
-<script src="{{ url_for('static', filename='dataset-modal.js') }}"></script> -->
 <script src="{{ url_for('static', filename='external-list-modal.js') }}"></script>
 <script src="{{ url_for('static', filename='marker-modal.js') }}"></script>
 <script src="{{ url_for('static', filename='marker-csv.js') }}"></script>
@@ -653,5 +650,6 @@
 
 {% endblock %}
 {% block scripts %}
-  <script src="{{ url_for('static', filename='enable-update.js') }}"></script>
+  <!-- Respond to changes in input: enable/disable update button; turn off display of errors -->
+  <script src="{{ url_for('static', filename='input-changes.js') }}"></script>
 {% endblock %}

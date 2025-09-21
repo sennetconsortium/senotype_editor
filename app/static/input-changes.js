@@ -1,6 +1,11 @@
-// Enable the update button only if there is a change in input
-// or
-// if there was an error during update/create.
+/*
+Respond to changes in inputs:
+
+1. Enable the update button only if there is a change in input
+   or
+   if there was an error during update/create.
+2. Turn off display of any error messages.
+*/
 
 document.addEventListener('DOMContentLoaded', function() {
   const editForm = document.getElementById('edit_form');
@@ -14,13 +19,22 @@ document.addEventListener('DOMContentLoaded', function() {
   // Note that addEventListener events are not triggered for disabled inputs, such as
   // the DOI. The doi-modal.js script will add a custom event dispatch to trigger
   // a change event.
-  editForm.addEventListener('input', checkForEnabled);
-  editForm.addEventListener('change', checkForEnabled);
+  editForm.addEventListener('input', handleInputChange);
+  editForm.addEventListener('change', handleInputChange);
 
   // Handles the case of the edit form being loaded in response to validation
   // errors from an attempted create/update.
   checkForEnabled();
 
+ function handleInputChange() {
+    // Remove all error classes (text-danger, text-bg-danger)
+    document.querySelectorAll('div.text-danger, div.text-bg-danger').forEach(div => {
+      // Option 1: Hide the error div
+      div.style.display = 'none';
+    });
+
+    checkForEnabled();
+  }
   // Function to check for changes to inputs.
   function checkForChange() {
     const currentData = new FormData(editForm);
