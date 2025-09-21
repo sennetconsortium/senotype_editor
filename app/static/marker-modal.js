@@ -1,4 +1,4 @@
-// Features to support management of individual markers for Senotype submission.
+// Features to support management of individual specified markers for Senotype submission.
 // Assume a list that is initially populated via Flask/WTForms.
 
 // Remove marker from list.

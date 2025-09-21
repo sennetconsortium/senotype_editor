@@ -1,10 +1,11 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<!--Data for the senotype treeview passed from the edit route in Flask-->
+<!--Data for the senotype treeview passed from the edit route in Flask.-->
 <script>
   window.tree_data = {{ response.tree_data|tojson|safe }};
 </script>
+
 <!-- JINJA RENDERING MACROS-->
 <!-- Standard field rendering -->
 {% from "_formhelpers.html" import render_field %}
@@ -14,8 +15,11 @@
 <!-- Renders sections for specified and regulating markers, with add buttons and error display -->
 {% from "_marker_lists.html" import render_marker_section %}
 {% from "_marker_lists.html" import render_regmarker_section %}
-<!-- Renders "search modals"--i.e., modals that call external APIs -->
+<!-- Renders "valueset select modals -- i.e., modals that allow selection from a valueset -->
+{% from "_valueset_modal_macro.html" import valueset_modal %}
+<!-- Renders "external search modals"--i.e., modals that call external APIs -->
 {% from "_search_modal_macro.html" import search_modal %}
+
 <!-- START OF PAGE -->
 <div class="d-flex align-items-end mb-1 p-1" style="background-color: #F0FDF4; border: 1px solid #ccc; border-radius: 5px;">
     <img src="static/editor.png" width="80" height="76" alt="Senotype Editor" style="border: 1px solid #ccc;">
@@ -218,11 +222,27 @@
 </form>
 
 <!-- MODAL DIVS -->
+<!-- Valueset Select modals for simple assertions:
+     taxon
+     location
+     celltype
+     hallmark
+     observable
+     inducer
+     assay-->
+{{ valueset_modal("taxonModal", "Taxon", "taxon-modal-list") }}
+{{ valueset_modal("locationModal", "Location", "location-modal-list") }}
+{{ valueset_modal("celltypeModal", "Cell type", "celltype-modal-list") }}
+{{ valueset_modal("hallmarkModal", "Hallmark", "hallmark-modal-list") }}
+{{ valueset_modal("observableModal", "Observable", "observable-modal-list") }}
+{{ valueset_modal("inducerModal", "Inducer", "inducer-modal-list") }}
+{{ valueset_modal("assayModal", "Assay", "assay-modal-list") }}
+
 <!-- Search modals for external API searches -->
 <!-- Modal for external API search for PubMed citation-->
 {{ search_modal(
     modal_id="citationSearchModal",
-    modal_label="Search PubMed for PMID",
+    modal_label="Search PubMed for Citation PMID",
     input_id="citation-search-input",
     explore_url="https://pubmed.ncbi.nlm.nih.gov/",
     explore_text="Explore PubMed",
@@ -231,16 +251,16 @@
 <!-- Modal for external API search for RRID origin-->
 {{ search_modal(
     modal_id="originSearchModal",
-    modal_label="Search SciCrunch for RRID",
+    modal_label="Search SciCrunch for Origin RRID",
     input_id="origin-search-input",
     explore_url="https://scicrunch.org/resolver/",
     explore_text="Explore SciCrunch",
     results_id="origin-search-results"
 ) }}
-<!-- Modal for external SenNet entity-api search for dataset-->
+<!-- Modal for external SenNet entity-api search for SenNet dataset-->
 {{ search_modal(
     modal_id="datasetSearchModal",
-    modal_label="Search SenNet Data Portal for dataset",
+    modal_label="Search SenNet Data Portal for dataset ID",
     input_id="dataset-search-input",
     explore_url="https://data.sennetconsortium.org",
     explore_text="Explore SenNet Data Portal",
@@ -255,7 +275,7 @@
     explore_text="Explore DataCite Commons",
     results_id="doi-search-results"
 ) }}
-<!-- Modal for external ubkg-api search for specified marker-->
+<!-- Modal for external ubkg-api search for adding single specified marker-->
 <div class="modal fade" id="markerSearchModal" tabindex="-1" aria-labelledby="markerSearchModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -286,7 +306,7 @@
         </div>
     </div>
 </div>
-<!-- Modal for external ubkg-api search for regulated marker-->
+<!-- Modal for external ubkg-api search for adding single regulated marker-->
 <div class="modal fade" id="regmarkerSearchModal" tabindex="-1" aria-labelledby="regmarkerSearchModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -335,104 +355,7 @@
         </div>
     </div>
 </div>
-<!-- Taxon Modal for valueset-modal.js -->
-<div class="modal fade" id="taxonModal" tabindex="-1" aria-labelledby="taxonModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="taxonModalLabel">Select Taxon</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <div id="taxon-modal-list" class="list-group"></div>
-            </div>
-        </div>
-    </div>
-</div>
-<!-- Location Modal for valueset-modal.js -->
-<div class="modal fade" id="locationModal" tabindex="-1" aria-labelledby="locationModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="locationModalLabel">Select Location</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <div id="location-modal-list" class="list-group"></div>
-            </div>
-        </div>
-    </div>
-</div>
-<!-- Celltype Modal for valueset-modal.js -->
-<div class="modal fade" id="celltypeModal" tabindex="-1" aria-labelledby="celltypeModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="celltypeModalLabel">Select Cell type</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <div id="celltype-modal-list" class="list-group"></div>
-            </div>
-        </div>
-    </div>
-</div>
-<!-- Hallmark Modal for valueset-modal.js -->
-<div class="modal fade" id="hallmarkModal" tabindex="-1" aria-labelledby="hallmarkModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="hallmarkModalLabel">Select Hallmark</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <div id="hallmark-modal-list" class="list-group"></div>
-            </div>
-        </div>
-    </div>
-</div>
-<!-- Observable Modal for valueset-modal.js -->
-<div class="modal fade" id="observableModal" tabindex="-1" aria-labelledby="observableModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="observableModalLabel">Select Observable</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <div id="observable-modal-list" class="list-group"></div>
-            </div>
-        </div>
-    </div>
-</div>
-<!-- Inducer Modal for valueset-modal.js -->
-<div class="modal fade" id="inducerModal" tabindex="-1" aria-labelledby="inducerModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="inducerModalLabel">Select Inducer</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <div id="inducer-modal-list" class="list-group"></div>
-            </div>
-        </div>
-    </div>
-</div>
-<!-- Assay Modal for valueset-modal.js -->
-<div class="modal fade" id="assayModal" tabindex="-1" aria-labelledby="assayModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="assayModalLabel">Select Assay</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <div id="assay-modal-list" class="list-group"></div>
-            </div>
-        </div>
-    </div>
-</div>
+
 <!-- UPDATE FORM below edit_form -->
 <form id="update_form" method="post" action="/update" class="my-4 position-relative">
     <div class="d-flex justify-content-center">
@@ -445,8 +368,11 @@
     </div>
     <div id="update-spinner-label" style="display:none;position:absolute;top:10px;right:60px;z-index:10;">Updating...</div>
 </form>
+
 <!-- CSV UPLOAD CSV MODAL FORMS -->
-<!-- Modal div with form to upload CSV of specified markers. Placed here so that form will not be transparent. -->
+<!-- Modal divs with form to upload bulk load of markers via CSV. Placed outside of edit form so that the divs will not
+display with transparent background--apparently, a known bug in this scenario. -->
+<!-- Specified Markers -->
 <div class="modal fade" id="markerCsvModal" tabindex="-1" aria-labelledby="markerCsvModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <form id="marker-csv-form" class="modal-content" enctype="multipart/form-data">
@@ -483,7 +409,7 @@
         </form>
     </div>
 </div>
-<!-- Modal div with form to upload CSV of regulating markers. Placed here so that form will not be transprent. -->
+<!-- Regulating markers-->
 <div class="modal fade" id="regmarkerCsvModal" tabindex="-1" aria-labelledby="regmarkerCsvModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <form id="regmarker-csv-form" class="modal-content" enctype="multipart/form-data">
@@ -545,22 +471,24 @@
         </form>
     </div>
 </div>
-<!-- JavaScripts-->
+
+<!-- JAVASCRIPTS-->
+
 <!-- Get the id of the node selected in the treeview for the senotype-treeview.js script. -->
 <script>
   window.selected_node_id = document.getElementById('selected_node_id')
     ? document.getElementById('selected_node_id').value
     : null;
 </script>
+
+<!-- Includes -->
 <!-- Script to manage the Senotype treeview-->
 <script src="{{ url_for('static', filename='senotype-treeview.js') }}"></script>
 <!-- Script to enable/disable controls based on whether the selected id is editable -->
 <script src="{{ url_for('static', filename='enable-based-on-selection.js') }}"></script>
-<!-- Script to enable the update button only if a change in input -->
-<!--<script src="{{ url_for('static', filename='input-changes.js') }}"></script>-->
 <!-- Script behind the update button-->
 <script src="{{ url_for('static', filename='update-button.js') }}"></script>
-<!-- Script to add external link buttons -->
+<!-- Script to add external link buttons to inputs -->
 <script src="{{ url_for('static', filename='add-link-buttons.js') }}"></script>
 <!-- Scripts to manage modals related to the add and remove buttons-->
 <script src="{{ url_for('static', filename='valueset-modal.js') }}"></script>
@@ -572,7 +500,9 @@
 <script src="{{ url_for('static', filename='doi-modal.js') }}"></script>
 
 {% endblock %}
+
 {% block scripts %}
-  <!-- Respond to changes in input: enable/disable update button; turn off display of errors -->
+  <!-- Respond to changes in input: enable/disable update button; turn off display of previous errors.
+       Placed after the HTML body for timing purposes.-->
   <script src="{{ url_for('static', filename='input-changes.js') }}"></script>
 {% endblock %}

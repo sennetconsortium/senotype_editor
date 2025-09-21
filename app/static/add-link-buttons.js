@@ -1,5 +1,5 @@
-/**
- * Dynamically adds link buttons next to hidden input elements, before the remove button.
+/*
+ Dynamically adds link buttons next to hidden input elements, before the remove button.
  * @param {string} url_base - The base URL to use for the anchor's href (will append the hidden input's value or parsed code).
  * @param {string} hidden_input_selector - A CSS selector for the hidden input(s) whose value will be used.
  * @param {string} link_title - The title attribute for the anchor.

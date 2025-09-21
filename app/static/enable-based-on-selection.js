@@ -1,8 +1,8 @@
 /*
 Script that enables or disables inputs in the form based on whether the senotype selected
 in the treeview is editable.
-
 */
+
 $(function() {
   // When the tree is ready...
   $('#senotype-tree').on('ready.jstree', function(e, data) {
@@ -68,9 +68,7 @@ $(function() {
       }
     });
 
-    /* Update button:
-       Label should be "Create" if "new" was selected, else "Update".
-    */
+    // Update button label should be "Create" if "new" was selected, else "Update".
     if(update_btn) {
         update_btn.textContent = (nodeid === "new") ? "Create" : "Update";
     }

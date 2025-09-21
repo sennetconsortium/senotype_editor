@@ -1,4 +1,4 @@
-// CSV upload and validation for marker bulk addition.
+// CSV upload and validation for specified marker bulk addition.
 
 document.addEventListener("DOMContentLoaded", function () {
     // Elements from the modal div/form for specified markers in edit.html

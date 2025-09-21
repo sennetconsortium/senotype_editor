@@ -1,4 +1,7 @@
-// Features to support management of DataCite DOIs for Senotype submission.
+/*
+Features to support management of DataCite DOIs for Senotype submission.
+The DOI requires an external search, but the input is a textarea instead of a link.
+*/
 
 // Remove DOI from textarea and hidden input
 function clearAllDoiReferences() {
@@ -45,6 +48,7 @@ function addDoiReference(doiid, title) {
     var link = document.createElement('a');
     link.className = 'btn btn-sm btn-outline-primary ms-2';
     link.style.width = '2.5em';
+    // For now, the DataCite Commons URI will include the generic SenNet provider ID.
     link.href = 'https://commons.datacite.org/doi.org/10.6084/' + encodeURIComponent(doiid);
     link.target = '_blank';
     link.title = 'View DOI details';
