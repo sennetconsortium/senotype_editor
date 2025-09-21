@@ -11,7 +11,7 @@ from models.appconfig import AppConfig
 from models.senlib import SenLib
 from models.editform import EditForm
 
-from models.clearerrors import clearerrors
+from models.formdata import fetchfromdb, setdefaults
 
 update_blueprint = Blueprint('update', __name__, url_prefix='/update')
 
@@ -230,23 +230,22 @@ def update():
         flash('Success!')
 
         # Trigger a reload of the edit form that refreshes with updated data.
+        form = EditForm(request.form)
+        senlib = SenLib(cfg)
+        if selected_node_id == 'new' or selected_node_id is None:
+            # The user selected 'new'. Load an empty form.
+            setdefaults(form=form)
 
-        # Dev note
-        # This will require refactoring the loadexistingdata function in edit.py so that
-        # it is common to both the edit and update routes.
-        # After successful update
-        #form = EditForm(normalized_deduped_form_data)
-        # refresh senlib object
-        #tree_data = senlib.get_tree_data()  # Assuming senlib can do this
+        else:
 
-        #return render_template(
-            #"edit.html",
-            #form=form,
-            #tree_data=tree_data,
-            #selected_node_id=selected_node_id,
-        #)
-        return redirect(url_for('edit.edit', selected_node_id=selected_node_id))
-     else:
+            fetchfromdb(id=selected_node_id, senlib=senlib, form=form)
+
+        return render_template('edit.html',
+                               form=form,
+                               response={'tree_data': senlib.senotypetree},
+                               selected_node_id=selected_node_id)
+
+    else:
         # Inject custom errors into standard WTForms validation errors, avoiding duplicates.
         for field_name, custom_field_errors in custom_errors.items():
             if hasattr(form, field_name):
