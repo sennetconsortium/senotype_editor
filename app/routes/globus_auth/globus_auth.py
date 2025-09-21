@@ -1,5 +1,5 @@
 """
-Globus auth routes.
+Globus authentication routes.
 
 """
 

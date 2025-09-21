@@ -1,5 +1,6 @@
 """
 Calls the hs-ontology API.
+
 """
 from flask import Blueprint, make_response
 from models.requestretry import RequestRetry

@@ -8,8 +8,8 @@ import json
 from models.appconfig import AppConfig
 
 # Register Blueprints
-from routes.auth.auth import login_blueprint
-from routes.globus.globus import globus_blueprint
+from routes.globus_auth.globus_auth import login_blueprint
+from routes.globus_index.globus import globus_blueprint
 from routes.edit.edit import edit_blueprint
 from routes.valueset.valueset import valueset_blueprint
 from routes.ontology.ontology import ontology_blueprint

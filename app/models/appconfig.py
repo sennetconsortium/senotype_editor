@@ -47,8 +47,6 @@ class AppConfig:
         try:
             stream = open(self.file,'r')
         except FileNotFoundError as e:
-            # print(f'The app.cfg is not in the path  {self.path}. This is a bare-metal (non-containerized) '
-                  # f'deployment. Trying path on host machine.')
             home = str(Path('~').expanduser())
             self.path = home + '/senotype-editor'
             self.file = self.path + '/app.cfg'

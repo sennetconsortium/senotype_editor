@@ -1,5 +1,7 @@
 """
-Index route that authenticates to Globus to allow calls to entity-api.
+Index route that authenticates to Globus to allow calls to SenNet APIs:
+- entity-api
+- uuid-api
 """
 
 from flask import Blueprint, request, redirect, session

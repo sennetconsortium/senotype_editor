@@ -1,5 +1,5 @@
 """
-Form used to manage Senotype submisstion JSONs.
+Form used to manage Senotype JSONs.
 """
 
 
