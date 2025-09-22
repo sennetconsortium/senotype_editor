@@ -181,7 +181,7 @@ def update():
     cfg = AppConfig()
     uuid_base_url = cfg.getfield(key='UUID_BASE_URL')
 
-    senlib = SenLib(cfg)
+    senlib = SenLib(cfg=cfg, userid=session['userid'])
 
     # In the Edit form, the modal sections and Javascript build hidden text inputs
     # that store values added dynamically to lists in the assertion sections. For some
@@ -231,7 +231,7 @@ def update():
 
         # Trigger a reload of the edit form that refreshes with updated data.
         form = EditForm(request.form)
-        senlib = SenLib(cfg)
+        senlib = SenLib(cfg=cfg, userid=session['userid'])
         if selected_node_id == 'new' or selected_node_id is None:
             # The user selected 'new'. Load an empty form.
             setdefaults(form=form)

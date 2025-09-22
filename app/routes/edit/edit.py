@@ -268,7 +268,7 @@ def edit():
     # github_token = cfg.getfield(key='GITHUB_TOKEN')
 
     # Senlib interface
-    senlib = SenLib(cfg=cfg)
+    senlib = SenLib(cfg=cfg, userid=session['userid'])
 
     # Check if we have session data for the form.
     # Session data will correspond to the state of the form at the time of

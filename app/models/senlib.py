@@ -1,6 +1,7 @@
 """
 Class for working with Senotype submission JSON files in the senlib data source.
 """
+
 import logging
 import pandas as pd
 
@@ -131,10 +132,27 @@ class SenLib:
             # published and assigned a DOI, and also not a folder.
             # The edit page uses this property to enable/disable editing features.
             editable = not bool(snt.get("doi"))
+
+            # An editable JSON can only be edited by the original submitter.
+            senotype_submitter_email = senotype_by_id[id_].get("submitter", {}).get("email")
+            authorized = senotype_submitter_email == self.userid
+
+            classes = []
+            if editable:
+                classes.append("editable")
+            if authorized:
+                classes.append("authorized")
+
+            if editable and authorized:
+                style = "color: green; font-weight: bold;"
+            elif editable and not authorized:
+                style = "color: red; font-weight: normal;"
+            else:
+                style = "color: gray; font-style: italic; font-weight: normal;"
+
             a_attrs = {
-                **({"class": "editable"} if editable else {}),
-                **({"style": "color: green; font-style: bold"} if editable
-                   else {"style": "color: gray; font-style: italic"})
+                "class": " ".join(classes),
+                "style": style
             }
 
             # Published nodes should be displayed as "disabled"--i.e., in gray
@@ -184,7 +202,7 @@ class SenLib:
             })
 
         # Add "new" node
-        a_attrs = {"class": "editable",
+        a_attrs = {"class": "editable authorized",
                    "style": "color: green; font-style: bold"}
         new_node = {
             "id": "new",
@@ -204,6 +222,8 @@ class SenLib:
             "state": {"opened": True},
             "a_attr": {"style": "color: black; font-style: normal; font-size: 1.5em"},
         }
+
+        print([senotype_parent])
 
         return [senotype_parent]
 
@@ -242,10 +262,11 @@ class SenLib:
 
         return term
 
-    def __init__(self, cfg: AppConfig):
+    def __init__(self, cfg: AppConfig, userid: str):
 
         """
         param cfg: AppConfig object representing the app.cfg file.
+        userid: user Globus id
 
         """
 
@@ -257,5 +278,8 @@ class SenLib:
         # SenLib valuesets
         self.senlibvaluesets = self.database.senlibvaluesets
 
+        self.userid = userid
+
         # JSON for the senotype jstree
         self.senotypetree = self._getsenotypejtree()
+

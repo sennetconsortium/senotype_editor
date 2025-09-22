@@ -10,11 +10,13 @@ $(function() {
     var tree = $('#senotype-tree').jstree(true);
     var isEditable = false;
 
-    //... check for an editable class on the selected node. (The class is set by Flask.)
+    //... check for editable and authorized classes on the selected node.
+    // (The classes are set by Flask.)
     if (nodeid) {
       var nodeDom = tree.get_node(nodeid, true);
       if (nodeDom && nodeDom.length) {
         isEditable = nodeDom.find('.jstree-anchor').hasClass('editable');
+        isAuthorized = nodeDom.find('.jstree-anchor').hasClass('authorized');
       }
     }
 
@@ -38,21 +40,7 @@ $(function() {
         return;
       }
 
-      if (!isEditable) {
-        if (el.tagName === "SPAN") {
-          el.style.pointerEvents = 'none';
-          el.style.opacity = 0.6;
-          el.style.backgroundColor = '#e5e5e5';
-        } else if (el.tagName === "INPUT" && el.type === "text") {
-          el.disabled = true;
-          el.style.backgroundColor = '#e5e5e5';
-        } else if (el.tagName === "TEXTAREA") {
-          el.disabled = true;
-          el.style.backgroundColor = '#e5e5e5';
-        } else if (el.tagName === "BUTTON") {
-          el.disabled = true;
-        }
-      } else {
+      if (isEditable & isAuthorized) {
         if (el.tagName === "SPAN") {
           el.style.pointerEvents = '';
           el.style.opacity = '';
@@ -66,6 +54,22 @@ $(function() {
         } else if (el.tagName === "BUTTON") {
           el.disabled = false;
         }
+      } else {
+
+        if (el.tagName === "SPAN") {
+          el.style.pointerEvents = 'none';
+          el.style.opacity = 0.6;
+          el.style.backgroundColor = '#e5e5e5';
+        } else if (el.tagName === "INPUT" && el.type === "text") {
+          el.disabled = true;
+          el.style.backgroundColor = '#e5e5e5';
+        } else if (el.tagName === "TEXTAREA") {
+          el.disabled = true;
+          el.style.backgroundColor = '#e5e5e5';
+        } else if (el.tagName === "BUTTON") {
+          el.disabled = true;
+        }
+
       }
     });
 

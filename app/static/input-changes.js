@@ -40,7 +40,6 @@ document.addEventListener('DOMContentLoaded', function() {
   function checkForChange() {
     const currentData = new FormData(editForm);
     const currentSerialized = serializeFormData(currentData);
-    console.log(currentSerialized);
     return currentSerialized !== initialSerialized;
   }
 

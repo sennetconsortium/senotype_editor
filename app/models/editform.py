@@ -13,7 +13,6 @@ from models.senlib import SenLib
 from models.stringnumber import stringisintegerorfloat
 
 
-
 def validate_age(form, field):
     """
     Custom validator for age.
@@ -114,8 +113,16 @@ class EditForm(Form):
     # Read the app.cfg file outside the Flask application context.
     cfg = AppConfig()
 
-    # Senlib interface
-    senlib = SenLib(cfg)
+    # Senlib interface.
+
+    # The features of the Senotype treeview depend on whether the user is authorized
+    # to edit the senotype JSONs. The authorization compares the user's email address
+    # from Globus (in a session variable) with the email stored with a Senotype JSON.
+    def __init__(self, *args, **kwargs):
+        super(EditForm, self).__init__(*args, **kwargs)
+        # Import session in the method to avoid issues outside request context
+        from flask import session
+        self.senlib = SenLib(cfg=AppConfig(), userid=session.get('userid', ''))
 
     # SET DEFAULTS
 
@@ -148,7 +155,6 @@ class EditForm(Form):
     agelowerbound = StringField('Lowerbound', validators=[validate_age])
     ageupperbound = StringField('Upperbound', validators=[validate_age])
     ageunit = StringField('Unit')
-
 
     # External assertions
     # Citations
