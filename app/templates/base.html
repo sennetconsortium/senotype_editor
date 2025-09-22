@@ -34,6 +34,16 @@
         font-size: 1 em;
       }
     </style>
+    <style>
+        .label-wide {
+          width: 110px; /* Wide enough for 'Description' with bold font */
+          min-width: 110px;
+          display: inline-block;
+        }
+        .label-left-margin {
+          margin-left: 6px !important;
+        }
+    </style>
     <script type="text/javascript">
       window.addEventListener('pageshow', function(event) {
         // Forces a reload of a page in case of navigating back, which will hide the spinner animation.
@@ -47,7 +57,7 @@
     {% with messages = get_flashed_messages() %}
       {% if messages %}
         {% set joined = messages|join(' ') %}
-        <div class="p-3 {{ 'text-bg-danger' if 'Error' in joined else 'text-bg-success' }}">
+        <div class="p-0 {{ 'text-bg-danger' if 'Error' in joined else 'text-bg-success' }}">
           <ul class=flashes>
             {% for message in messages %}
               <li>{{ message }}</li>
@@ -97,10 +107,15 @@
     {% block content %}
     {% endblock %}
     <!-- bottom -->
-    <footer>
-        <div class="navbar-fixed-bottom m-3">
-          <a href="https://github.com/sennetconsortium/senotype_editor">The Senotype Editor</a> © 2025 by <a href="https://www.dbmi.pitt.edu/">Department of Biomedical Informatics, University of Pittsburgh</a> is licensed under <a href="https://creativecommons.org/licenses/by/4.0/">Creative Commons Attribution 4.0 International</a><img src="https://mirrors.creativecommons.org/presskit/icons/cc.svg" alt="" style="max-width: 1em;max-height:1em;margin-left: .2em;"><img src="https://mirrors.creativecommons.org/presskit/icons/by.svg" alt="" style="max-width: 1em;max-height:1em;margin-left: .2em;">
-        </div>
+    <footer class="fixed-bottom">
+      <div class="text-center m-3">
+        <a href="https://github.com/sennetconsortium/senotype_editor">The Senotype Editor</a> © 2025 by
+        <a href="https://www.dbmi.pitt.edu/">Department of Biomedical Informatics, University of Pittsburgh</a>
+      is licensed under
+        <a href="https://creativecommons.org/licenses/by/4.0/">Creative Commons Attribution 4.0 International</a>
+        <img src="https://mirrors.creativecommons.org/presskit/icons/cc.svg" alt="" style="max-width: 1em; max-height: 1em; margin-left: .2em;">
+        <img src="https://mirrors.creativecommons.org/presskit/icons/by.svg" alt="" style="max-width: 1em; max-height: 1em; margin-left: .2em;">
+      </div>
     </footer>
     <!-- Bootstrap Javascript -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>

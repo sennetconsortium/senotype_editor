@@ -2,7 +2,7 @@
 Updates the Senotype repository by writing/overwriting a submission JSON file.
 """
 from flask import Blueprint, request, render_template, flash, redirect, session, url_for
-import uuid
+
 from werkzeug.datastructures import MultiDict
 import requests
 
@@ -10,8 +10,6 @@ import requests
 from models.appconfig import AppConfig
 from models.senlib import SenLib
 from models.editform import EditForm
-
-from models.formdata import fetchfromdb, setdefaults
 
 update_blueprint = Blueprint('update', __name__, url_prefix='/update')
 
@@ -141,7 +139,7 @@ def validate_form(form, fieldlist_prefixes):
                 errname = 'regulating marker'
             else:
                 errname = base_name
-            errors[base_name] = [f'At least one {errname} must be provided.']
+            errors[base_name] = [f'At least one {errname} required.']
     return errors
 
 
@@ -151,17 +149,17 @@ def update():
     Receives POST from the update_form, which has all edit_form fields as hidden inputs (cloned by JS).
     Validates using WTForms and acts on result.
     """
-    # Get the node that the user is attempting to create or update.
-
-    selected_node_id = request.form.get('selected_node_id') or request.args.get('selected_node_id')
-    if selected_node_id == "new":
-        selected_node_id = request.form.get('senotypeid')
 
     # Get IDs for existing Senotype submissions and URLs
     cfg = AppConfig()
-    uuid_base_url = cfg.getfield(key='UUID_BASE_URL')
-
     senlib = SenLib(cfg=cfg, userid=session['userid'])
+
+    # Get the node that the user is attempting to create or update.
+    id = request.form.get('selected_node_id') or request.args.get('selected_node_id')
+
+    if id == "new":
+        # The edit route minted a new SenNet ID, which is in the senotypeid input.
+        id = request.form.get('senotypeid')
 
     # In the Edit form, the modal sections and Javascript build hidden text inputs
     # that store values added dynamically to lists in the assertion sections. For some
@@ -213,7 +211,7 @@ def update():
         form = EditForm(request.form)
         senlib = SenLib(cfg=cfg, userid=session['userid'])
 
-        fetchfromdb(id=selected_node_id, senlib=senlib, form=form)
+        senlib.fetchfromdb(id=id, senlib=senlib, form=form)
 
         return render_template('edit.html',
                                form=form,
@@ -228,7 +226,9 @@ def update():
                 for err in custom_field_errors:
                     if err not in form_field.errors:
                         form_field.errors.append(err)
+
         flash("Error: Validation failed. Please check your inputs.", "danger")
+
         # Pass both the current form data (which, in general, will have been modified
         # from the existing submission data) and the validation errors from the validated form
         # to a reload of the form.
@@ -237,4 +237,5 @@ def update():
 
         # Redirect to the edit form, which will set the focus of the treeview back
         # to the original node.
+        selected_node_id = request.form.get('selected_node_id') or request.args.get('selected_node_id')
         return redirect(url_for('edit.edit', selected_node_id=selected_node_id))

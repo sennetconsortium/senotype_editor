@@ -55,7 +55,7 @@ document.addEventListener('DOMContentLoaded', function() {
       let nodeDom = data.instance.get_node(selectedId, true);
       let editable = nodeDom && nodeDom.find('.jstree-anchor').hasClass('editable');
 
-      // Patch: also update new-version-btn on initial load
+      // Also update new-version-btn on initial load
       updateNewVersionBtnState(nodeObj, data.instance);
 
       setSpinner(false);
@@ -76,48 +76,61 @@ document.addEventListener('DOMContentLoaded', function() {
     return false;
   }
 
+  // Function to check whether to allow the creation of a new version
+  // of a senotype.
   function updateNewVersionBtnState(nodeObj, treeInstance) {
     let newVersionBtn = document.getElementById('new-version-btn');
     if (!newVersionBtn || !nodeObj) return;
 
-    // 1. If node id is "Senotype", always disable
-    if (nodeObj.id === "Senotype") {
+    // 1. If node id is "Senotype" or "new, always disable
+    var alwaysDisable = ["Senotype", "new"]
+    if (alwaysDisable.includes(nodeObj.id)) {
         newVersionBtn.disabled = true;
         return;
     }
 
-    // 2. If node id contains "rootwrap"
-    if (nodeObj.id && nodeObj.id.includes("rootwrap")) {
-        // If none of its children are editable, enable, else disable
-        if (Array.isArray(nodeObj.children) && !anyEditable(nodeObj.children, treeInstance)) {
+    // 2. If node id contains "group", then enable only if the first child is not editable
+    if (nodeObj.id && nodeObj.id.includes("group")) {
+        if (Array.isArray(nodeObj.children) && nodeObj.children.length > 0) {
+                let firstChildId = nodeObj.children[0];
+                let firstChildDom = treeInstance.get_node(firstChildId, true);
+                let firstChildEditable = firstChildDom && firstChildDom.find('.jstree-anchor').hasClass('editable');
+                newVersionBtn.disabled = !!firstChildEditable;
+                console.log('firstChildId= ' + firstChildId);
+                console.log('firstChildEditable = ' + firstChildEditable);
+            } else {
+            // If no children, enable
             newVersionBtn.disabled = false;
-        } else {
-            newVersionBtn.disabled = true;
         }
         return;
     }
 
-    // 3. Otherwise: enable only if neither the node nor its siblings are editable
-    let nodeDom = treeInstance.get_node(nodeObj.id, true);
-    let nodeIsEditable = nodeDom && nodeDom.find('.jstree-anchor').hasClass('editable');
-
-    let parentId = nodeObj.parent;
-    let siblings = [];
-    if (parentId && parentId !== "#") {
-        let parentNode = treeInstance.get_node(parentId);
-        if (parentNode && parentNode.children) {
-        siblings = parentNode.children.filter(id => id !== nodeObj.id);
+    // 3. Otherwise: enable only if the first node in the branch path is not editable
+    // Find nearest ancestor whose id contains "group"
+    let currentNode = nodeObj;
+    let groupNode = null;
+    while (currentNode && currentNode.parent && currentNode.parent !== "#") {
+        let parentNode = treeInstance.get_node(currentNode.parent);
+        if (parentNode && parentNode.id && parentNode.id.includes("group")) {
+            groupNode = parentNode;
+            break;
         }
+        currentNode = parentNode;
     }
 
-    let siblingsEditable = anyEditable(siblings, treeInstance);
-
-    if (!nodeIsEditable && !siblingsEditable) {
-        newVersionBtn.disabled = false;
+    if (groupNode && Array.isArray(groupNode.children) && groupNode.children.length > 0) {
+        let firstChildId = groupNode.children[0];
+        let firstChildDom = treeInstance.get_node(firstChildId, true);
+        let firstChildEditable = firstChildDom && firstChildDom.find('.jstree-anchor').hasClass('editable');
+        newVersionBtn.disabled = !!firstChildEditable;
     } else {
-        newVersionBtn.disabled = true;
+        // If not under a group node, enable
+        newVersionBtn.disabled = false;
     }
-  }
+
+    //debug
+    newVersionBtn.disabled = false;
+ }
 
   // On user select, handle state and submit if needed (with spinner)
   $('#senotype-tree').on('select_node.jstree', function(e, data) {
@@ -128,7 +141,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let nodeDom = treeInstance.get_node(data.node.id, true);
     let editable = nodeDom && nodeDom.find('.jstree-anchor').hasClass('editable');
 
-    // Patch: update new-version-btn state on every selection
+    // Update new-version-btn state on every selection
     updateNewVersionBtnState(nodeObj, treeInstance);
 
     if (programmaticSelection) {
@@ -147,6 +160,59 @@ document.addEventListener('DOMContentLoaded', function() {
 
     setSpinner(true, `Loading ${data.node.id}...`);
     document.getElementById('edit_form').submit();
+
+
+
+
   });
 
+  // Function that identifies the first node in a tree path, corresponding to the
+  // latest version of a senotype.
+  function getFirstBranchNodeId(selectedNodeId, treeInstance) {
+    let currentNode = treeInstance.get_node(selectedNodeId);
+    let parentNode = null;
+    let ancestor = currentNode;
+
+    // Climb up until we reach the node whose parent is rootwrap/group or "#"
+    while (ancestor.parent && ancestor.parent !== "#") {
+        parentNode = treeInstance.get_node(ancestor.parent);
+        // If parent is rootwrap/group or "#", ancestor is the first in the branch
+        if (
+            parentNode.id.includes("rootwrap") ||
+            parentNode.id.includes("group") ||
+            parentNode.parent === "#"
+        ) {
+            break;
+        }
+        ancestor = parentNode;
+    }
+    return ancestor.id;
+  }
+
+  // Handle new-version-btn click:
+  const newVersionBtn = document.getElementById('new-version-btn');
+  if (newVersionBtn) {
+    newVersionBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        const treeInstance = $('#senotype-tree').jstree(true);
+        if (!window.selected_node_id || !treeInstance) return;
+
+        // Find first node in the branch path
+        const firstBranchNodeId = getFirstBranchNodeId(window.selected_node_id, treeInstance);
+
+        // Append '-newversion' and set hidden field
+        const newNodeId = firstBranchNodeId + '_newversion';
+        const hidden = document.getElementById('selected_node_id');
+        if (hidden) hidden.value = newNodeId;
+
+        setSpinner(true, `Creating new version for ${firstBranchNodeId}...`);
+
+        // Submit to /version route
+        const form = document.getElementById('edit_form');
+        if (form) {
+            form.action = '/version';
+            form.submit();
+        }
+    });
+  }
 });

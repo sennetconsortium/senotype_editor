@@ -26,7 +26,7 @@ Arguments:
 -->
 
 {% macro render_fieldlist_section(form, field_name, modal_id, label_bg="#FEF2F2", is_external=False, col_class="col-md-4", groups_token=None) %}
-<div class="{{ col_class }}" style="background-color: {{ label_bg }}; border: 1px solid #ccc; border-radius: 5px; padding: 3px;"">
+<div class="{{ col_class }}" style="background-color: {{ label_bg }}; border: 1px solid #ccc; border-radius: 5px; padding: 3px;">
     {# header #}
     <strong style="margin-left: 12px;">{{ form[field_name].label }}</strong>
     <div class="d-flex align-items-start">
@@ -126,13 +126,13 @@ Use case: DOI field
 {% macro render_textarea_section(form, field_name, modal_id, label_bg="#f5f5f5", link_base_url=None, link_title=None, parse_code=False) %}
 <div style="background-color: {{ label_bg }};">
     <div class="d-flex align-items-center" id="{{ field_name }}-row">
-        <label for="{{ form[field_name].id }}" class="me-2 mb-0" style="white-space: nowrap;">
+        <label for="{{ form[field_name].id }}" class="me-2 mb-0 label-wide label-left-margin">
             {% set hidden_value = (form[field_name].data or '').split(' ')[0] %}
             <input name="{{ form[field_name].name }}" type="hidden" id="{{ field_name }}-hidden-input" value="{{ hidden_value }}">
             <strong>{{ form[field_name].label.text }}</strong>
         </label>
         <div class="d-flex align-items-start w-100">
-            {{ form[field_name](class_="form-control", rows=1, style="resize: vertical; width: 100%;") }}
+            {{ form[field_name](class_="form-control", style="width: 100%;", rows="1") }}
             {% for error in form[field_name].errors %}
                 <div class="text-danger">{{ error }}</div>
             {% endfor %}

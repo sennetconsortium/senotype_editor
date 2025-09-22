@@ -4,12 +4,14 @@ Data fetching functions common to edit and update routes.
 """
 
 from flask import session
+import requests
 
 # WTForms
 from models.editform import EditForm
 
 from models.senlib import SenLib
 from models.requestretry import RequestRetry
+from models.appconfig import AppConfig
 
 
 def getdoi(senotype: dict) -> str:
@@ -455,3 +457,24 @@ def fetchfromdb(id: str, senlib: SenLib, form: EditForm):
     else:
         form.regmarker.process(None, [''])
 
+
+def getnewsenotypeid() -> str:
+    """
+    Calls the uuid-api to obtain a new SenNet ID.
+    """
+
+    # Get the URL to the uuid-api.
+    cfg = AppConfig()
+    uuid_url = f"{cfg.getfield(key='UUID_BASE_URL')}"
+
+    # request body
+    data = {"entity_type": "REFERENCE"}
+    # auth header
+    token = session["groups_token"]
+    headers = {"Authorization": f"Bearer {token}"}
+
+    # The uuid-api returns a list of dicts. The default call returns one element.
+    response = requests.post(url=uuid_url, headers=headers, json=data)
+    responsejson = response.json()[0]
+    sennet_id = responsejson.get('sennet_id', '')
+    return sennet_id
