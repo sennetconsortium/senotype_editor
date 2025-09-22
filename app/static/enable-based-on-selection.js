@@ -30,7 +30,8 @@ $(function() {
       if (el.id === 'selected_node_id') return;
 
       // Readonly controls are always disabled.
-      var readonly = ['senotypeid','doi'];
+      var readonly = ['senotypeid','doi','submitterfirst',
+      'submitterlast','submitteremail'];
       if (readonly.includes(el.id)) {
         el.disabled = true;
         el.style.backgroundColor = '#e5e5e5';

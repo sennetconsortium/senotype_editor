@@ -316,6 +316,11 @@ def edit():
             # The user selected 'new'. Load an empty form.
             setdefaults(form=form)
 
+            # Use the Globus authentication information to identify the submitter.
+            form.submitterfirst.data = session['username'].split(' ')[0]
+            form.submitterlast.data = session['username'].split(' ')[1]
+            form.submitteremail.data = session['userid']
+
         else:
             # Load from existing data.
             fetchfromdb(id=id, senlib=senlib, form=form)
