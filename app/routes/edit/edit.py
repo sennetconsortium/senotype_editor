@@ -3,7 +3,7 @@ Senotype edit route.
 Works with editform.py.
 
 """
-
+import requests
 from flask import Blueprint, request, render_template, session
 
 # WTForms
@@ -12,6 +12,7 @@ from models.editform import EditForm
 # Helper classes
 from models.appconfig import AppConfig
 from models.senlib import SenLib
+
 
 from models.formdata import (fetchfromdb, setdefaults, getmarkerobjects,
                              getcitationobjects, getoriginobjects, getdatasetobjects,
@@ -243,6 +244,28 @@ def getsessiondata(senlib: SenLib, form:EditForm, form_data: dict):
         form.regmarker.process(None, [''])
 
 
+def getnewsenotypeid() -> str:
+    """
+    Calls the uuid-api to obtain a new SenNet ID.
+    """
+
+    # Get the URL to the uuid-api.
+    cfg = AppConfig()
+    uuid_url = f"{cfg.getfield(key='UUID_BASE_URL')}"
+
+    # request body
+    data = {"entity_type": "REFERENCE"}
+    # auth header
+    token = session["groups_token"]
+    headers = {"Authorization": f"Bearer {token}"}
+
+    # The uuid-api returns a list of dicts. The default call returns one element.
+    response = requests.post(url=uuid_url, headers=headers, json=data)
+    responsejson = response.json()[0]
+    sennet_id = responsejson.get('sennet_id', '')
+    return sennet_id
+
+
 @edit_blueprint.route('', methods=['POST', 'GET'])
 def edit():
 
@@ -315,6 +338,9 @@ def edit():
         if id == 'new' or id is None:
             # The user selected 'new'. Load an empty form.
             setdefaults(form=form)
+
+            # Mint a new SenNet ID.
+            form.senotypeid.data = getnewsenotypeid()
 
             # Use the Globus authentication information to identify the submitter.
             form.submitterfirst.data = session['username'].split(' ')[0]

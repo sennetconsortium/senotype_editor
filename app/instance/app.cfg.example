@@ -1,7 +1,15 @@
-#URLs for senlib
+# url for GitHub folder for Senotype repository
 SENOTYPE_URL='https://api.github.com/repos/sennetconsortium/senlib/contents/senotypes'
-VALUESET_URL='https://api.github.com/repos/sennetconsortium/senlib/contents/valuesets/'senotype_editor_valuesets.csv'
+# url for the Senotype Editor's valuesets
+VALUESET_URL='https://raw.githubusercontent.com/sennetconsortium/senlib/refs/heads/main/valuesets/senotype_editor_valuesets.csv'
+# url for the folder containing Senotype submissions
 JSON_URL='https://raw.githubusercontent.com/sennetconsortium/senlib/main/senotypes'
+
+# Connection to the SenLib MySQL database
+SENOTYPE_DB_USER='user'
+SENOTYPE_DB_PWD='pwd'
+SENOTYPE_DB_NAME='db'
+SENOTYPE_DB_HOST='host'
 
 # Flask secret key
 KEY=x

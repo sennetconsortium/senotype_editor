@@ -16,35 +16,13 @@ from models.formdata import fetchfromdb, setdefaults
 update_blueprint = Blueprint('update', __name__, url_prefix='/update')
 
 
-def getnewsnid(uuid_base_url:str) -> str:
-    """
-    Obtain a new SenNet dataset ID from the uuid API.
-    :param uuid_base_url: base URL to the uuid API.
-    """
-
-    data = {"entity_type":"REFERENCE"}
-
-    try:
-        response = requests.post(url=uuid_base_url, data=data)
-        response.raise_for_status()  # Raise an exception for bad status codes (4xx or 5xx)
-        print("Status Code:", response.status_code)
-        print("Response JSON:", response.json())
-    except requests.exceptions.RequestException as e:
-        print(f"An error occurred: {e}")
-
-    return str(uuid.uuid4())
-
-
-def buildsubmission(form_data: dict[str, str], uuid_base_url: str) -> dict:
+def buildsubmission(form_data: dict[str, str]) -> dict:
     """
     Builds a Senotype submission JSON from the POSTed request form data.
     :param form_data: inputs to write to the submission file.
-    :param uuid_base_url: base URL to the uuid API.
     """
 
     senotypeid = request.form.get('senotypeid')
-    if senotypeid == 'new':
-        senotypeid = getnewsnid(uuid_base_url=uuid_base_url)
 
     dictsenotype = {
         'code': senotypeid,
@@ -73,7 +51,7 @@ def writesubmission():
     # Senlib interface
     # senlib = SenLib(senlib_url, valueset_url, json_url, github_token)
 
-    senlib = SenLib(cfg)
+    senlib = SenLib(cfg=cfg, userid=session['userid'])
 
 
 def remove_duplicates_from_multidict(md: MultiDict, prefix_list: list) -> MultiDict:
@@ -176,6 +154,8 @@ def update():
     # Get the node that the user is attempting to create or update.
 
     selected_node_id = request.form.get('selected_node_id') or request.args.get('selected_node_id')
+    if selected_node_id == "new":
+        selected_node_id = request.form.get('senotypeid')
 
     # Get IDs for existing Senotype submissions and URLs
     cfg = AppConfig()
@@ -232,13 +212,8 @@ def update():
         # Trigger a reload of the edit form that refreshes with updated data.
         form = EditForm(request.form)
         senlib = SenLib(cfg=cfg, userid=session['userid'])
-        if selected_node_id == 'new' or selected_node_id is None:
-            # The user selected 'new'. Load an empty form.
-            setdefaults(form=form)
 
-        else:
-
-            fetchfromdb(id=selected_node_id, senlib=senlib, form=form)
+        fetchfromdb(id=selected_node_id, senlib=senlib, form=form)
 
         return render_template('edit.html',
                                form=form,

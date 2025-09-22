@@ -30,6 +30,7 @@ document.addEventListener('DOMContentLoaded', function() {
   // On initial load, hide spinner.
   $(function() {
     setSpinner(false);
+
   });
 
   // On jstree ready (form reload), restore selection to
