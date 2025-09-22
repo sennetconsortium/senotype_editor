@@ -34,7 +34,7 @@
                     new version
                 </button>
                 <div id="senotype-tree" style="background-color:white; border: 1px solid #ccc;
-                    border-radius: 5px; padding: 3px; height: 180px; overflow-y: auto; overflow-x: auto;">
+                    border-radius: 5px; padding: 3px; height: 210px; overflow-y: auto; overflow-x: auto;">
                 </div>
                 <input type="hidden" name="selected_node_id" id="selected_node_id" value="{{ selected_node_id or '' }}">
                 <div id="senotype-spinner" class="spinner-border text-primary position-absolute"
@@ -51,83 +51,85 @@
           </div>
         </div>
       <!-- Submission column -->
-      <div class="col-md-8" style="background-color: #f5f5f5; border: 1px solid #ccc; border-radius: 5px; padding: 3px;">
-        <!-- Senotype id, name, description -->
-        <div class="row align-items-center mb-1">
-          <div class="col-md-3 d-flex align-items-center">
-            <label for="{{ form.senotypeid.id }}" class="me-2 mb-0"><strong>{{ form.senotypeid.label.text }}</strong></label>
-            {{ form.senotypeid(class="form-control", style="width: 100%;") }}
-          </div>
-          <div class="col-md-4 d-flex align-items-center">
-            <label for="{{ form.senotypename.id }}" class="me-2 mb-0"><strong>{{ form.senotypename.label.text }}</strong></label>
-            {{ form.senotypename(class="form-control", style="width: 100%;", rows="2") }}
-          </div>
-          <div class="col-md-5 d-flex align-items-center">
-            <label for="{{ form.senotypedescription.id }}" class="me-2 mb-0"><strong>{{ form.senotypedescription.label.text }}</strong></label>
-            {{ form.senotypedescription(class="form-control", style="width: 100%;", rows="2") }}
-          </div>
-        </div>
-        <!-- Senotype id, name, description errors -->
-        <div class="row mb-1">
-          <div class="col-md-3">
-            {% for error in form.senotypeid.errors %}
-              <div class="text-danger">{{ error }}</div>
-            {% endfor %}
-          </div>
-          <div class="col-md-4">
-            {% for error in form.senotypename.errors %}
-              <div class="text-danger">{{ error }}</div>
-            {% endfor %}
-          </div>
-          <div class="col-md-5">
-            {% for error in form.senotypedescription.errors %}
-              <div class="text-danger">{{ error }}</div>
-            {% endfor %}
-          </div>
-        </div>
-        <!-- Submitter fields -->
-        <div class="row align-items-center mb-1">
-          <div class="col-md-4 d-flex align-items-center">
-            <label for="{{ form.submitterfirst.id }}" class="me-2 mb-0"><strong>{{ form.submitterfirst.label.text }}</strong></label>
-            {{ form.submitterfirst(class="form-control d-inline-block", style="width: 100%;") }}
-          </div>
-          <div class="col-md-4 d-flex align-items-center">
-            <label for="{{ form.submitterlast.id }}" class="me-2 mb-0"><strong>{{ form.submitterlast.label.text }}</strong></label>
-            {{ form.submitterlast(class="form-control d-inline-block", style="width: 100%;") }}
-          </div>
-          <div class="col-md-4 d-flex align-items-center">
-            <label for="{{ form.submitteremail.id }}" class="me-2 mb-0"><strong>{{ form.submitteremail.label.text }}</strong></label>
-            {{ form.submitteremail(class="form-control d-inline-block", style="width: 100%;") }}
-          </div>
-        </div>
-        <!-- Submitter field errors -->
-        <div class="row mb-1">
-          <div class="col-md-4">
-            {% for error in form.submitterfirst.errors %}
-              <div class="text-danger">{{ error }}</div>
-            {% endfor %}
-          </div>
-          <div class="col-md-4">
-            {% for error in form.submitterlast.errors %}
-              <div class="text-danger">{{ error }}</div>
-            {% endfor %}
-          </div>
-          <div class="col-md-4">
-            {% for error in form.submitteremail.errors %}
-              <div class="text-danger">{{ error }}</div>
-            {% endfor %}
-          </div>
-        </div>
-        <!-- DOI -->
-        <div class="row mb-1">
-          <div class="col-md-8">
-              {{ render_textarea_section(form, 'doi', 'doiSearchModal', '#f5f5f5', link_base_url='https://api.datacite.org/dois/', link_title='View DOI details', parse_code=False ) }}
-          </div>
-          <div class="col-md-4">
-            <!-- For alignment -->
-          </div>
-        </div>
-      </div> <!-- col-md-8 (Submission column) -->
+        <div class="col-md-8" style="background-color: #f5f5f5; border: 1px solid #ccc; border-radius: 5px; padding: 3px;">
+            <h4 class="mb-3">Submitter</h4>
+            <!-- Submitter fields -->
+            <div class="row align-items-center mb-1">
+                  <div class="col-md-4 d-flex align-items-center">
+                    <label for="{{ form.submitterfirst.id }}" class="me-2 mb-0"><strong>{{ form.submitterfirst.label.text }}</strong></label>
+                    {{ form.submitterfirst(class="form-control d-inline-block", style="width: 100%;") }}
+                  </div>
+                  <div class="col-md-4 d-flex align-items-center">
+                    <label for="{{ form.submitterlast.id }}" class="me-2 mb-0"><strong>{{ form.submitterlast.label.text }}</strong></label>
+                    {{ form.submitterlast(class="form-control d-inline-block", style="width: 100%;") }}
+                  </div>
+                  <div class="col-md-4 d-flex align-items-center">
+                    <label for="{{ form.submitteremail.id }}" class="me-2 mb-0"><strong>{{ form.submitteremail.label.text }}</strong></label>
+                    {{ form.submitteremail(class="form-control d-inline-block", style="width: 100%;") }}
+                  </div>
+                </div>
+            <!-- Submitter field errors -->
+            <div class="row mb-1">
+                  <div class="col-md-4">
+                    {% for error in form.submitterfirst.errors %}
+                      <div class="text-danger">{{ error }}</div>
+                    {% endfor %}
+                  </div>
+                  <div class="col-md-4">
+                    {% for error in form.submitterlast.errors %}
+                      <div class="text-danger">{{ error }}</div>
+                    {% endfor %}
+                  </div>
+                  <div class="col-md-4">
+                    {% for error in form.submitteremail.errors %}
+                      <div class="text-danger">{{ error }}</div>
+                    {% endfor %}
+                  </div>
+                </div>
+            <h4>Submission</h4>
+            <!-- Senotype id, name, description -->
+            <div class="row align-items-center mb-1">
+                <div class="col-auto d-flex align-items-center" style="min-width: 240px; max-width: 260px;">
+                    <label for="{{ form.senotypeid.id }}" class="me-2 mb-0"><strong>{{ form.senotypeid.label.text }}</strong></label>
+                    {{ form.senotypeid(class="form-control", style="width: 18ch;", maxlength="16") }}
+                </div>
+                <div class="col d-flex align-items-center">
+                    <label for="{{ form.senotypename.id }}" class="me-2 mb-0"><strong>{{ form.senotypename.label.text }}</strong></label>
+                    {{ form.senotypename(class="form-control", style="width: 100%;", rows="1") }}
+                </div>
+                <div class="col d-flex align-items-center">
+                    <label for="{{ form.senotypedescription.id }}" class="me-2 mb-0"><strong>{{ form.senotypedescription.label.text }}</strong></label>
+                    {{ form.senotypedescription(class="form-control", style="width: 100%;", rows="1") }}
+                </div>
+            </div>
+            <!-- Senotype id, name, description errors -->
+            <div class="row mb-1">
+                  <div class="col-md-3">
+                    {% for error in form.senotypeid.errors %}
+                      <div class="text-danger">{{ error }}</div>
+                    {% endfor %}
+                  </div>
+                  <div class="col-md-4">
+                    {% for error in form.senotypename.errors %}
+                      <div class="text-danger">{{ error }}</div>
+                    {% endfor %}
+                  </div>
+                  <div class="col-md-5">
+                    {% for error in form.senotypedescription.errors %}
+                      <div class="text-danger">{{ error }}</div>
+                    {% endfor %}
+                  </div>
+                </div>
+            <!-- DOI -->
+            <div class="row mb-1">
+                  <div class="col-md-12">
+                      {{ render_textarea_section(form, 'doi', 'doiSearchModal', '#f5f5f5', link_base_url='https://api.datacite.org/dois/', link_title='View DOI details', parse_code=False ) }}
+                  </div>
+                  <div class="col-md-4">
+                    <!-- For alignment -->
+                  </div>
+                </div>
+          </div> <!-- col-md-8 (Submission column) -->
     </div> <!-- row (Main row) -->
     <!-- Simple Assertions section-->
     <div class="row">

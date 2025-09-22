@@ -223,8 +223,6 @@ class SenLib:
             "a_attr": {"style": "color: black; font-style: normal; font-size: 1.5em"},
         }
 
-        print([senotype_parent])
-
         return [senotype_parent]
 
     def getsenlibjson(self, id: str) -> dict:

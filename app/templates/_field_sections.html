@@ -132,7 +132,7 @@ Use case: DOI field
             <strong>{{ form[field_name].label.text }}</strong>
         </label>
         <div class="d-flex align-items-start w-100">
-            {{ form[field_name](class_="form-control", rows=2, style="resize: vertical; width: 100%;") }}
+            {{ form[field_name](class_="form-control", rows=1, style="resize: vertical; width: 100%;") }}
             {% for error in form[field_name].errors %}
                 <div class="text-danger">{{ error }}</div>
             {% endfor %}
