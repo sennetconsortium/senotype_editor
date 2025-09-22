@@ -26,7 +26,7 @@
     <!-- Senotype / Submission -->
     <div class="row">
       <!-- Senotype column -->
-        <div class="col-md-4" style="background-color: #f5f5f5; border: 1px solid #ccc; border-radius: 5px; padding: 3px;">
+        <div class="col-md-4" style="background-color: #FEF2F2; border: 1px solid #ccc; border-radius: 5px; padding: 3px;">
           <div class="row">
             <div class="col-12">
               <div style="position: relative; width: 100%;">
@@ -34,7 +34,8 @@
                     new version
                 </button>
                 <div id="senotype-tree" style="background-color:white; border: 1px solid #ccc;
-                    border-radius: 5px; padding: 3px; height: 210px; overflow-y: auto; overflow-x: auto;">
+                    border-radius: 5px; padding: 3px; height: 210px; overflow-y: auto; overflow-x: auto;"
+                    title="Expand the tree to navigate to a version of a Senotype">
                 </div>
                 <input type="hidden" name="selected_node_id" id="selected_node_id" value="{{ selected_node_id or '' }}">
                 <div id="senotype-spinner" class="spinner-border text-primary position-absolute"
@@ -51,7 +52,7 @@
           </div>
         </div>
       <!-- Submission column -->
-        <div class="col-md-8" style="background-color: #f5f5f5; border: 1px solid #ccc; border-radius: 5px; padding: 3px;">
+        <div class="col-md-8" style="background-color: #FEF2F2; border: 1px solid #ccc; border-radius: 5px; padding: 3px;">
             <h4 class="mb-3">Submitter</h4>
             <!-- Submitter fields -->
             <div class="row align-items-center mb-1">
@@ -203,7 +204,9 @@
             data-bs-target="#collapseMarkers"
             aria-expanded="true"
             aria-controls="collapseMarkers"
-            style="background-color: #009999; color: #fff; justify-content: center; font-weight: bold;">
+            style="background-color: #009999; color: #fff; justify-content: center; font-weight: bold;"
+            id="btn-accordion"
+          >
         Markers
       </button>
         </h3>

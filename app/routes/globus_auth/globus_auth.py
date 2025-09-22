@@ -101,7 +101,6 @@ def login():
         groups_token = token_response.by_resource_server['groups.api.globus.org']['access_token']
         # Also get the user info (sub, email, name, preferred_username) using the AuthClient with the auth token
         user_info = get_user_info(auth_token)
-        print(user_info)
 
         session['groups_token'] = groups_token
         session['consortium'] = consortium

@@ -23,55 +23,87 @@ $(function() {
     // Enable or disable controls.
     var form = document.getElementById('edit_form');
     if (!form) return;
-    var elements = form.querySelectorAll('input, span, textarea, button');
+    var elements = form.querySelectorAll('input, span, textarea, button, li');
     var update_btn = document.getElementById('update_btn');
 
     elements.forEach(function(el) {
 
-      // Never disable the senotype treeview.
-      if (el.id === 'selected_node_id') return;
+        // Do not change the senotype jstree, the marker accordion, or the hidden
+        // selected node input.
 
-      // Readonly controls are always disabled.
-      var readonly = ['senotypeid','submitterfirst',
-      'submitterlast','submitteremail'];
-      if (readonly.includes(el.id)) {
-        el.disabled = true;
-        el.style.backgroundColor = '#e5e5e5';
-        return;
-      }
+        // Collect all jsTree node and anchor IDs.
+        var jsTreeElements = document.querySelectorAll('.jstree-node, .jstree-anchor');
+        var leaveAlone = ['btn-accordion', 'selected_node_id'];
+        // Add all jsTree node and anchor IDs to leaveAlone
+        jsTreeElements.forEach(function(el) {
+            if (el.id) {
+                leaveAlone.push(el.id);
+            }
+        });
+        if (leaveAlone.includes(el.id)) return;
 
-      if (isEditable & isAuthorized) {
-        if (el.tagName === "SPAN") {
-          el.style.pointerEvents = '';
-          el.style.opacity = '';
-          el.style.backgroundColor = '';
-        } else if (el.tagName === "INPUT" && el.type === "text") {
-          el.disabled = false;
-          el.style.backgroundColor = 'white';
-        } else if (el.tagName === "TEXTAREA") {
-            console.log(el.id);
-            el.disabled = (el.id === "doi");
-            el.style.backgroundColor = 'white';
-        } else if (el.tagName === "BUTTON") {
-          el.disabled = false;
-        }
-      } else {
-
-        if (el.tagName === "SPAN") {
-          el.style.pointerEvents = 'none';
-          el.style.opacity = 0.6;
-          el.style.backgroundColor = '#e5e5e5';
-        } else if (el.tagName === "INPUT" && el.type === "text") {
-          el.disabled = true;
-          el.style.backgroundColor = '#e5e5e5';
-        } else if (el.tagName === "TEXTAREA") {
-          el.disabled = true;
-          el.style.backgroundColor = '#e5e5e5';
-        } else if (el.tagName === "BUTTON") {
-          el.disabled = true;
+        // Readonly controls are always disabled.
+        var readonly = ['senotypeid','submitterfirst',
+        'submitterlast','submitteremail'];
+        if (readonly.includes(el.id)) {
+            el.disabled = true;
+            el.style.backgroundColor = '#eeeeee';
+            return;
         }
 
-      }
+        // Buttons that always display.
+        var alwaysVisible = ['update_btn', 'new-version-btn'];
+
+        // For all other inputs, enabled and possibly visibility are
+        // determined by the selected node.
+        if (isEditable && isAuthorized) {
+            // Enabled and visible.
+            if (el.tagName === "SPAN") {
+                el.style.pointerEvents = '';
+                el.style.opacity = '';
+                el.style.backgroundColor = '';
+                el.style.visibility = 'display';
+            } else if (el.tagName === "INPUT" && el.type === "text") {
+                el.disabled = false;
+                el.style.backgroundColor = 'white';
+            } else if (el.tagName === "TEXTAREA") {
+                el.disabled = (el.id === "doi");
+                el.style.backgroundColor = 'white';
+            } else if (el.tagName === "BUTTON") {
+                el.disabled = false;
+                el.style.visibility = 'visible';
+            } else if (el.tagName === "LI") {
+                el.style.background = 'white';
+            }
+
+        } else {
+
+            // Disabled.
+            // Add and remove buttons hidden.
+            if (el.tagName === "SPAN") {
+                el.style.pointerEvents = 'none';
+                el.style.opacity = 0.6;
+                el.style.backgroundColor = '#eeeeee';
+                if (el.id.includes("link")) {
+                    el.style.visibility = "hidden";
+                }
+            } else if (el.tagName === "INPUT" && el.type === "text") {
+                el.disabled = true;
+                el.style.backgroundColor = '#eeeeee';
+            } else if (el.tagName === "TEXTAREA") {
+                el.disabled = true;
+                el.style.backgroundColor = '#eeeeee';
+            } else if (el.tagName === "BUTTON") {
+                el.disabled = true;
+                if (alwaysVisible.includes(el.id)) {
+                    el.style.visibility = "visible";
+                } else {
+                    el.style.visibility = "hidden";
+                }
+            } else if (el.tagName === "LI") {
+                el.style.background = '#eeeeee';
+            }
+        }
     });
 
     // Update button label should be "Create" if "new" was selected, else "Update".

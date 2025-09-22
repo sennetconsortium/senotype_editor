@@ -26,11 +26,11 @@ Arguments:
 -->
 
 {% macro render_fieldlist_section(form, field_name, modal_id, label_bg="#FEF2F2", is_external=False, col_class="col-md-4", groups_token=None) %}
-<div class="{{ col_class }}" style="background-color: {{ label_bg }}; border: 1px solid #ccc; border-radius: 5px; padding: 3px;">
+<div class="{{ col_class }}" style="background-color: {{ label_bg }}; border: 1px solid #ccc; border-radius: 5px; padding: 3px;"">
     {# header #}
-    <strong>{{ form[field_name].label }}</strong>
+    <strong style="margin-left: 12px;">{{ form[field_name].label }}</strong>
     <div class="d-flex align-items-start">
-        <ul id="{{ field_name }}-list" class="list-group mb-2 w-100" style="margin-bottom:0!important;">
+        <ul id="{{ field_name }}-list" class="list-group mb-2 w-100" style="margin-bottom:0!important; margin-left: 12px;">
             <!-- Parse code from value provided by WTForms field. -->
             {% for field in form[field_name] %}
                 {% set full_value = field.data %}
@@ -74,7 +74,7 @@ Arguments:
                 title="Add {{ field_name }}"
                 aria-label="Add {{ field_name }}"
                 class="btn btn-sm ms-2"
-                style="background-color: #0d6efd; color: #fff; margin-top:8px; width: 2.5em;"
+                style="background-color: #0d6efd; color: #fff; margin-top:8px; width:2.5em; margin-right:12px;"
                 data-bs-toggle="modal"
                 data-bs-target="#{{ modal_id }}">
             +

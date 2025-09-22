@@ -72,13 +72,26 @@ class SenLib:
         -------- Version 1 (A)
         -- new
 
+        The JSON has additional classes that the senotype-treeview Javascript uses
+        to control treeview behavior:
+        1. The "editable" class indicates whether the node corresponds to a senotype
+           that has not yet been published.
+        2. The "authorized" class indicates whether the user is authorized to
+           edit a senotype. Authorization is based on the user's Globus userid.
+
         """
+
+        # Node icons
+        icon_locked = '🔒'
+        icon_unauthorized = '🚫'
+        icon_edit = '📝'
 
         # Obtain an (unordered) list of of all sentotype jsons.
         senotype_jsons = self.database._getallsenotypejsons()
 
         # Build maps used to organize senotypes by version:
         # All senotype IDs
+
         senotype_by_id = {}
         # Predecessors by ID
         predecessor_map = {}
@@ -123,6 +136,7 @@ class SenLib:
             assign_versions_from_oldest(oid, 1)
 
         # BUILD THE TREE VIEW.
+
         # Build nodes for each senotype JSON.
         node_map = {}
         for id_ in senotype_by_id:
@@ -145,14 +159,21 @@ class SenLib:
 
             if editable and authorized:
                 style = "color: green; font-weight: bold;"
+                icon = icon_edit
+                state = "editable"
             elif editable and not authorized:
                 style = "color: red; font-weight: normal;"
+                icon = icon_unauthorized
+                state = "editing unauthorized"
             else:
                 style = "color: gray; font-style: italic; font-weight: normal;"
+                icon = icon_locked
+                state = "read-only - published"
 
             a_attrs = {
                 "class": " ".join(classes),
-                "style": style
+                "style": style,
+                "title": f"Version {version_map[id_]} ({state})"
             }
 
             # Published nodes should be displayed as "disabled"--i.e., in gray
@@ -161,7 +182,7 @@ class SenLib:
 
             node_map[id_] = {
                 "id": id_,
-                "text": f"Version {version_map[id_]} ({id_})",
+                "text": f"{icon} Version {version_map[id_]} ({id_})",
                 "children": [],
                 "state": {},
                 "icon": "jstree-file",
@@ -198,15 +219,18 @@ class SenLib:
                 # "state": {"opened": True},
                 "state": {},
                 "icon": "jstree-folder",  # folder icon
-                "a_attr": {"style": "color: black; font-style: normal"},
+                "a_attr": {"style": "color: black; font-style: normal",
+                           "title": name_only},
+
             })
 
         # Add "new" node
         a_attrs = {"class": "editable authorized",
-                   "style": "color: green; font-style: bold"}
+                   "style": "color: green; font-style: bold",
+                   "title": "new Senotype"}
         new_node = {
             "id": "new",
-            "text": "new",
+            "text": f"{icon_edit} new",
             "children": [],
             "state": {},
             "icon": "jstree-file",
@@ -220,7 +244,8 @@ class SenLib:
             "text": "Senotype",
             "children": wrapped_roots + [new_node],
             "state": {"opened": True},
-            "a_attr": {"style": "color: black; font-style: normal; font-size: 1.5em"},
+            "a_attr": {"style": "color: black; font-style: normal; font-size: 1.5em",
+                       "title": "Senotype"},
         }
 
         return [senotype_parent]
