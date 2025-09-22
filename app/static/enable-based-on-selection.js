@@ -49,8 +49,9 @@ $(function() {
           el.disabled = false;
           el.style.backgroundColor = 'white';
         } else if (el.tagName === "TEXTAREA") {
-          el.disabled = false;
-          el.style.backgroundColor = 'white';
+            console.log(el.id);
+            el.disabled = (el.id === "doi");
+            el.style.backgroundColor = 'white';
         } else if (el.tagName === "BUTTON") {
           el.disabled = false;
         }
