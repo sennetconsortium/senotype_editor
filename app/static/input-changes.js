@@ -31,7 +31,8 @@ document.addEventListener('DOMContentLoaded', function() {
     // Remove all error classes (text-danger, text-bg-danger)
     document.querySelectorAll('div.text-danger, div.text-bg-danger').forEach(div => {
       // Option 1: Hide the error div
-      div.style.display = 'none';
+      //div.style.display = 'none';
+      div.remove();
     });
 
     checkForEnabled();
