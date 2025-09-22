@@ -75,6 +75,25 @@
     </style>
   </head>
   <body>
+    <!-- Menu navbar -->
+    <nav class="navbar" style="background-color: #F0FDF4;">
+      <div class="container-fluid">
+        <div class="d-flex align-items-center w-100 position-relative" style="height: 57px;">
+          <a class="navbar-brand d-flex align-items-center" href="{{ url_for('globus.globus') }}" style="margin-right: 1px; height: 57px;">
+            <img src="static/editor.png" width="60" height="57" alt="Senotype Editor" style="border: 1px solid #ccc;">
+          </a>
+          <p class="mb-0 flex-grow-1 d-flex align-items-center"
+           style="color: #212529; background-color: #F0FDF4; font-size: 2.5em; height: 57px; line-height: 57px; margin-left: 1px;">
+            Senotype Editor
+          </p>
+          {% if session.userid and session.username %}
+            <span class="position-absolute end-0 me-3" style="color: #212529; font-size: 0.9em;">
+              {{ session.userid }} ({{ session.username }})
+            </span>
+          {% endif %}
+        </div>
+      </div>
+    </nav>
     {% block content %}
     {% endblock %}
     <!-- bottom -->
