@@ -34,7 +34,7 @@
                     new version
                 </button>
                 <div id="senotype-tree" style="background-color:white; border: 1px solid #ccc;
-                    border-radius: 5px; padding: 3px; height: 255px; overflow-y: auto; overflow-x: auto;"
+                    border-radius: 5px; padding: 3px; height: 220px; overflow-y: auto; overflow-x: auto;"
                     title="Expand the tree to navigate to a version of a Senotype">
                 </div>
                 <input type="hidden" name="selected_node_id" id="selected_node_id" value="{{ selected_node_id or '' }}">
@@ -165,28 +165,28 @@
                     <h6><strong>Age</strong></h6>
                     <div class="col-3 d-flex align-items-center">
                         <strong>{{ form.agevalue.label }}</strong>
-                        {{ form.agevalue(class="form-control ms-2", type="number", maxlength="4", min="0", max="90", style="max-width:8ch;") }}
+                        {{ form.agevalue(class="form-control ms-2", type="number", maxlength="4", min="0", max="90", style="max-width:8ch;", disabled=True) }}
                     </div>
                     {% for error in form.agevalue.errors %}
                         <div class="text-danger">{{ error }}</div>
                     {% endfor %}
                     <div class="col-3 d-flex align-items-center">
                         <strong>{{ form.agelowerbound.label }}</strong>
-                        {{ form.agelowerbound(class="form-control ms-2", type="number", maxlength="4", min="0", max="90",style="max-width:8ch;") }}
+                        {{ form.agelowerbound(class="form-control ms-2", type="number", maxlength="4", min="0", max="90",style="max-width:8ch;", disabled=True) }}
                     </div>
                     {% for error in form.agelowerbound.errors %}
                         <div class="text-danger">{{ error }}</div>
                     {% endfor %}
                     <div class="col-3 d-flex align-items-center">
                         <strong>{{ form.ageupperbound.label }}</strong>
-                        {{ form.ageupperbound(class="form-control ms-2", type="number", maxlength="4",min="0", max="90", style="max-width:8ch;") }}
+                        {{ form.ageupperbound(class="form-control ms-2", type="number", maxlength="4",min="0", max="90", style="max-width:8ch;", disabled=True) }}
                     </div>
                     {% for error in form.ageupperbound.errors %}
                         <div class="text-danger">{{ error }}</div>
                     {% endfor %}
                     <div class="col-3 d-flex align-items-center">
                         <strong>{{ form.ageunit.label }}</strong>
-                        {{ form.ageunit(class="form-control ms-2", maxlength="5") }}
+                        {{ form.ageunit(class="form-control ms-2", maxlength="5", disabled=True) }}
                     </div>
                 </div>
             </div>

@@ -85,7 +85,7 @@ class SenLib:
         senotype JSON for this senotype has name "X".
 
         The treeview will display:
-        Senotype
+        Senotype Library
         -- X
         ---- Version 3 (C)
         ------ Version 2 (B)
@@ -191,10 +191,12 @@ class SenLib:
                 icon = icon_locked
                 state = "read-only - published"
 
+            instructions = f"Version {version_map[id_]} ({state})"
             a_attrs = {
                 "class": " ".join(classes),
                 "style": style,
-                "title": f"Version {version_map[id_]} ({state})"
+                "title": instructions,
+                "aria-label": instructions,
             }
 
             # Published nodes should be displayed as "disabled"--i.e., in gray
@@ -232,23 +234,27 @@ class SenLib:
                 versions = str(version) + ' versions'
             else:
                 versions = str(version) + ' version'
-            name_only = f"{name_map[root['id']]} ({versions})"
+            instructions = f"{name_map[root['id']]} ({versions}) - expand for details"
             wrapped_roots.append({
                 "id": f"group{root['id']}", # name from latest version
-                "text": name_only,
+                "text": instructions,
                 "children": [root],
                 # "state": {"opened": True},
                 "state": {},
                 "icon": "jstree-folder",  # folder icon
                 "a_attr": {"style": "color: black; font-style: normal",
-                           "title": name_only},
+                           "title": instructions,
+                           "aria-label": instructions},
 
             })
 
         # Add "new" node
+        instructions = "Create a new senotype"
         a_attrs = {"class": "editable authorized",
                    "style": "color: green; font-style: bold",
-                   "title": "new Senotype"}
+                   "title": instructions,
+                   "aria-label": instructions}
+
         new_node = {
             "id": "new",
             "text": f"{icon_edit} new",
@@ -259,14 +265,17 @@ class SenLib:
             "a_attr": a_attrs,
         }
 
-        # Top-level "Senotype" node as parent
+        # Top-level "Senotype Library" node as parent
+        instructions = ("Senotype Library: Expand and navigate to view existing senotypes, "
+                        "create new versions of senotypes, and create new senotypes")
         senotype_parent = {
             "id": "Senotype",
-            "text": "Senotype",
+            "text": "Senotype Library",
             "children": wrapped_roots + [new_node],
             "state": {"opened": True},
             "a_attr": {"style": "color: black; font-style: normal; font-size: 1.5em",
-                       "title": "Senotype"},
+                       "title": instructions,
+                       "aria-label": instructions},
         }
 
         return [senotype_parent]

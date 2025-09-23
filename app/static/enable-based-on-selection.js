@@ -44,7 +44,7 @@ $(function() {
 
         // Readonly controls are always disabled.
         var readonly = ['senotypeid','submitterfirst',
-        'submitterlast','submitteremail'];
+        'submitterlast','submitteremail','ageunit'];
         if (readonly.includes(el.id)) {
             el.disabled = true;
             el.style.backgroundColor = '#eeeeee';
@@ -54,25 +54,28 @@ $(function() {
         // Buttons that always display.
         var alwaysVisible = ['update_btn', 'new-version-btn'];
 
+        // Input types
+        var inputTypes = ['text','number'];
+
         // For all other inputs, enabled and possibly visibility are
         // determined by the selected node.
         if (isEditable && isAuthorized) {
             // Enabled and visible.
-            if (el.tagName === "SPAN") {
+            if (el.tagName === 'SPAN') {
                 el.style.pointerEvents = '';
                 el.style.opacity = '';
                 el.style.backgroundColor = '';
                 el.style.visibility = 'display';
-            } else if (el.tagName === "INPUT" && el.type === "text") {
+            } else if (el.tagName === 'INPUT' && inputTypes.includes(el.type)) {
                 el.disabled = false;
                 el.style.backgroundColor = 'white';
-            } else if (el.tagName === "TEXTAREA") {
+            } else if (el.tagName === 'TEXTAREA') {
                 el.disabled = (el.id === "doi");
                 el.style.backgroundColor = 'white';
-            } else if (el.tagName === "BUTTON") {
+            } else if (el.tagName === 'BUTTON') {
                 el.disabled = false;
                 el.style.visibility = 'visible';
-            } else if (el.tagName === "LI") {
+            } else if (el.tagName === 'LI') {
                 el.style.background = 'white';
             }
 
@@ -80,27 +83,27 @@ $(function() {
 
             // Disabled.
             // Add and remove buttons hidden.
-            if (el.tagName === "SPAN") {
+            if (el.tagName === 'SPAN') {
                 el.style.pointerEvents = 'none';
                 el.style.opacity = 0.6;
                 el.style.backgroundColor = '#eeeeee';
-                if (el.id.includes("link")) {
-                    el.style.visibility = "hidden";
+                if (el.id.includes('link')) {
+                    el.style.visibility = 'hidden';
                 }
-            } else if (el.tagName === "INPUT" && el.type === "text") {
+            } else if (el.tagName === 'INPUT' && inputTypes.includes(el.type)) {
                 el.disabled = true;
                 el.style.backgroundColor = '#eeeeee';
-            } else if (el.tagName === "TEXTAREA") {
+            } else if (el.tagName === 'TEXTAREA') {
                 el.disabled = true;
                 el.style.backgroundColor = '#eeeeee';
-            } else if (el.tagName === "BUTTON") {
+            } else if (el.tagName === 'BUTTON') {
                 el.disabled = true;
                 if (alwaysVisible.includes(el.id)) {
-                    el.style.visibility = "visible";
+                    el.style.visibility = 'visible';
                 } else {
-                    el.style.visibility = "hidden";
+                    el.style.visibility = 'hidden';
                 }
-            } else if (el.tagName === "LI") {
+            } else if (el.tagName === 'LI') {
                 el.style.background = '#eeeeee';
             }
         }
@@ -108,7 +111,7 @@ $(function() {
 
     // Update button label should be "Create" if "new" was selected, else "Update".
     if(update_btn) {
-        update_btn.textContent = (nodeid === "new") ? "Create" : "Update";
+        update_btn.textContent = (nodeid === 'new') ? 'Create' : 'Update';
     }
 
   });
