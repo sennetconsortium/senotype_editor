@@ -216,7 +216,7 @@ def update():
         return render_template('edit.html',
                                form=form,
                                response={'tree_data': senlib.senotypetree},
-                               selected_node_id=selected_node_id)
+                               selected_node_id=id)
 
     else:
         # Inject custom errors into standard WTForms validation errors, avoiding duplicates.

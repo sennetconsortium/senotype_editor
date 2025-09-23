@@ -1014,9 +1014,7 @@ class SenLib:
         # FieldList(FormField) instead of a simple FieldList.
         regmarkerlist = self.build_session_regmarkerlist(form_data=form_data)
         if len(regmarkerlist) > 0:
-            form.regmarker.process(
-                None,
-                [
+            form.regmarker.process(None, [
                     {
                         "marker": self.truncateddisplaytext(id=item['code'], description=item['term'],
                                                             trunclength=50),
@@ -1026,8 +1024,7 @@ class SenLib:
                 ]
             )
         else:
-
-            form.regmarker.process(None, [''])
+            form.regmarker.process(None, [])
 
     def __init__(self, cfg: AppConfig, userid: str):
 
