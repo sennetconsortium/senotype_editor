@@ -53,6 +53,9 @@ function addValuesetToList(fieldname, valuesetId, valuesetLabel) {
     li.appendChild(btn);
     ul.appendChild(li);
     reindexInputs(fieldname + '-list', fieldname);
+
+    // Global function in input-changes.js
+    handleInputChange();
 }
 
 // Load valueset list in modal via AJAX, parameterized by assertion predicate and field name
@@ -74,6 +77,12 @@ function initValuesetModal(predicate, fieldname) {
                     btn.textContent = item.label;
                     btn.onclick = function () {
                         addValuesetToList(fieldname, item.id, item.label);
+                        // Move focus out of the modal before hiding.
+                        // This avoids triggering prevents accessibility errors about focused
+                        // elements inside aria-hidden containers. (Bootstrap apparently inserts
+                        // aria-hidden statements.)
+                        document.activeElement.blur();
+
                         // Hide modal
                         var modalEl = document.getElementById(modalId);
                         var bsModal = bootstrap.Modal.getInstance(modalEl);

@@ -80,6 +80,9 @@ function addRegMarker(id, description, action) {
     li.appendChild(btn);
 
     ul.appendChild(li);
+
+    // Global function in input-changes.js
+    handleInputChange();
 }
 
 // Modal search logic (fetching marker IDs, then their descriptions)
@@ -148,6 +151,11 @@ document.addEventListener('DOMContentLoaded', function () {
                             // Use proper prefix for marker ID
                             var markerId = (type === "gene") ? ("HGNC:" + id) : ("UNIPROTKB:" + id);
                             addRegMarker(markerId, description, action);
+                            // Move focus out of the modal before hiding.
+                            // This avoids triggering prevents accessibility errors about focused
+                            // elements inside aria-hidden containers. (Bootstrap apparently inserts
+                            // aria-hidden statements.)
+                            document.activeElement.blur();
 
                             // Hide modal with Bootstrap 5
                             var modalEl = document.getElementById('regmarkerSearchModal');

@@ -496,6 +496,8 @@ display with transparent background--apparently, a known bug in this scenario. -
 <script src="{{ url_for('static', filename='update-button.js') }}"></script>
 <!-- Script to add external link buttons to inputs -->
 <script src="{{ url_for('static', filename='add-link-buttons.js') }}"></script>
+<!-- Respond to changes in input: enable/disable update button; turn off display of previous errors. -->
+<script src="{{ url_for('static', filename='input-changes.js') }}"></script>
 <!-- Scripts to manage modals related to the add and remove buttons-->
 <script src="{{ url_for('static', filename='valueset-modal.js') }}"></script>
 <script src="{{ url_for('static', filename='external-list-modal.js') }}"></script>
@@ -510,5 +512,5 @@ display with transparent background--apparently, a known bug in this scenario. -
 {% block scripts %}
   <!-- Respond to changes in input: enable/disable update button; turn off display of previous errors.
        Placed after the HTML body for timing purposes.-->
-  <script src="{{ url_for('static', filename='input-changes.js') }}"></script>
+  <!--<script src="{{ url_for('static', filename='input-changes.js') }}"></script>-->
 {% endblock %}

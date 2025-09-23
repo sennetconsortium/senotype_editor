@@ -55,6 +55,8 @@ function addDoiReference(doiid, title) {
     link.textContent = '🔗';
     container.appendChild(link);
 
+    // Global function in input-changes.js
+    handleInputChange();
 }
 
 // Modal search logic (fetching DOIs from DataCite)
@@ -91,12 +93,20 @@ document.getElementById('doi-search-input').addEventListener('input', function (
                     btn.textContent = title ? title : doiid;
                     btn.onclick = function () {
                         addDoiReference(doiid, title);
-                        // Hide modal with Bootstrap 5
+                        // Hide modal with Bootstrap 5.
+
+                        // Move focus out of the modal before hiding.
+                        // This avoids triggering prevents accessibility errors about focused
+                        // elements inside aria-hidden containers. (Bootstrap apparently inserts
+                        // aria-hidden statements.)
+                        document.activeElement.blur();
+
                         var modalEl = document.getElementById('doiSearchModal');
                         var modal = bootstrap.Modal.getInstance(modalEl);
                         modal.hide();
                     };
                     resultsDiv.appendChild(btn);
+
                 } else {
                     resultsDiv.innerHTML = '<div class="text-muted">No results found.</div>';
                 }

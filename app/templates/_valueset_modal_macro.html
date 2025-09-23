@@ -1,6 +1,11 @@
-{# Macro for valueset-select modals #}
 {% macro valueset_modal(modal_id, modal_label, modal_list_id) %}
-<div class="modal fade" id="{{ modal_id }}" tabindex="-1" aria-labelledby="{{ modal_id }}Label">
+<div class="modal fade"
+     id="{{ modal_id }}"
+     tabindex="-1"
+     aria-labelledby="{{ modal_id }}Label"
+     role="dialog"
+     aria-modal="true"
+     inert>
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
@@ -13,4 +18,32 @@
         </div>
     </div>
 </div>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var modalEl = document.getElementById('{{ modal_id }}');
+    var openerButton = null;
+
+    if (!modalEl) return;
+
+    // Detect when modal is shown
+    modalEl.addEventListener('show.bs.modal', function(e) {
+        // Save the currently focused element as opener
+        openerButton = document.activeElement;
+        modalEl.removeAttribute('inert');
+    });
+
+    // Detect when modal is hidden
+    modalEl.addEventListener('hidden.bs.modal', function(e) {
+        modalEl.setAttribute('inert', '');
+        // Restore focus to opener button if possible
+        if (openerButton && typeof openerButton.focus === 'function') {
+            openerButton.focus();
+        } else {
+            // As fallback, blur any active element
+            document.activeElement.blur();
+        }
+        openerButton = null;
+    });
+});
+</script>
 {% endmacro %}

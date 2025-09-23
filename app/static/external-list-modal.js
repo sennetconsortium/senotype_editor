@@ -181,6 +181,9 @@ function addExternal(type, info) {
     li.appendChild(btn);
 
     ul.appendChild(li);
+
+    // Global function in input-changes.js
+    handleInputChange();
 }
 
 function setupExternalModalSearch(type) {
@@ -204,7 +207,6 @@ function setupExternalModalSearch(type) {
                 const response = await fetch(apiUrl);
                 if (!response.ok) throw new Error("API error");
                 const data = await response.json();
-                console.log(`[${type}] API Response:`, data);
                 let items = [];
                 // Citation parse is async, dataset/origin are sync
                 if (type === "citation") {
@@ -224,7 +226,14 @@ function setupExternalModalSearch(type) {
                         btn.textContent = info.description;
                         btn.onclick = function () {
                             addExternal(type, info);
-                            // Hide modal with Bootstrap 5
+                            // Hide modal with Bootstrap 5.
+
+                            // Move focus out of the modal before hiding.
+                            // This avoids triggering prevents accessibility errors about focused
+                            // elements inside aria-hidden containers. (Bootstrap apparently inserts
+                            // aria-hidden statements.)
+                            document.activeElement.blur();
+
                             const modalEl = document.getElementById(`${type}SearchModal`);
                             const modal = bootstrap.Modal.getInstance(modalEl);
                             modal.hide();

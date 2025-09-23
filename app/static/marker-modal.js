@@ -52,6 +52,9 @@ function addMarker(id, description) {
     li.appendChild(btn);
 
     ul.appendChild(li);
+
+    // Global function in input-changes.js
+    handleInputChange();
 }
 
 // Modal search logic (fetching marker IDs, then their descriptions)
@@ -145,7 +148,14 @@ document.addEventListener('DOMContentLoaded', function () {
                                 .then(validateData => {
                                      // Only add marker if validation succeeded (i.e., exists in ontology)
                                     addMarker(id, description);
-                                    // Hide modal with Bootstrap 5
+
+                                    // Hide modal with Bootstrap 5.
+                                    // Move focus out of the modal before hiding.
+                                    // This avoids triggering prevents accessibility errors about focused
+                                    // elements inside aria-hidden containers. (Bootstrap apparently inserts
+                                    // aria-hidden statements.)
+                                    document.activeElement.blur();
+
                                     var modalEl = document.getElementById('markerSearchModal');
                                     var modal = bootstrap.Modal.getInstance(modalEl);
                                     modal.hide();

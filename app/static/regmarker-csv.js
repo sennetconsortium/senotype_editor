@@ -217,10 +217,20 @@ document.addEventListener("DOMContentLoaded", function () {
         // Reindex all marker inputs for consistency
         reindexRegMarkerInputs();
 
+        // Global function in input-changes.js
+        handleInputChange();
+
         // Reset form and hide modal
         form.reset();
         resultsDiv.innerHTML = "";
         submitBtn.disabled = true;
+
+        // Move focus out of the modal before hiding.
+        // This avoids triggering prevents accessibility errors about focused
+        // elements inside aria-hidden containers. (Bootstrap apparently inserts
+        // aria-hidden statements.)
+        document.activeElement.blur();
+
         let modalEl = document.getElementById('regmarkerCsvModal');
         let modal = bootstrap.Modal.getInstance(modalEl);
         modal.hide();
