@@ -140,6 +140,19 @@ document.addEventListener("DOMContentLoaded", function () {
         e.preventDefault();
         const ul = document.getElementById("regmarker-list");
 
+        // Remove any empty or blank <li> (from WTForms or template)
+        Array.from(ul.children).forEach(function(li) {
+            var codeInput = li.querySelector('input[name^="regmarker-"][name$="-marker"]');
+            var actionInput = li.querySelector('input[name^="regmarker-"][name$="-action"]');
+            var span = li.querySelector('.list-field-display');
+            // Remove li if inputs missing, blank, or span blank
+            if (!codeInput || !codeInput.value || codeInput.value.trim() === "" ||
+                !actionInput || !actionInput.value || actionInput.value.trim() === "" ||
+                (span && span.textContent.trim() === "")) {
+                li.remove();
+            }
+        });
+
         parsedMarkers.forEach(m => {
             let marker, description, action;
             // Translate the action into an icon for display.

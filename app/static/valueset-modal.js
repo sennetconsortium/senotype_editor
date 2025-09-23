@@ -22,6 +22,19 @@ function removeValue(btn) {
 function addValuesetToList(fieldname, valuesetId, valuesetLabel) {
 
     var ul = document.getElementById(fieldname + '-list');
+
+    // Remove any empty or blank <li> (from WTForms or template)
+    Array.from(ul.children).forEach(function(li) {
+        // li should contain a hidden input and a span
+        var input = li.querySelector('input[type="hidden"]');
+        var span = li.querySelector('.list-field-display');
+        // Remove li if hidden input is missing OR value is blank, OR span is blank
+        if (!input || !input.value || input.value.trim() === "" || (span && span.textContent.trim() === "")) {
+            li.remove();
+        }
+    });
+
+
     // Check for duplicates by value
     var alreadyPresent = Array.from(ul.querySelectorAll('input')).some(function(input) {
         return input.value === valuesetId;
@@ -29,6 +42,7 @@ function addValuesetToList(fieldname, valuesetId, valuesetLabel) {
 
     if (alreadyPresent) return; // Do not add duplicate
 
+    // Create new list element.
     var li = document.createElement('li');
     li.className = 'list-group-item d-flex justify-content-between align-items-center';
     // Hidden input for the POST submission via the Update button.

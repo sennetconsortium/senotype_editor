@@ -133,6 +133,17 @@ function addExternal(type, info) {
     const ul = document.getElementById(`${type}-list`);
     if (!ul) return;
 
+    // Remove any empty or blank <li> (from WTForms or template)
+    Array.from(ul.children).forEach(function(li) {
+        // li should contain a hidden input and a span
+        var input = li.querySelector('input[type="hidden"]');
+        var span = li.querySelector('.list-field-display');
+        // Remove li if hidden input is missing OR value is blank, OR span is blank
+        if (!input || !input.value || input.value.trim() === "" || (span && span.textContent.trim() === "")) {
+            li.remove();
+        }
+    });
+
     // Prevent duplicates
     const exists = Array.from(ul.querySelectorAll('input')).some(input => input.value === info.id);
     if (exists) return;

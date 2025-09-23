@@ -17,6 +17,18 @@ function reindexMarkerInputs() {
 // Add marker from API result: Only add ID if not already present, but display description in the list
 function addMarker(id, description) {
     var ul = document.getElementById('marker-list');
+    if (!ul) return;
+
+    // Remove any empty or blank <li> (from WTForms or template)
+    Array.from(ul.children).forEach(function(li) {
+        var input = li.querySelector('input[type="hidden"]');
+        var span = li.querySelector('.list-field-display');
+        // Remove li if hidden input is missing OR value is blank, OR span is blank
+        if (!input || !input.value || input.value.trim() === "" || (span && span.textContent.trim() === "")) {
+            li.remove();
+        }
+    });
+
     // Prevent duplicates
     // Standardize ID format for duplicate prevention (assume id is already standardized, e.g., "HGNC:1100")
     var exists = Array.from(ul.querySelectorAll('input')).some(input => input.value === id);

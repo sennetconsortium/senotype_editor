@@ -135,25 +135,23 @@ document.addEventListener("DOMContentLoaded", function () {
         e.preventDefault();
 
         const ul = document.getElementById("marker-list");
+
+        // Remove any empty or blank <li> (from WTForms or template)
+        Array.from(ul.children).forEach(function(li) {
+            var input = li.querySelector('input[type="hidden"]');
+            var span = li.querySelector('.list-field-display');
+            // Remove li if hidden input is missing OR value is blank, OR span is blank
+            if (!input || !input.value || input.value.trim() === "" || (span && span.textContent.trim() === "")) {
+                li.remove();
+            }
+        });
+
         parsedMarkers.forEach(m => {
             // id in format SAB:code
             const standardizedId = m.type === "gene" ? "HGNC:" + m.id : "UNIPROTKB:" + m.id;
             const description = m.type === "gene"
                 ? m.approved_symbol || m.symbol || m.id
                 : m.recommended_name || m.id;
-            //let id, description;
-
-            //if (m.type === "gene") {
-                // Use approved_symbol if present, else symbol, else id
-                //let symbol = m.approved_symbol || m.symbol || m.id;
-                //id = "HGNC:" + m.id;
-                //description = id + " (" + symbol + ")";
-            //} else {
-                // Use uniprotkb_id if present, else id
-                //let proteinId = m.uniprotkb_id || m.id;
-                //id = "UNIPROTKB:" + proteinId;
-                //description = id + " (" + m.recommended_name + ")";
-           // }
 
             // Prevent duplicates in the marker list.
             if (Array.from(ul.querySelectorAll('input')).some(input => input.value === standardizedId)) return;

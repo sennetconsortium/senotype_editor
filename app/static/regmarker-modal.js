@@ -23,6 +23,20 @@ function addRegMarker(id, description, action) {
 
     var ul = document.getElementById('regmarker-list');
 
+    if (!ul) return;
+
+    // Remove any empty or blank <li> (from WTForms or template)
+    Array.from(ul.children).forEach(function(li) {
+        var inputCode = li.querySelector('input[name^="regmarker-"][name$="-marker"]');
+        var inputAction = li.querySelector('input[name^="regmarker-"][name$="-action"]');
+        var span = li.querySelector('.list-field-display');
+        if (!inputCode || !inputCode.value || inputCode.value.trim() === "" ||
+            !inputAction || !inputAction.value || inputAction.value.trim() === "" ||
+            (span && span.textContent.trim() === "")) {
+            li.remove();
+        }
+    });
+
    // Prevent adding duplicate marker-action pairs
     var exists = Array.from(ul.children).some(li => {
         var inputCode = li.querySelector('input[name^="regmarker-code"]');
