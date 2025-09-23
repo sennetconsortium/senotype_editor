@@ -27,6 +27,7 @@ function addLinkButtons(url_base, hidden_input_selector, link_title, target_sele
             link.href = url_base + encodeURIComponent(code);
             link.target = '_blank';
             link.title = link_title;
+            link.setAttribute('aria-label', link_title);
             link.textContent = '🔗';
             placeholder.innerHTML = '';
             placeholder.appendChild(link);

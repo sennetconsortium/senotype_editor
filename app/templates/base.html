@@ -52,17 +52,29 @@
         }
       });
     </script>
+    <script>
+      function clearErrorAlerts(btn) {
+        // Clears display of validation errors.
+        // Remove all error divs
+        document.querySelectorAll('div.text-danger, div.text-bg-danger').forEach(div => div.style.display = 'none');
+        // Remove the button's parent div
+        btn.closest('div').remove();
+      }
+</script>
     <title>Senotype Editor</title>
     <!-- Flask flash message display -->
     {% with messages = get_flashed_messages() %}
       {% if messages %}
         {% set joined = messages|join(' ') %}
-        <div class="p-0 {{ 'text-bg-danger' if 'Error' in joined else 'text-bg-success' }}">
+        <div class="p-1 d-flex align-items-start justify-content-between {{ 'text-bg-danger' if 'Error' in joined else 'text-bg-success' }}" style="position:relative;">
           <ul class=flashes>
             {% for message in messages %}
               <li>{{ message }}</li>
             {% endfor %}
           </ul>
+          <button type="button" class="btn btn-sm btn-primary ms-3" onclick="clearErrorAlerts(this)" aria-label="Clear Errors">
+            Clear Errors
+          </button>
         </div>
       {% endif %}
     {% endwith %}

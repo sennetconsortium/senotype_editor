@@ -111,7 +111,10 @@ $(function() {
 
     // Update button label should be "Create" if "new" was selected, else "Update".
     if(update_btn) {
-        update_btn.textContent = (nodeid === 'new') ? 'Create' : 'Update';
+        var action = (nodeid === 'new') ? 'Create' : 'Update';
+        update_btn.textContent = action;
+        update_btn.title = action + ' ' + nodeid;
+        update_btn.setAttribute('aria-label', action + ' ' + nodeid);
     }
 
   });

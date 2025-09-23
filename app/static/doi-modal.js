@@ -52,6 +52,7 @@ function addDoiReference(doiid, title) {
     link.href = 'https://commons.datacite.org/doi.org/10.6084/' + encodeURIComponent(doiid);
     link.target = '_blank';
     link.title = 'View DOI details';
+    link.setAttribute('aria-label', 'View DOI details');
     link.textContent = '🔗';
     container.appendChild(link);
 

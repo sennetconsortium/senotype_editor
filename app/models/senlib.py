@@ -185,11 +185,11 @@ class SenLib:
             elif editable and not authorized:
                 style = "color: red; font-weight: normal;"
                 icon = icon_unauthorized
-                state = "editing unauthorized"
+                state = "you are not unauthorized to edit"
             else:
                 style = "color: gray; font-style: italic; font-weight: normal;"
                 icon = icon_locked
-                state = "read-only - published"
+                state = "published; read-only"
 
             instructions = f"Version {version_map[id_]} ({state})"
             a_attrs = {
