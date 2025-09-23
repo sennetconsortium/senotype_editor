@@ -203,7 +203,7 @@ def update():
     custom_errors = validate_form(form=form, fieldlist_prefixes=fieldlist_prefixes)
     if len(custom_errors) == 0:
         # Handle successful update (save to database, etc.)
-        dictsenotype = buildsubmission(form_data=normalized_deduped_form_data, uuid_base_url=uuid_base_url)
+        dictsenotype = buildsubmission(form_data=normalized_deduped_form_data)
         writesubmission()
         flash('Success!')
 
@@ -211,7 +211,7 @@ def update():
         form = EditForm(request.form)
         senlib = SenLib(cfg=cfg, userid=session['userid'])
 
-        senlib.fetchfromdb(id=id, senlib=senlib, form=form)
+        senlib.fetchfromdb(id=id, form=form)
 
         return render_template('edit.html',
                                form=form,
