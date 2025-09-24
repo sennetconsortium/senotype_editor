@@ -1111,6 +1111,9 @@ class SenLib:
         # Senotype Editor assertion valuesets
         self.assertionvaluesets = self.database.assertionvaluesets
         # Senotype Editor assertion-object maps
+        self.assertion_predicate_object = self.database.assertion_predicate_object
+        # Senotype Editor context maps
+        self.context_assertion_code = self.database.context_assertion_code
 
         self.userid = userid
 

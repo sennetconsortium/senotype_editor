@@ -70,17 +70,17 @@ class SenLibMySql():
 
         return listjson
 
-    def _getassertionvaluesets(self) -> pd.DataFrame:
+    def _gettable(self, tablename: str) -> pd.DataFrame:
+
         """
-        Get the Senotype Editor assertion valuesets from the senlib database as a Pandas DataFrame.
-        :return:
+        Fetches a table from the senlib database.
+
         """
 
         # Format: "mysql+pymysql://<username>:<password>@<host>/<database>"
         engine = create_engine(f"mysql+pymysql://{self.db_user}:{self.db_pwd}@{self.db_host}/{self.db_name}")
 
-        df = pd.read_sql('SELECT * FROM senotype_editor_valuesets', engine)
-
+        df = pd.read_sql(f'SELECT * FROM {tablename}', engine)
         return df
 
     def getsenlibjson(self, id: str) -> dict:
@@ -119,7 +119,13 @@ class SenLibMySql():
         self.senlibjsonids = self._getsenotypeids()
 
         # Get the Senotype Editor assertion valuesets.
-        self.assertionvaluesets = self._getassertionvaluesets()
+        self.assertionvaluesets = self._gettable(tablename='senotype_editor_valuesets')
+
+        # Get the Senotype Editor assertion-object maps.
+        self.assertion_predicate_object = self._gettable(tablename='assertion_predicate_object')
+
+        # Get the Senotype Editor context assertion maps.
+        self.context_assertion_code = self._gettable(tablename='context_assertion_code')
 
     def close(self):
         self.conn.close()
