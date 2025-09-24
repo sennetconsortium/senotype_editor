@@ -70,9 +70,9 @@ class SenLibMySql():
 
         return listjson
 
-    def _getsenlibvaluesets(self) -> pd.DataFrame:
+    def _getassertionvaluesets(self) -> pd.DataFrame:
         """
-        Get the Senotype Editor valueset from the senlib database as a Pandas DataFrame.
+        Get the Senotype Editor assertion valuesets from the senlib database as a Pandas DataFrame.
         :return:
         """
 
@@ -118,8 +118,8 @@ class SenLibMySql():
         # Get IDs for all senlib JSONs.
         self.senlibjsonids = self._getsenotypeids()
 
-        # Get the application valuesets.
-        self.senlibvaluesets = self._getsenlibvaluesets()
+        # Get the Senotype Editor assertion valuesets.
+        self.assertionvaluesets = self._getassertionvaluesets()
 
     def close(self):
         self.conn.close()

@@ -79,7 +79,7 @@ class SenLibGitHub():
         url = f'{self.json_url}/{id}.json'
         return self.request.getresponse(url=url, format='json')
 
-    def _getsenlibvaluesets(self) -> pd.DataFrame:
+    def _getvaluesets(self) -> pd.DataFrame:
         """
         Get the Senotype Editor valueset from the senlib repo as a Pandas DataFrame.
         :return:
@@ -118,6 +118,6 @@ class SenLibGitHub():
         self.senlibjsonids = self._getsenotypeids()
 
         # Get the application valuesets.
-        self.senlibvaluesets = self._getsenlibvaluesets()
+        self.valuesets = self._getvaluesets()
 
 

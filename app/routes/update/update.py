@@ -13,45 +13,6 @@ from models.editform import EditForm
 
 update_blueprint = Blueprint('update', __name__, url_prefix='/update')
 
-
-def buildsubmission(form_data: dict[str, str]) -> dict:
-    """
-    Builds a Senotype submission JSON from the POSTed request form data.
-    :param form_data: inputs to write to the submission file.
-    """
-
-    senotypeid = request.form.get('senotypeid')
-
-    dictsenotype = {
-        'code': senotypeid,
-        'term': request.form.get('senotypename'),
-        'definition': request.form.get('senotypedescription')
-    }
-    dictsubmission = {
-        'senotype': dictsenotype
-    }
-
-    return dictsubmission
-
-
-def writesubmission():
-
-    # Read the app.cfg file outside the Flask application context.
-    cfg = AppConfig()
-
-    # Get IDs for existing Senotype submissions.
-    # Get the URLs to the senlib repo.
-    # senlib_url = cfg.getfield(key='SENOTYPE_URL')
-    # valueset_url = cfg.getfield(key='VALUESET_URL')
-    # json_url = cfg.getfield(key='JSON_URL')
-    # Github personal access token for authorized calls
-    # github_token = cfg.getfield(key='GITHUB_TOKEN')
-    # Senlib interface
-    # senlib = SenLib(senlib_url, valueset_url, json_url, github_token)
-
-    senlib = SenLib(cfg=cfg, userid=session['userid'])
-
-
 def remove_duplicates_from_multidict(md: MultiDict, prefix_list: list) -> MultiDict:
     """
     Remove duplicate values for keys that start with any prefix in prefix_list.
@@ -203,8 +164,7 @@ def update():
     custom_errors = validate_form(form=form, fieldlist_prefixes=fieldlist_prefixes)
     if len(custom_errors) == 0:
         # Handle successful update (save to database, etc.)
-        dictsenotype = buildsubmission(form_data=normalized_deduped_form_data)
-        writesubmission()
+        dictsenotype = senlib.writesubmission(form_data=normalized_deduped_form_data)
         flash('Success!')
 
         # Trigger a reload of the edit form that refreshes with updated data.

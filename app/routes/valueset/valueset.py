@@ -24,7 +24,7 @@ def valueset():
     # Convert to desired list of dicts
     listret = [
         {'id': row['valueset_code'], 'label': row['valueset_term']}
-        for _, row in senlib.getsenlibvalueset(predicate=predicate).iterrows()
+        for _, row in senlib.getvalueset(predicate=predicate).iterrows()
     ]
 
     return jsonify(listret)

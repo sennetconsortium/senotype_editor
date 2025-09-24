@@ -86,7 +86,7 @@ def getchoices(sl: SenLib, predicate: str) -> list[tuple]:
     :param predicate: assertion predicate. Can be either an IRI or a term.
     """
     # Get the DataFrame of valueset information corresponding to an assetion predicate.
-    dfchoices = sl.getsenlibvalueset(predicate=predicate)
+    dfchoices = sl.getvalueset(predicate=predicate)
 
     # Buiild a list of tuples from the relevant columns of the DataFrame.
     choices = list(zip(dfchoices['valueset_code'], dfchoices['valueset_term']))

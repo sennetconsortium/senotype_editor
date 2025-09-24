@@ -284,14 +284,14 @@ class SenLib:
         # Obtains the Senotype JSON for the specified ID.
         return self.database.getsenlibjson(id=id)
 
-    def getsenlibvalueset(self, predicate: str) -> pd.DataFrame:
+    def getassertionvalueset(self, predicate: str) -> pd.DataFrame:
         """
         Obtain the valueset associated with an assertion predicate.
         :param dfvaluesets: valueset dataframe
         :param predicate: assertion predicate. Can be either an IRI or a term.
         """
 
-        df = self.senlibvaluesets
+        df = self.assertionvaluesets
 
         # Check whether the predicate corresponds to an IRI.
         dfassertion = df[df['predicate_IRI'] == predicate]
@@ -303,12 +303,12 @@ class SenLib:
 
     def getsenlibterm(self, predicate: str, code: str) -> str:
         """
-        Returns the term from a valueset for a code.
+        Returns the term from an assertion valueset for a code.
         :param predicate: assertion predicate for the valueset.
         :param code: code key
         """
 
-        valueset = self.getsenlibvalueset(predicate=predicate)
+        valueset = self.getassertionvalueset(predicate=predicate)
         matched = valueset.loc[valueset['valueset_code'] == code, 'valueset_term']
         term = matched.iloc[0] if not matched.empty else None
 
@@ -639,7 +639,7 @@ class SenLib:
         form.agevalue.data = ''
         form.agelowerbound.data = ''
         form.ageupperbound.data = ''
-        form.ageunit.data = ''
+        form.ageunit.data = 'year'
 
         # External assertions
         form.citation.process([''])
@@ -843,7 +843,7 @@ class SenLib:
 
         codelist = form_data[listkey]
         assertion = assertion_map[listkey]
-        valueset = self.getsenlibvalueset(predicate=assertion)
+        valueset = self.getassertionvalueset(predicate=assertion)
         objects = {}
         if len(codelist) > 0:
             # Obtain the term for each code from the valueset for the associated assertion.
@@ -1035,6 +1035,64 @@ class SenLib:
         else:
             form.regmarker.process(None, [])
 
+    def getprovenanceids(self, senotypeid: str) -> dict:
+        """
+        Obtains the provenance ids for a senotype.
+        :param senotypeid: senotype id
+        """
+
+        # If senotype exists in data, obtain provenance ids.
+        senotypejson = self.getsenlibjson(id=senotypeid)
+        if senotypejson != {}:
+            dictprov = senotypejson.get('provenance')
+            predecessor = dictprov.get('predecessor',None)
+            successor = dictprov.get('successor', None)
+        else:
+            predecessor = None
+            successor = None
+
+        return {"provenance": {
+            "predecessor": predecessor,
+            "successor": successor
+            }
+        }
+
+    def writesubmission(self, form_data: dict[str, str]) -> dict:
+        """
+        Builds a Senotype submission JSON from the POSTed request form data.
+        :param form_data: inputs to write to the submission file.
+        """
+
+        dictsubmission = {}
+        print(form_data)
+        id = form_data.get('senotypeid')
+
+        # senotype
+        dictsenotype = {
+            "id": id,
+            "provenance": self.getprovenanceids(senotypeid=id),
+            "doi": form_data.get('doiid-0',None),
+            "name": form_data.get('senotypename'),
+            "definition": form_data.get('senotypedescription')
+        }
+
+        # submitter
+        dictsubmitter = {"name":
+                             {"first": form_data.get('submitterfirst'),
+                              "last": form_data.get('submitterlast')},
+                         "email": form_data.get('submitteremail')
+                         }
+
+        dictsubmission = {"senotype": dictsenotype,
+                          "submitter": dictsubmitter
+                          }
+
+
+
+        print(dictsubmission)
+        exit(1)
+        return dictsubmission
+
     def __init__(self, cfg: AppConfig, userid: str):
 
         """
@@ -1050,8 +1108,9 @@ class SenLib:
         # self.database = SenLibGitHub(cfg)
         self.database = SenLibMySql(cfg)
 
-        # SenLib valuesets
-        self.senlibvaluesets = self.database.senlibvaluesets
+        # Senotype Editor assertion valuesets
+        self.assertionvaluesets = self.database.assertionvaluesets
+        # Senotype Editor assertion-object maps
 
         self.userid = userid
 
