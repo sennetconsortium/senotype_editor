@@ -1282,13 +1282,14 @@ class SenLib:
         doi = form_data.get('doi',None)
         if doi is not None:
             doiid = doi.split(' (')[0]
+            doiurl = f'https://doi.org/{doiid}'
         else:
-            doiid = None
+            doiurl = None
 
         dictsenotype = {
             "id": id,
             "provenance": self.getprovenanceids(senotypeid=id),
-            "doi": doiid,
+            "doi": doiurl,
             "name": form_data.get('senotypename'),
             "definition": form_data.get('senotypedescription')
         }

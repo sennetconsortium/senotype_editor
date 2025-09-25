@@ -7,7 +7,7 @@ Update script.
 document.addEventListener("DOMContentLoaded", function () {
 
     // Spinner controls passed to the external setSpinner function (spinner.js)
-    const spinnerId = 'update-spinner-';
+    const spinnerId = 'update-spinner';
     const spinnerLabelId = 'update-spinner-label';
 
     const editForm = document.getElementById("edit_form");

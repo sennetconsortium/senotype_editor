@@ -11,6 +11,9 @@ function clearAllDoiReferences() {
     // Remove all hidden inputs
     var container = document.getElementById('doi-hidden-inputs');
     if (container) container.innerHTML = '';
+    // Hide or remove disclaimer
+    var disclaimer = document.getElementById('doi-association-disclaimer');
+    if (disclaimer) disclaimer.style.display = 'none';
 }
 
 // Add DOI from DataCite API result
@@ -94,6 +97,22 @@ document.getElementById('doi-search-input').addEventListener('input', function (
                     btn.textContent = title ? title : doiid;
                     btn.onclick = function () {
                         addDoiReference(doiid, title);
+
+                        // Show disclaimer when a DOI is added
+                        var disclaimerId = 'doi-association-disclaimer';
+                        var disclaimer = document.getElementById(disclaimerId);
+                        if (!disclaimer) {
+                            // Insert disclaimer below the textarea
+                            var textarea = document.getElementById('doi');
+                            disclaimer = document.createElement('div');
+                            disclaimer.id = disclaimerId;
+                            disclaimer.className = 'alert alert-warning mt-2';
+                            disclaimer.textContent = 'Adding a DOI will make the senotype read-only.';
+                            textarea.parentNode.insertBefore(disclaimer, textarea.nextSibling);
+                        } else {
+                            disclaimer.style.display = 'block'; // show if previously hidden
+                        }
+
                         // Hide modal with Bootstrap 5.
 
                         // Move focus out of the modal before hiding.
