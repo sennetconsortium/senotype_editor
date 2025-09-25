@@ -38,7 +38,7 @@ function addDoiReference(doiid, title) {
     // Use FieldList pattern: doiid-<index>
     var idx = container.children.length;
     var input = document.createElement('input');
-    input.type = 'text';
+    input.type = 'hidden';
     input.name = 'doiid-' + idx;
     input.value = doiid;
     input.className = 'form-control d-none'; // Hidden but submitted
@@ -49,7 +49,7 @@ function addDoiReference(doiid, title) {
     link.className = 'btn btn-sm btn-outline-primary ms-2';
     link.style.width = '2.5em';
     // For now, the DataCite Commons URI will include the generic SenNet provider ID.
-    link.href = 'https://commons.datacite.org/doi.org/10.6084/' + encodeURIComponent(doiid);
+    link.href = 'https://commons.datacite.org/doi.org/' + encodeURIComponent(doiid);
     link.target = '_blank';
     link.title = 'View DOI details';
     link.setAttribute('aria-label', 'View DOI details');

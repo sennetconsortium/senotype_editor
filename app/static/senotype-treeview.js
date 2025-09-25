@@ -2,6 +2,10 @@
 
 document.addEventListener('DOMContentLoaded', function() {
 
+  // Spinner controls passed to the external setSpinner function (spinner.js)
+  const spinnerId = 'senotype-spinner';
+  const spinnerLabelId = 'senotype-spinner-label';
+
   // Flag to distinguish between user-initiated selections in the
   // treeview and those initiated by events such as reloading of the form.
   // Prevents unwanted double-handling or form submissions.
@@ -14,22 +18,9 @@ document.addEventListener('DOMContentLoaded', function() {
     'plugins': ['state']
   });
 
-  // Show or hide spinner and label.
-  function setSpinner(visible, labelText) {
-    const spinner = document.getElementById('senotype-spinner');
-    const spinnerLabel = document.getElementById('senotype-spinner-label');
-    if (spinner) spinner.style.display = visible ? 'inline-block' : 'none';
-    if (spinnerLabel) {
-      spinnerLabel.style.display = visible ? 'inline-block' : 'none';
-      if (visible && labelText) {
-        spinnerLabel.textContent = labelText;
-      }
-    }
-  }
-
   // On initial load, hide spinner.
   $(function() {
-    setSpinner(false);
+    setSpinner(spinnerId,spinnerLabelId,false);
 
   });
 
@@ -39,7 +30,7 @@ document.addEventListener('DOMContentLoaded', function() {
   $('#senotype-tree').on('ready.jstree', function(e, data) {
     let selectedId = window.selected_node_id || (window.tree_data[0] && window.tree_data[0].id);
     if (!selectedId) {
-      setSpinner(false);
+      setSpinner(spinnerId,spinnerLabelId,false);
       programmaticSelection = false;
       return;
     }
@@ -57,8 +48,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
       // Also update new-version-btn on initial load
       updateNewVersionBtnState(nodeObj, data.instance);
-
-      setSpinner(false);
+      setSpinner(spinnerId,spinnerLabelId,false);
 
       programmaticSelection = false;
     }, 10);
@@ -151,14 +141,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
     if (!isFile) {
       // Not a file. Do nothing. Hide spinner just in case
-      setSpinner(false);
+      setSpinner(spinnerId,spinnerLabelId,false);
+
       return;
     }
     // File node: always submit
     let hidden = document.getElementById('selected_node_id');
     if (hidden) hidden.value = data.node.id;
 
-    setSpinner(true, `Loading ${data.node.id}...`);
+    setSpinner(spinnerId,spinnerLabelId,true,`Loading ${data.node.id}...`);
     document.getElementById('edit_form').submit();
 
 
@@ -205,7 +196,8 @@ document.addEventListener('DOMContentLoaded', function() {
         const hidden = document.getElementById('selected_node_id');
         if (hidden) hidden.value = newNodeId;
 
-        setSpinner(true, `Creating new version for ${firstBranchNodeId}...`);
+        setSpinner(spinnerId,spinnerLabelId,true,`Creating new version for ${firstBranchNodeId}...`);
+
 
         // Submit to /version route
         const form = document.getElementById('edit_form');

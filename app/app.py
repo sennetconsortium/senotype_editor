@@ -63,6 +63,7 @@ class SenotypeUI:
         # Set the session lifetime to 30 minutes (in seconds).
         self.app.config['PERMANENT_SESSION_LIFETIME'] = 300 * 60
 
+
         # Custom 400 error handler.
         @self.app.errorhandler(400)
         def badrequest(error):

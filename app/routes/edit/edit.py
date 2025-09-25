@@ -67,15 +67,20 @@ def edit():
     elif request.method == 'GET':
 
         # Initial load of the form as a result of the redirect from Globus login.
+
+        # Clear session variables related to prior form submissions.
+        session.pop('form_data', None)
+        session.pop('form_errors', None)
+
         # Load an empty form.
         form = EditForm()
         senlib.setdefaults(form=form)
 
     elif request.method == 'POST':
 
-        # This is the result of a POST triggered by the change event in the senotype
-        # list. In other words, the user selected something other than
-        # 'new' in the list.
+        # This is the result of one of two scenarios:
+        # 1. A POST triggered by the change event in the senotype list.
+        #    In other words, the user selected something other than 'new' in the list.
         # Fetch submission data from the senlib repo and populate the form.
 
         # Load existing data for the selected submission.

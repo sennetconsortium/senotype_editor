@@ -13,9 +13,11 @@ Functions in the class:
 """
 
 from flask import session
+from werkzeug.datastructures import MultiDict
 import requests
 import logging
 import pandas as pd
+import json
 
 # Application configuration object
 from models.appconfig import AppConfig
@@ -23,14 +25,8 @@ from models.appconfig import AppConfig
 # Interface to MySql database
 from models.senlib_mysql import SenLibMySql
 
-# Interface to GitHub repo (deprecated)
-# from models.senlib_github import SenLibGitHub
-
 # For external API requests
 from models.requestretry import RequestRetry
-
-# The EditForm
-# from models.editform import EditForm
 
 # Configure consistent logging. This is done at the beginning of each module instead of with a superclass of
 # logger to avoid the need to overload function calls to logger.
@@ -119,6 +115,8 @@ class SenLib:
         successor_map = {}
         # Names by ID
         name_map = {}
+        # Submitter emails by ID
+        submitter_email_by_id = {}
 
         # Map every json in terms of provenance.
         # A provenance map element has key=ID of a JSON and value=ID of the predecessor
@@ -128,6 +126,7 @@ class SenLib:
             id_ = snt["id"]
             name_map[id_] = snt.get("name", id_)
             senotype_by_id[id_] = snt
+            submitter_email_by_id[id_] = obj.get("submitter").get("email")
             prov = snt.get("provenance", {})
             pred = prov.get("predecessor")
             succ = prov.get("successor")
@@ -169,8 +168,7 @@ class SenLib:
             editable = not bool(snt.get("doi"))
 
             # An editable JSON can only be edited by the original submitter.
-            senotype_submitter_email = senotype_by_id[id_].get("submitter", {}).get("email")
-            authorized = senotype_submitter_email == self.userid
+            authorized = submitter_email_by_id[id_] == self.userid
 
             classes = []
             if editable:
@@ -227,7 +225,7 @@ class SenLib:
         roots = [node_map[id_] for id_ in latest_ids]
 
         # Wrap each root with a "group" node.
-        wrapped_roots = []
+        grouped_roots = []
         for root in roots:
             version = version_map[root['id']]
             if int(version) > 1:
@@ -235,7 +233,7 @@ class SenLib:
             else:
                 versions = str(version) + ' version'
             instructions = f"{name_map[root['id']]} ({versions}) - expand for details"
-            wrapped_roots.append({
+            grouped_roots.append({
                 "id": f"group{root['id']}", # name from latest version
                 "text": instructions,
                 "children": [root],
@@ -271,7 +269,7 @@ class SenLib:
         senotype_parent = {
             "id": "Senotype",
             "text": "Senotype Library",
-            "children": wrapped_roots + [new_node],
+            "children": grouped_roots + [new_node],
             "state": {"opened": True},
             "a_attr": {"style": "color: black; font-style: normal; font-size: 1.5em",
                        "title": instructions,
@@ -820,32 +818,50 @@ class SenLib:
         sennet_id = responsejson.get('sennet_id', '')
         return sennet_id
 
-    def build_session_list(self, form_data: dict, listkey: str):
+    def get_field_metadata(self, field_name: str, field_property: str) -> str:
+        """
+        Returns a field from assertion_predicate_object for a form field.
+        :param field_name: name of the field.
+        :param field_property: name of an associated field in assertion_predicate_object
+        """
+
+        df = self.assertion_predicate_object
+
+        matched = df[df['object_form_field'] == field_name][field_property]
+        prop = matched.iloc[0] if not matched.empty else None
+        return prop
+
+    def get_iri(self, predicate_term: str) -> str:
+        """
+        Get the Relations Ontology IRI for an assertion predicate from the assertion
+        valuesets.
+
+        :param predicate_term: the predicate term
+        """
+
+        df = self.assertionvaluesets
+        matched = df[df['predicate_term'] == predicate_term]['predicate_IRI']
+        iri = matched.iloc[0] if not matched.empty else None
+        return iri
+
+    def build_session_list(self, form_data: dict, field_name: str):
         """
         Builds content for lists of assertions other than markers (taxon, location, etc.)
         on the Edit Form based on session data.
         :param form_data: dict of form state data.
-        :param listkey: asser
+        :param field_name: name of the field
         """
 
-        assertion_map = {
-            'taxon': 'in_taxon',
-            'location': 'located_in',
-            'celltype': 'has_cell_type',
-            'hallmark': 'has_hallmark',
-            'observable': 'has_molecular_observable',
-            'inducer': 'has_inducer',
-            'assay': 'has_assay',
-            'citation': 'has_citation',
-            'origin': 'has_origin',
-            'dataset': 'has_dataset'
-        }
-
-        codelist = form_data[listkey]
-        assertion = assertion_map[listkey]
+        # Get the assertion associated with the field in the form.
+        assertion = self.get_field_metadata(field_name=field_name, field_property='predicate_term')
+        # Get the valueset for the assertion.
         valueset = self.getassertionvalueset(predicate=assertion)
+
+        # Get the list of codes associated with the field from the form.
+        field_codelist = form_data[field_name]
+
         objects = {}
-        if len(codelist) > 0:
+        if len(field_codelist) > 0:
             # Obtain the term for each code from the valueset for the associated assertion.
             # Externally linked lists (e.g., citation) will not be in valuesets.
             rawobjects = [
@@ -856,7 +872,7 @@ class SenLib:
                         else valueset[valueset['valueset_code'] == item]['valueset_term'].iloc[0]
                     )
                 }
-                for item in codelist
+                for item in field_codelist
             ]
 
             # Obtain the appropriate term. Externally linked lists must obtain terms via API calls.
@@ -931,56 +947,56 @@ class SenLib:
         # from the load from existing data, and will be parsed properly by the _field_lists
         # Jinja macro.
         # Taxon
-        taxonlist = self.build_session_list(form_data=form_data, listkey='taxon')
+        taxonlist = self.build_session_list(form_data=form_data, field_name='taxon')
         if len(taxonlist) > 0:
             form.taxon.process(None, [f"{item['code']} ({item['term']})" for item in taxonlist])
         else:
             form.taxon.process(None, [''])
 
         # Location
-        locationlist = self.build_session_list(form_data=form_data, listkey='location')
+        locationlist = self.build_session_list(form_data=form_data, field_name='location')
         if len(locationlist) > 0:
             form.location.process(None, [f"{item['code']} ({item['term']})" for item in locationlist])
         else:
             form.location.process(None, [''])
 
         # Cell type
-        celltypelist = self.build_session_list(form_data=form_data, listkey='celltype')
+        celltypelist = self.build_session_list(form_data=form_data, field_name='celltype')
         if len(celltypelist) > 0:
             form.celltype.process(None, [f"{item['code']} ({item['term']})" for item in celltypelist])
         else:
             form.celltype.process(None, [''])
 
         # Hallmark
-        hallmarklist = self.build_session_list(form_data=form_data, listkey='hallmark')
+        hallmarklist = self.build_session_list(form_data=form_data, field_name='hallmark')
         if len(hallmarklist) > 0:
             form.hallmark.process(None, [f"{item['code']} ({item['term']})" for item in hallmarklist])
         else:
             form.hallmark.process(None, [''])
 
         # Molecular observable
-        observablelist = self.build_session_list(form_data=form_data, listkey='observable')
+        observablelist = self.build_session_list(form_data=form_data, field_name='observable')
         if len(observablelist) > 0:
             form.observable.process(None, [f"{item['code']} ({item['term']})" for item in observablelist])
         else:
             form.observable.process(None, [''])
 
         # Inducer
-        inducerlist = self.build_session_list(form_data=form_data, listkey='inducer')
+        inducerlist = self.build_session_list(form_data=form_data, field_name='inducer')
         if len(inducerlist) > 0:
             form.inducer.process(None, [f"{item['code']} ({item['term']})" for item in inducerlist])
         else:
             form.inducer.process(None, [''])
 
         # Assay
-        assaylist = self.build_session_list(form_data=form_data, listkey='assay')
+        assaylist = self.build_session_list(form_data=form_data, field_name='assay')
         if len(assaylist) > 0:
             form.assay.process(None, [f"{item['code']} ({item['term']})" for item in assaylist])
         else:
             form.assay.process(None, [''])
 
         # Citation
-        citationlist = self.build_session_list(form_data=form_data, listkey='citation')
+        citationlist = self.build_session_list(form_data=form_data, field_name='citation')
         if len(citationlist) > 0:
             form.citation.process(None, [self.truncateddisplaytext(id=item['code'],
                                                                    description=item['term'],
@@ -990,7 +1006,7 @@ class SenLib:
             form.citation.process(None, [''])
 
         # Origin
-        originlist = self.build_session_list(form_data=form_data, listkey='origin')
+        originlist = self.build_session_list(form_data=form_data, field_name='origin')
         if len(originlist) > 0:
             form.origin.process(None, [self.truncateddisplaytext(id=item['code'],
                                                                  description=item['term'],
@@ -1000,7 +1016,7 @@ class SenLib:
             form.origin.process(None, [''])
 
         # Dataset
-        datasetlist = self.build_session_list(form_data=form_data, listkey='dataset')
+        datasetlist = self.build_session_list(form_data=form_data, field_name='dataset')
         if len(datasetlist) > 0:
             form.dataset.process(None, [self.truncateddisplaytext(id=item['code'],
                                                                   description=item['term'],
@@ -1043,55 +1059,267 @@ class SenLib:
 
         # If senotype exists in data, obtain provenance ids.
         senotypejson = self.getsenlibjson(id=senotypeid)
+
+        print(senotypejson)
         if senotypejson != {}:
-            dictprov = senotypejson.get('provenance')
+            senotype = senotypejson.get('senotype')
+            dictprov = senotype.get('provenance')
             predecessor = dictprov.get('predecessor',None)
             successor = dictprov.get('successor', None)
         else:
             predecessor = None
             successor = None
 
-        return {"provenance": {
+        return {
             "predecessor": predecessor,
             "successor": successor
             }
-        }
 
-    def writesubmission(self, form_data: dict[str, str]) -> dict:
+    def buildsimpleassertions(self, form_data: MultiDict) -> list:
+        """
+        Builds the elements of the assertions object of a senotype submission, corresponding
+        to simple assertions--i.e., neither context assertions nor marker assertions.
+        :param form_data: form data
+        """
+
+        # Loop through the keys of form_data that correspond to fields from the Edit
+        # form with data.
+        # For each field,
+        # 1. Find the associated assertion predicate and source type.
+        # 2. A field can have multiple values. Each field value corresponds to the object
+        #    of an assertion. Build a list of "object" objects for each value.
+        # 3. Associate the object list with the assertion information in an assertion object.
+        # 4. Build a list of assertion objects.
+
+        assertions = []
+        for key in form_data:
+            objects = []
+            predicate_term = self.get_field_metadata(field_name=key, field_property='predicate_term')
+
+            if predicate_term is None:
+                # This is not a field that corresponds to an assertion.
+                continue
+
+            predicate_iri = self.get_iri(predicate_term=predicate_term)
+            source = self.get_field_metadata(field_name=key, field_property='object_source')
+
+            if isinstance(form_data.get(key), list):
+                field_values = form_data.get(key)
+            else:
+                field_values = [form_data.get(key)]
+
+            if len(field_values) > 0:
+
+                for fv in field_values:
+                    obj = {"source": source,
+                           "code": fv}
+                    objects.append(obj)
+
+                if predicate_iri is not None:
+                    predicate_object = {
+                                        "term": predicate_term,
+                                        "IRI": predicate_iri
+                                    }
+                else:
+                    predicate_object = {
+                        "term": predicate_term
+                    }
+                assertion = {"predicate": predicate_object,
+                             "objects": objects
+                            }
+                assertions.append(assertion)
+
+        return assertions
+
+    def buildcontextassertions(self, form_data: MultiDict) -> list:
+        """
+        Builds the elements of the assertions object of a senotype submission, corresponding
+        to context assertions.
+        :param form_data: form data
+        """
+
+        assertions = []
+        # Get the context fields from context_assertion_code.
+        # For each field,
+        # - get
+        #   - code (from context_assertion_code)
+        #   - value, upperbound, lowerbound, unit - from form data
+
+        # Assumption:
+        # The value, upperbound, lowerbound, and unit associated with a context
+        # assertion will all include the name of the assertion object--e.g.,
+        # there will be an agevalue, ageupperbound, agelowerbound, and ageunit for
+        # the context assertion object age.
+
+        assertions = []
+
+        df = self.context_assertion_code
+        for index, row in df.iterrows():
+            context_object_name = row['context_name']
+            code = row['code']
+
+            objects = []
+            value = form_data.get(context_object_name)
+            if value is not None:
+                lowerbound_name = f'{context_object_name}lowerbound'
+                lowerbound = form_data.get(lowerbound_name)
+                upperbound_name = f'{context_object_name}upperbound'
+                upperbound = form_data.get(upperbound_name)
+                unit_name = f'{context_object_name}unit'
+                unit = form_data.get(unit_name)
+                obj = {
+                    "term": context_object_name,
+                    "code": code,
+                    "value": value
+                }
+                if lowerbound is not None:
+                    obj["lowerbound"] = lowerbound
+                if upperbound is not None:
+                    obj["upperbound"] = upperbound
+                if unit is not None:
+                    obj["unit"] = unit
+
+                objects.append(obj)
+                if len(objects) > 0:
+                    predicate = {"term": "has_context"}
+                    assertion = {"predicate": predicate,
+                                 "objects": objects}
+                    assertions.append(assertion)
+
+            return assertions
+
+    def buildregmarkerassertions(self, form_data: MultiDict) -> list:
+        """
+            Builds the elements of the assertions objects for
+            regulating markers.
+            :param form_data: form data
+        """
+
+        # Regulating markers must be distributed among the three types
+        # of assertions--up_regulates, down_regulates, and inconclusively_regulates.
+        # Aside from this sorting, the function is similar to buildsimpleassertions
+
+        # For the regmarker field,
+        # 1. The field can have multiple values. Each field value corresponds to the object
+        #    of an assertion. Build a list of "object" objects for each value.
+        # 2. Associate the object list with the assertion information in an assertion object.
+        # 3. Build a list of assertion objects.
+
+        assertions = []
+        regmarkers = form_data.get('regmarker')
+
+        if len(regmarkers) > 0:
+
+            up_objects = []
+            down_objects = []
+            inc_objects = []
+
+            for m in regmarkers:
+                code = m.get('marker')
+                action = m.get('action')
+                obj = {"source": 'external',
+                       "code": code}
+                if action == 'up_regulates':
+                    up_objects.append(obj)
+                elif action == 'down_regulates':
+                    down_objects.append(obj)
+                else:
+                    inc_objects.append(obj)
+
+                if len(up_objects) > 0:
+                    predicate = {"term": 'up_regulates'}
+                    assertion = {"predicate": predicate,
+                                 "objects": up_objects}
+                    assertions.append(assertion)
+
+                if len(down_objects) > 0:
+                    predicate = {"term": 'down_regulates'}
+                    assertion = {"predicate": predicate,
+                                 "objects": down_objects}
+                    assertions.append(assertion)
+
+                if len(inc_objects) > 0:
+                    predicate = {"term": 'inconclusively_regulates'}
+                    assertion = {"predicate": predicate,
+                                 "objects": inc_objects}
+                    assertions.append(assertion)
+
+        return assertions
+
+    def buildassertions(self, form_data: MultiDict) -> list:
+        """
+        Builds the assertions object of a senotype submission JSON
+        :param form_data: form data
+        """
+
+        # Simple assertions, including specific markers
+        assertions = self.buildsimpleassertions(form_data=form_data)
+
+        # Regulating marker assertions
+        assertions = assertions + self.buildregmarkerassertions(form_data=form_data)
+
+        # Optional context assertions
+        contextassertions = self.buildcontextassertions(form_data=form_data)
+        if len(contextassertions) > 0:
+            assertions = assertions + contextassertions
+
+        return assertions
+
+    def buildsubmissionjson(self, form_data: MultiDict) -> dict:
         """
         Builds a Senotype submission JSON from the POSTed request form data.
-        :param form_data: inputs to write to the submission file.
+        :param form_data: form data
         """
 
         dictsubmission = {}
-        print(form_data)
         id = form_data.get('senotypeid')
 
         # senotype
+        # Although the DOI ID should be available in a hidden input, there appears
+        # to be some issue. For now, parse the ID from the hydrated DOI field, which is
+        # always passed.
+
+        doi = form_data.get('doi',None)
+        if doi is not None:
+            doiid = doi.split(' (')[0]
+        else:
+            doiid = None
+
         dictsenotype = {
             "id": id,
             "provenance": self.getprovenanceids(senotypeid=id),
-            "doi": form_data.get('doiid-0',None),
+            "doi": doiid,
             "name": form_data.get('senotypename'),
             "definition": form_data.get('senotypedescription')
         }
 
         # submitter
-        dictsubmitter = {"name":
-                             {"first": form_data.get('submitterfirst'),
-                              "last": form_data.get('submitterlast')},
+        dictname = {"first": form_data.get('submitterfirst'),
+                    "last": form_data.get('submitterlast')}
+        dictsubmitter = {"name": dictname,
                          "email": form_data.get('submitteremail')
                          }
 
+        # simple assertions
+        listassertions = self.buildassertions(form_data=form_data)
+
         dictsubmission = {"senotype": dictsenotype,
-                          "submitter": dictsubmitter
+                          "submitter": dictsubmitter,
+                          "assertions": listassertions
                           }
 
+        return json.dumps(dictsubmission)
 
+    def writesubmission(self, form_data: MultiDict):
+        """
+        Writes a senotype submission to the senlib database.
+        :param form_data: form data
+        """
 
-        print(dictsubmission)
-        exit(1)
-        return dictsubmission
+        senotypeid = form_data.get('senotypeid')
+        # Build the submission JSON.
+        self.submissionjson = self.buildsubmissionjson(form_data=form_data)
+        self.database.writesenotype(senotypeid=senotypeid, senotypejson=self.submissionjson)
 
     def __init__(self, cfg: AppConfig, userid: str):
 
@@ -1104,8 +1332,6 @@ class SenLib:
         """
 
         # Connect to the senlib database.
-        # GitHub repo as a database has been deprecated.
-        # self.database = SenLibGitHub(cfg)
         self.database = SenLibMySql(cfg)
 
         # Senotype Editor assertion valuesets
@@ -1119,4 +1345,6 @@ class SenLib:
 
         # JSON for the senotype jstree
         self.senotypetree = self._getsenotypejtree()
+
+        self.submissionjson = {}
 

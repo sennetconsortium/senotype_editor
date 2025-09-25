@@ -215,11 +215,11 @@
     <!-- PubMed citations/RRID origin/SenNet datasets -->
     <div class="row">
         <!-- CITATION section -->
-        {{ render_fieldlist_section(form, "citation", "citationSearchModal", is_external=True,  col_class="col-md-4") }}
+        {{ render_fieldlist_section(form, "citation", "citationSearchModal", is_external=True,  col_class="col-md-4", label_bg="#EBF6F9") }}
         <!-- ORIGIN section -->
-        {{ render_fieldlist_section(form, "origin", "originSearchModal", is_external=True,  col_class="col-md-4") }}
+        {{ render_fieldlist_section(form, "origin", "originSearchModal", is_external=True,  col_class="col-md-4", label_bg="#EBF6F9") }}
         <!-- DATASET section -->
-        {{ render_fieldlist_section(form, "dataset", "datasetSearchModal", is_external=True,  col_class="col-md-4") }}
+        {{ render_fieldlist_section(form, "dataset", "datasetSearchModal", is_external=True,  col_class="col-md-4", label_bg="#EBF6F9") }}
     </div>
     <!-- Specified Markers/Regulating Markers -->
     <div class="accordion" id="markerAccordion">
@@ -510,6 +510,7 @@ display with transparent background--apparently, a known bug in this scenario. -
 </script>
 
 <!-- Includes -->
+<script src="{{ url_for('static', filename='spinner.js') }}"></script>
 <!-- Script to manage the Senotype treeview-->
 <script src="{{ url_for('static', filename='senotype-treeview.js') }}"></script>
 <!-- Script to enable/disable controls based on whether the selected id is editable -->

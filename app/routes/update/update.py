@@ -1,7 +1,7 @@
 """
 Updates the Senotype repository by writing/overwriting a submission JSON file.
 """
-from flask import Blueprint, request, render_template, flash, redirect, session, url_for
+from flask import Blueprint, request, render_template, flash, redirect, session, url_for, jsonify
 
 from werkzeug.datastructures import MultiDict
 import requests
@@ -12,30 +12,6 @@ from models.senlib import SenLib
 from models.editform import EditForm
 
 update_blueprint = Blueprint('update', __name__, url_prefix='/update')
-
-def remove_duplicates_from_multidict(md: MultiDict, prefix_list: list) -> MultiDict:
-    """
-    Remove duplicate values for keys that start with any prefix in prefix_list.
-    Keeps only unique values per prefix+value.
-    """
-
-    new_items = []
-    seen = {}
-    for key, value in md.items(multi=True):
-        for prefix in prefix_list:
-            if key.startswith(prefix):
-                if (prefix, value) in seen:
-                    break  # Already seen this value for this prefix
-                seen[(prefix, value)] = True
-        else:
-            # Not a target prefix, always keep
-            new_items.append((key, value))
-            continue
-        # If not break (i.e., not duplicate), save it
-        if not (prefix, value) in seen:
-            new_items.append((key, value))
-
-    return MultiDict(new_items)
 
 
 def normalize_multidict(md: MultiDict) -> MultiDict:
@@ -59,16 +35,29 @@ def normalize_multidict(md: MultiDict) -> MultiDict:
     return normalized
 
 
-def validate_form(form, fieldlist_prefixes):
+def validate_form(form):
     """
     Custom validator that includes the hidden inputs passed to the update
     route by the update button on the Edit form.
 
     :param form: WTForms form instance
-    :param fieldlist_prefixes: list of prefixes of hidden inputs built from modal forms
-                               --e.g., ["taxon-", "location-"]
     :return: dict of errors
     """
+
+    fieldlist_prefixes = [
+        'taxon-',
+        'location-',
+        'celltype-',
+        'hallmark-',
+        'observable-',
+        'inducer-',
+        'assay-',
+        'citation-',
+        'origin-',
+        'dataset-',
+        'marker-',
+        'regmarker-'
+    ]
     errors = {}
 
     # Standard validation of inputs not populated via modal forms.
@@ -118,39 +107,17 @@ def update():
     # Get the node that the user is attempting to create or update.
     id = request.form.get('selected_node_id') or request.args.get('selected_node_id')
 
+    action = 'updat'
     if id == "new":
         # The edit route minted a new SenNet ID, which is in the senotypeid input.
         id = request.form.get('senotypeid')
-
-    # In the Edit form, the modal sections and Javascript build hidden text inputs
-    # that store values added dynamically to lists in the assertion sections. For some
-    # reason, the POST from the update button results in duplicate values.
-    # In addition, the Edit form's default validators do not recognize the hidden
-    # inputs.
-
-    # List all fieldlist prefixes to deduplicate.
-    fieldlist_prefixes= [
-        'taxon-',
-        'location-',
-        'celltype-',
-        'hallmark-',
-        'observable-',
-        'inducer-',
-        'assay-',
-        'citation-',
-        'origin-',
-        'dataset-',
-        'marker-',
-        'regmarker-'
-     ]
-
-    deduped_form_data = remove_duplicates_from_multidict(request.form, fieldlist_prefixes)
+        action = 'creat'
 
     # Normalize form data values of [''] and ['None'] to [].
-    normalized_deduped_form_data = normalize_multidict(deduped_form_data)
+    normalized_form_data = normalize_multidict(request.form)
 
     # Load the edit form with the deduplicated, normalized form data.
-    form = EditForm(normalized_deduped_form_data)
+    form = EditForm(normalized_form_data)
 
     # Set selected value for senotypeid (to preserve selection)
     prior_senotypeid = request.form.get('senotypeid', 'new')
@@ -161,11 +128,14 @@ def update():
         session['flashes'].clear()
 
     # Apply custom validator of form data.
-    custom_errors = validate_form(form=form, fieldlist_prefixes=fieldlist_prefixes)
+    custom_errors = validate_form(form=form)
+
     if len(custom_errors) == 0:
         # Handle successful update (save to database, etc.)
-        dictsenotype = senlib.writesubmission(form_data=normalized_deduped_form_data)
-        flash('Success!')
+
+        senlib.writesubmission(form_data=form.data)
+
+        flash(f'Successfully {action}ed senotype with ID {id}.')
 
         # Trigger a reload of the edit form that refreshes with updated data.
         form = EditForm(request.form)
@@ -187,7 +157,7 @@ def update():
                     if err not in form_field.errors:
                         form_field.errors.append(err)
 
-        flash("Error: Validation failed. Please check your inputs.", "danger")
+        flash(f"Error: Validation failed during attempt to {action}e senotype with ID {id}. Please check your inputs.", "danger")
 
         # Pass both the current form data (which, in general, will have been modified
         # from the existing submission data) and the validation errors from the validated form

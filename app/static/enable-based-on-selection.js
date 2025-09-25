@@ -57,6 +57,10 @@ $(function() {
         // Input types
         var inputTypes = ['text','number'];
 
+        // External inputs are indicated visually with a light blue background.
+        var external = ['citation-list','origin-list','dataset-list','doi']
+        var enabledColor = (external.includes(el.id)) ? '#EBF6F9' : 'white';
+
         // For all other inputs, enabled and possibly visibility are
         // determined by the selected node.
         if (isEditable && isAuthorized) {
@@ -68,15 +72,15 @@ $(function() {
                 el.style.visibility = 'display';
             } else if (el.tagName === 'INPUT' && inputTypes.includes(el.type)) {
                 el.disabled = false;
-                el.style.backgroundColor = 'white';
+                el.style.backgroundColor = enabledColor;
             } else if (el.tagName === 'TEXTAREA') {
                 el.disabled = (el.id === "doi");
-                el.style.backgroundColor = 'white';
+                el.style.backgroundColor = enabledColor;
             } else if (el.tagName === 'BUTTON') {
                 el.disabled = false;
                 el.style.visibility = 'visible';
             } else if (el.tagName === 'LI') {
-                el.style.background = 'white';
+                el.style.background = enabledColor;
             }
 
         } else {

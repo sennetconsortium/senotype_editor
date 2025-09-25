@@ -5,6 +5,11 @@ Update script.
 3. Submits hidden inputs to update route.
 */
 document.addEventListener("DOMContentLoaded", function () {
+
+    // Spinner controls passed to the external setSpinner function (spinner.js)
+    const spinnerId = 'update-spinner-';
+    const spinnerLabelId = 'update-spinner-label';
+
     const editForm = document.getElementById("edit_form");
     const updateForm = document.getElementById("update_form");
     const updateBtn = document.getElementById("update_btn");
@@ -59,10 +64,9 @@ document.addEventListener("DOMContentLoaded", function () {
     updateForm.addEventListener("submit", function (e) {
 
         // Show spinner
-        const spinner = document.getElementById('update-spinner');
-        const spinnerLabel = document.getElementById('update-spinner-label');
-        if (spinner) spinner.style.display = 'inline-block';
-        if (spinnerLabel) spinnerLabel.style.display = 'inline-block';
+        console.log(update_btn.title);
+        var spinText = update_btn.title.includes('Update') ? 'Updating' : 'Creating';
+        setSpinner(spinnerId,spinnerLabelId,true,`${spinText}...`);
 
         // e.preventDefault();
         // Remove previously added hidden inputs

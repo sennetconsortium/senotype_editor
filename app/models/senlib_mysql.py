@@ -96,6 +96,28 @@ class SenLibMySql():
 
         return {}
 
+    def writesenotype(self, senotypeid: str, senotypejson: dict):
+        """
+        Upsert to the senlib database.
+        :param senotypeid: id to add or update
+        :param senotypejson: new or revised senotype json
+        """
+
+        cursor = self.conn.cursor()
+        sql = (
+            "INSERT INTO senotype (senotypeid, senotypejson) "
+            "VALUES (%s, CAST(%s AS JSON)) "
+            "ON DUPLICATE KEY UPDATE senotypejson = VALUES(senotypejson);"
+        )
+
+
+        params = (senotypeid, senotypejson)
+
+        cursor.execute(sql, params)
+        # Commit the transaction
+        self.conn.commit()
+        cursor.close()
+
     def __init__(self, cfg: AppConfig):
         """
         :param cfg: AppConfig, representing the app.cfg file.

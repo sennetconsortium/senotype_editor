@@ -123,7 +123,7 @@ Arguments:
 Renders a textarea field, analogous to the field lists used for the categorical fields.
 Use case: DOI field
 -->
-{% macro render_textarea_section(form, field_name, modal_id, label_bg="#f5f5f5", link_base_url=None, link_title=None, parse_code=False) %}
+{% macro render_textarea_section(form, field_name, modal_id, label_bg="#EBF6F9", link_base_url=None, link_title=None, parse_code=False) %}
 <div style="background-color: {{ label_bg }};">
     <div class="d-flex align-items-center" id="{{ field_name }}-row">
         <label for="{{ form[field_name].id }}" class="me-2 mb-0 label-wide label-left-margin">
