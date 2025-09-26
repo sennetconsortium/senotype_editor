@@ -140,9 +140,10 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     if (!isFile) {
-      // Not a file. Do nothing. Hide spinner just in case
+      // Not a file. Expand the folder node if it's collapsed.
+      treeInstance.open_node(nodeObj); // <-- Expand folder node
+      //Hide spinner just in case
       setSpinner(spinnerId,spinnerLabelId,false);
-
       return;
     }
     // File node: always submit

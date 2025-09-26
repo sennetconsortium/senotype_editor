@@ -4,7 +4,9 @@ Class for working with senlib as MySQL database.
 """
 
 import mysql.connector
+from mysql.connector import errors
 from sqlalchemy import create_engine
+from flask import abort
 
 import pandas as pd
 import json
@@ -110,13 +112,17 @@ class SenLibMySql():
             "ON DUPLICATE KEY UPDATE senotypejson = VALUES(senotypejson);"
         )
 
-
         params = (senotypeid, senotypejson)
 
-        cursor.execute(sql, params)
-        # Commit the transaction
-        self.conn.commit()
-        cursor.close()
+        try:
+            cursor.execute(sql, params)
+            # Commit the transaction
+            self.conn.commit()
+        except errors.DatabaseError as db_err:
+            logger.error(f"Error writing to the senlib database: {db_err}")
+            abort(500, f"Error writing to the senlib database: {db_err}")
+        finally:
+            cursor.close()
 
     def __init__(self, cfg: AppConfig):
         """
@@ -129,25 +135,31 @@ class SenLibMySql():
         self.db_name = cfg.getfield(key='SENOTYPE_DB_NAME')
         self.db_host = cfg.getfield(key='SENOTYPE_DB_HOST')
 
+        self.error = ''
         # Connect to the database.
-        self.conn = mysql.connector.connect(
-            user=self.db_user,
-            password=self.db_pwd,
-            host=self.db_host,
-            database=self.db_name
-        )
+        try:
+            self.conn = mysql.connector.connect(
+                user=self.db_user,
+                password=self.db_pwd,
+                host=self.db_host,
+                database=self.db_name
+            )
 
-        # Get IDs for all senlib JSONs.
-        self.senlibjsonids = self._getsenotypeids()
+            # Get IDs for all senlib JSONs.
+            self.senlibjsonids = self._getsenotypeids()
 
-        # Get the Senotype Editor assertion valuesets.
-        self.assertionvaluesets = self._gettable(tablename='senotype_editor_valuesets')
+            # Get the Senotype Editor assertion valuesets.
+            self.assertionvaluesets = self._gettable(tablename='senotype_editor_valuesets')
 
-        # Get the Senotype Editor assertion-object maps.
-        self.assertion_predicate_object = self._gettable(tablename='assertion_predicate_object')
+            # Get the Senotype Editor assertion-object maps.
+            self.assertion_predicate_object = self._gettable(tablename='assertion_predicate_object')
 
-        # Get the Senotype Editor context assertion maps.
-        self.context_assertion_code = self._gettable(tablename='context_assertion_code')
+            # Get the Senotype Editor context assertion maps.
+            self.context_assertion_code = self._gettable(tablename='context_assertion_code')
+
+        except errors.DatabaseError as db_err:
+            logger.error(f"Error connecting to the senlib database: {db_err}")
+            abort(500, f"Error connecting to the senlib database: {db_err}")
 
     def close(self):
         self.conn.close()

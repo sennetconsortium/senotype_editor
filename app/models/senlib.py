@@ -12,7 +12,7 @@ Functions in the class:
 
 """
 
-from flask import session
+from flask import session, current_app
 from werkzeug.datastructures import MultiDict
 import requests
 import logging
@@ -1337,6 +1337,11 @@ class SenLib:
 
         # Senotype Editor assertion valuesets
         self.assertionvaluesets = self.database.assertionvaluesets
+
+        # Cache the assertion valuesets at the app level
+        # for use by routes like valueset
+        current_app.assertionvaluesets = self.assertionvaluesets
+
         # Senotype Editor assertion-object maps
         self.assertion_predicate_object = self.database.assertion_predicate_object
         # Senotype Editor context maps

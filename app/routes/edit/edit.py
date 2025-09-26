@@ -2,7 +2,7 @@
 Edit route.
 
 """
-from flask import Blueprint, request, render_template, session
+from flask import Blueprint, request, render_template, session, make_response, abort, current_app
 
 # The EditForm WTForm
 from models.editform import EditForm
@@ -10,7 +10,6 @@ from models.editform import EditForm
 # Helper classes
 from models.appconfig import AppConfig
 from models.senlib import SenLib
-
 
 edit_blueprint = Blueprint('edit', __name__, url_prefix='/edit')
 
@@ -42,10 +41,15 @@ def edit():
     # Senlib interface
     senlib = SenLib(cfg=cfg, userid=session['userid'])
 
+    # Cache the assertions valueset dataframe for use by routes like valueset.
+    # The dataframe should not change during the current editing transaction.
+    current_app.assertionvaluesets = senlib.assertionvaluesets
+
     # Check if we have session data for the form.
-    # Session data will correspond to the state of the form at the time of
+    # The presence of session data corresponds to the state of the form at the time of
     # validation errors resulting from an attempt at updating.
-    # This form data represents either a new submission or modifications to an
+
+    # This form data represents the edited state of either a new submission or modifications to an
     # existing submission.
 
     form_data = session.pop('form_data', None)
@@ -66,9 +70,10 @@ def edit():
 
     elif request.method == 'GET':
 
-        # Initial load of the form as a result of the redirect from Globus login.
+        # This scenario occurs on the initial load of the form as a result of the
+        # redirect from Globus login.
 
-        # Clear session variables related to prior form submissions.
+        # Clear session variables related to prior senotype edits.
         session.pop('form_data', None)
         session.pop('form_errors', None)
 
@@ -78,15 +83,14 @@ def edit():
 
     elif request.method == 'POST':
 
-        # This is the result of one of two scenarios:
-        # 1. A POST triggered by the change event in the senotype list.
-        #    In other words, the user selected something other than 'new' in the list.
-        # Fetch submission data from the senlib repo and populate the form.
+        # This is the result of a POST triggered by the change event in the senotype
+        # treeview.  Fetch submission data from the senlib database if the
+        # senotype already exists and populate the form.
 
-        # Load existing data for the selected submission.
+        # Build the Edit form.
         form = EditForm(request.form)
 
-        # Selected senotype id
+        # Obtain the selected senotype id
         id = request.form.get('selected_node_id')
 
         if id == 'new' or id is None:
@@ -98,7 +102,10 @@ def edit():
             # Mint a new SenNet ID.
             form.senotypeid.data = senlib.getnewsenotypeid()
 
-            # Use the Globus authentication information to identify the submitter.
+            # Use the Globus authentication information to identify the submitter's
+            # privileges. Currently, a user is only allowed to edit unpublished
+            # senotypes for which the user's email matches the submitter email in
+            # the senotype JSON.
             form.submitterfirst.data = session['username'].split(' ')[0]
             form.submitterlast.data = session['username'].split(' ')[1]
             form.submitteremail.data = session['userid']
