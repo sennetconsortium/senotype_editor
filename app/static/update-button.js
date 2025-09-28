@@ -1,9 +1,14 @@
 /*
-Update script.
+Update script that supports the actions of:
+1. the "Update/Create" button in the update form
+2. the "new version" button that displays with the Senotype treeview.
+
+Actions:
 1. Collects state of inputs in edit form.
 2. Writes state to hidden inputs.
 3. Submits hidden inputs to update route.
 */
+
 document.addEventListener("DOMContentLoaded", function () {
 
     // Spinner controls passed to the external setSpinner function (spinner.js)
@@ -21,7 +26,6 @@ document.addEventListener("DOMContentLoaded", function () {
     ];
 
     // Helper to get current form state (including hidden).
-    // Used to control the enabling of the Update button.
     function getFormState() {
         const elements = Array.from(editForm.elements).filter(el =>
             (el.tagName === "INPUT" || el.tagName === "SELECT" || el.tagName === "TEXTAREA")
@@ -38,20 +42,21 @@ document.addEventListener("DOMContentLoaded", function () {
         return inputState.concat(listState);
     }
 
-    // Store initial state
-    const initialState = getFormState();
-
-    function checkChanged() {
+   // Helper to check for changed state
+   function checkChanged() {
         const currentState = getFormState();
         const changed = currentState.some((val, i) => val !== initialState[i]);
         updateBtn.disabled = !changed;
     }
 
+    // Store initial state
+    const initialState = getFormState();
+
     // Listen for input/change events for fields
     editForm.addEventListener("input", checkChanged);
     editForm.addEventListener("change", checkChanged);
 
-    // Listen for changes to the lists (add/remove)
+    // Listen for changes to the lists (additions/removals via Javascripts)
     listIds.forEach(id => {
         const ul = document.getElementById(id);
         if (ul && editForm.contains(ul)) {
@@ -60,15 +65,28 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 
+    // Use a global flag so dynamically created new-version-btn handlers can set it
+    window.newVersionClicked = false;
+
+    // If the "New Version" button exists at page load, set up its handler
+    const newVersionBtn = document.getElementById("new_version_btn");
+    if (newVersionBtn) {
+        newVersionBtn.addEventListener("click", function(e) {
+            // Indicate that the new version button was clicked.
+            window.newVersionClicked = true;
+            updateForm.requestSubmit(); // Triggers the submit event programmatically
+        });
+    }
+
+    //-----------------------
+
     // On update_form submit, copy all edit_form inputs to update_form
     updateForm.addEventListener("submit", function (e) {
 
         // Show spinner
-        console.log(update_btn.title);
         var spinText = update_btn.title.includes('Update') ? 'Updating' : 'Creating';
         setSpinner(spinnerId,spinnerLabelId,true,`${spinText}...`);
 
-        // e.preventDefault();
         // Remove previously added hidden inputs
         Array.from(updateForm.querySelectorAll(".cloned-edit-input")).forEach(el => el.remove());
 
@@ -90,6 +108,21 @@ document.addEventListener("DOMContentLoaded", function () {
             updateForm.appendChild(hidden);
         });
 
-        // Submit proceeds
+        // Add an action field to identify the button that triggered the update.
+        // Remove any previous action input
+        const prevAction = updateForm.querySelector("input[name='action']");
+        if (prevAction) prevAction.remove();
+
+        const actionInput = document.createElement("input");
+        actionInput.type = "hidden";
+        actionInput.name = "action";
+        actionInput.value = newVersionClicked ? "new_version" : "update";
+        actionInput.className = "cloned-edit-input";
+        updateForm.appendChild(actionInput);
+
+        // Reset the flag for next submit
+        window.newVersionClicked = false;
+
+        // Allow submit to proceed
     });
 });

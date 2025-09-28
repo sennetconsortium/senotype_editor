@@ -85,7 +85,7 @@ class SenLibMySql():
         df = pd.read_sql(f'SELECT * FROM {tablename}', engine)
         return df
 
-    def getsenlibjson(self, id: str) -> dict:
+    def getsenotypejson(self, id: str) -> dict:
         """
         Get a single senotype JSON.
         :param id: id of the senotype
@@ -104,6 +104,9 @@ class SenLibMySql():
         :param senotypeid: id to add or update
         :param senotypejson: new or revised senotype json
         """
+
+        # Convert the dict into a string.
+        senotypejson = json.dumps(senotypejson)
 
         cursor = self.conn.cursor()
         sql = (

@@ -1,10 +1,10 @@
 """
 Updates the Senotype repository by writing/overwriting a submission JSON file.
 """
-from flask import Blueprint, request, render_template, flash, redirect, session, url_for, jsonify
+from flask import Blueprint, request, render_template, flash, redirect, session, url_for
 
 from werkzeug.datastructures import MultiDict
-import requests
+
 
 # Helper classes
 from models.appconfig import AppConfig
@@ -96,7 +96,7 @@ def validate_form(form):
 @update_blueprint.route('', methods=['POST', 'GET'])
 def update():
     """
-    Receives POST from the update_form, which has all edit_form fields as hidden inputs (cloned by JS).
+    Receives POST from the Update form, which has all edit_form fields as hidden inputs (cloned by JS).
     Validates using WTForms and acts on result.
     """
 
@@ -104,49 +104,88 @@ def update():
     cfg = AppConfig()
     senlib = SenLib(cfg=cfg, userid=session['userid'])
 
-    # Get the node that the user is attempting to create or update.
-    id = request.form.get('selected_node_id') or request.args.get('selected_node_id')
+    # IDENTIFY THE SENOTYPE VERSION TO CREATE OR UPDATE
+    # Information on the version is written to the hidden input named selected_node_id.
 
-    action = 'updat'
-    if id == "new":
+    # The user sets the value of the selected_node_id input through one of three paths:
+    # 1. The user selects the node for an existing version in the treeview and then clicks
+    #    the update/create button.
+    #    Action: Update the senotype json for the existing version.
+    # 2. The user selects "new" in the treeview and then clicks the update/create button.
+    #    The Edit form created a senotype ID for the new senotype and stored it in the
+    #    senotypeid input.
+    #    Action: Create a new senotype record.
+    # 3. The user selects an existing version and then clicks the "new version" button.
+    #    The selected_node_id will concatenate the ID of the existing version with "_newversion"
+    #    Actions:
+    #    a. Create a new senotype record for the new version, based on the data from
+    #       the existing version (except for the DOI).
+    #    b. Update the provenance of the existing version to reflect that is is now the
+    #       penultimate version of the senotype.
+
+    selected_node_id = request.form.get('selected_node_id') or request.args.get('selected_node_id')
+    update_id = ''
+
+    # result_action_root is used in the display text of the header div in the edit form. The
+    # tense of the action's verb is set based on the state of the action.
+    result_action_root = ''
+
+    if selected_node_id == 'new':
         # The edit route minted a new SenNet ID, which is in the senotypeid input.
-        id = request.form.get('senotypeid')
-        action = 'creat'
+        update_id = request.form.get('senotypeid')
+        result_action_root = 'creat'
+    else:
+        # Either update an existing or create a new version. Both actions are technically
+        # updates to the existing version.
+        result_action_root = 'updat'
 
+        # Determine whether new version or simple update.
+        action = request.form.get('action')
+        if action == 'new_version':
+            # Mint a new SenNet ID.
+            update_id = senlib.getnewsenotypeid()
+        else:
+            update_id = selected_node_id
+
+    # PREPARE FORM DATA FOR SUBMISSION.
     # Normalize form data values of [''] and ['None'] to [].
     normalized_form_data = normalize_multidict(request.form)
 
-    # Load the edit form with the deduplicated, normalized form data.
+    # Load the edit form with the normalized form data.
     form = EditForm(normalized_form_data)
 
-    # Set selected value for senotypeid (to preserve selection)
-    prior_senotypeid = request.form.get('senotypeid', 'new')
-    form.senotypeid.data = prior_senotypeid
-
-    # Clear any prior error messages that can display in the edit form.
+    # Clear any prior error messages.
     if 'flashes' in session:
         session['flashes'].clear()
+
+    # VALIDATE INPUTS AND SUBMIT.
 
     # Apply custom validator of form data.
     custom_errors = validate_form(form=form)
 
     if len(custom_errors) == 0:
-        # Handle successful update (save to database, etc.)
 
-        senlib.writesubmission(form_data=form.data)
+        # The submission data is valid.
+        # Handle successful update.
 
-        flash(f'Successfully {action}ed senotype with ID {id}.')
+        new_version_id = ''
+        if action == 'new_version':
+            new_version_id = update_id
 
-        # Trigger a reload of the edit form that refreshes with updated data.
+        # Write to the database. If new_version_id has a value, then the writesubmission
+        # script will also update the provenance of the penultimate version.
+        senlib.writesubmission(form_data=form.data, new_version_id=new_version_id)
+
+        flash(f'Successfully {result_action_root}ed senotype with ID {update_id}.')
+
+        # Trigger a reload of the edit form that refreshes with the updated data.
         form = EditForm(request.form)
         senlib = SenLib(cfg=cfg, userid=session['userid'])
-
-        senlib.fetchfromdb(id=id, form=form)
-
+        senlib.fetchfromdb(id=update_id, form=form)
         return render_template('edit.html',
                                form=form,
                                response={'tree_data': senlib.senotypetree},
-                               selected_node_id=id)
+                               selected_node_id=update_id)
 
     else:
         # Inject custom errors into standard WTForms validation errors, avoiding duplicates.
@@ -157,7 +196,8 @@ def update():
                     if err not in form_field.errors:
                         form_field.errors.append(err)
 
-        flash(f"Error: Validation failed during attempt to {action}e senotype with ID {id}. Please check your inputs.", "danger")
+        flash(f"Error: Validation failed during attempt to {result_action_root}e senotype with ID {id}. "
+              f"Please check your inputs.", "danger")
 
         # Pass both the current form data (which, in general, will have been modified
         # from the existing submission data) and the validation errors from the validated form

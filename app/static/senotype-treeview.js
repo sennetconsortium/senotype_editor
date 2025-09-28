@@ -69,10 +69,11 @@ document.addEventListener('DOMContentLoaded', function() {
   // Function to check whether to allow the creation of a new version
   // of a senotype.
   function updateNewVersionBtnState(nodeObj, treeInstance) {
+    console.log(nodeObj.id);
     let newVersionBtn = document.getElementById('new-version-btn');
     if (!newVersionBtn || !nodeObj) return;
 
-    // 1. If node id is "Senotype" or "new, always disable
+    // 1. If node id is "Senotype" or "new", always disable
     var alwaysDisable = ["Senotype", "new"]
     if (alwaysDisable.includes(nodeObj.id)) {
         newVersionBtn.disabled = true;
@@ -86,8 +87,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 let firstChildDom = treeInstance.get_node(firstChildId, true);
                 let firstChildEditable = firstChildDom && firstChildDom.find('.jstree-anchor').hasClass('editable');
                 newVersionBtn.disabled = !!firstChildEditable;
-                console.log('firstChildId= ' + firstChildId);
-                console.log('firstChildEditable = ' + firstChildEditable);
+
             } else {
             // If no children, enable
             newVersionBtn.disabled = false;
@@ -118,8 +118,6 @@ document.addEventListener('DOMContentLoaded', function() {
         newVersionBtn.disabled = false;
     }
 
-    //debug
-    newVersionBtn.disabled = false;
  }
 
   // On user select, handle state and submit if needed (with spinner)
@@ -152,9 +150,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
     setSpinner(spinnerId,spinnerLabelId,true,`Loading ${data.node.id}...`);
     document.getElementById('edit_form').submit();
-
-
-
 
   });
 
@@ -189,22 +184,27 @@ document.addEventListener('DOMContentLoaded', function() {
         const treeInstance = $('#senotype-tree').jstree(true);
         if (!window.selected_node_id || !treeInstance) return;
 
-        // Find first node in the branch path
+        // Find first node in the branch path, which corresponds to the latest version.
         const firstBranchNodeId = getFirstBranchNodeId(window.selected_node_id, treeInstance);
 
         // Append '-newversion' and set hidden field
         const newNodeId = firstBranchNodeId + '_newversion';
-        const hidden = document.getElementById('selected_node_id');
+        // Set in edit_form in case logic relies on it
+        let hidden = document.getElementById('selected_node_id');
         if (hidden) hidden.value = newNodeId;
+
+        // Set a flag to indicate new version action (your update-script.js will pick this up)
+        window.newVersionClicked = true;
 
         setSpinner(spinnerId,spinnerLabelId,true,`Creating new version for ${firstBranchNodeId}...`);
 
+        // Disable the new version button. A new version will always be unpublished.
+        newVersionBtn.disabled = true;
 
-        // Submit to /version route
-        const form = document.getElementById('edit_form');
+        // Submit the update form.
+        const form = document.getElementById('update_form');
         if (form) {
-            form.action = '/version';
-            form.submit();
+            form.requestSubmit();
         }
     });
   }

@@ -41,7 +41,7 @@ class SenLibGitHub():
         for entry in listdir:
             filename = entry.get('name')
             senotypeid = filename.split('.json')[0]
-            senotypejson = self.getsenlibjson(senotypeid)
+            senotypejson = self.getsenotypejson(senotypeid)
             senotype = senotypejson.get('senotype')
             provenance = senotype.get('provenance')
             successor = provenance.get('successor')
@@ -65,11 +65,11 @@ class SenLibGitHub():
         for entry in listdir:
             filename = entry.get('name')
             senotypeid = filename.split('.json')[0]
-            listjson.append(self.getsenlibjson(senotypeid))
+            listjson.append(self.getsenotypejson(senotypeid))
 
         return listjson
 
-    def getsenlibjson(self, id: str) -> dict:
+    def getsenotypejson(self, id: str) -> dict:
         """
         Get a single senotype JSON.
         :param id: id of the senotype, corresponding to the file name in the data

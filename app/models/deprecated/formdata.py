@@ -324,7 +324,7 @@ def fetchfromdb(id: str, senlib: SenLib, form: EditForm):
     form.senotypeid.data = id
 
     # Get senotype data
-    dictsenlib = senlib.getsenlibjson(id=id)
+    dictsenlib = senlib.getsenotypejson(id=id)
 
     senotype = dictsenlib.get('senotype')
     form.senotypename.data = senotype.get('name', '')

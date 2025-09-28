@@ -278,9 +278,9 @@ class SenLib:
 
         return [senotype_parent]
 
-    def getsenlibjson(self, id: str) -> dict:
+    def getsenotypejson(self, id: str) -> dict:
         # Obtains the Senotype JSON for the specified ID.
-        return self.database.getsenlibjson(id=id)
+        return self.database.getsenotypejson(id=id)
 
     def getassertionvalueset(self, predicate: str) -> pd.DataFrame:
         """
@@ -661,7 +661,7 @@ class SenLib:
         form.senotypeid.data = id
 
         # Get senotype data
-        dictsenlib = self.getsenlibjson(id=id)
+        dictsenlib = self.getsenotypejson(id=id)
 
         senotype = dictsenlib.get('senotype')
         form.senotypename.data = senotype.get('name', '')
@@ -1051,23 +1051,37 @@ class SenLib:
         else:
             form.regmarker.process(None, [])
 
-    def getprovenanceids(self, senotypeid: str) -> dict:
+    def getprovenanceids(self, senotypeid: str, predecessorid: str) -> dict:
         """
         Obtains the provenance ids for a senotype.
         :param senotypeid: senotype id
+        :param predecessorid: id of the predecessor of the senotype)
         """
 
-        # If senotype exists in data, obtain provenance ids.
-        senotypejson = self.getsenlibjson(id=senotypeid)
+        # If senotype exists in data, then the user requested either
+        # the update of an existing senotype or the creation of a new version
+        # of an existing senotype. If the senotype does not exist in data,
+        # then the user requested the creation of a new senotype.
 
-        print(senotypejson)
+        senotypejson = self.getsenotypejson(id=senotypeid)
+
         if senotypejson != {}:
+            # existing senotype
             senotype = senotypejson.get('senotype')
             dictprov = senotype.get('provenance')
-            predecessor = dictprov.get('predecessor',None)
+
+            if predecessorid is None:
+                # update of existing senotype
+                predecessor = dictprov.get('predecessor', None)
+            else:
+                # new version of senotype
+                predecessor = predecessorid
+
             successor = dictprov.get('successor', None)
+
         else:
-            predecessor = None
+            # new senotype
+            predecessor = predecessorid
             successor = None
 
         return {
@@ -1265,21 +1279,24 @@ class SenLib:
 
         return assertions
 
-    def buildsubmissionjson(self, form_data: MultiDict) -> dict:
+    def buildsubmissionjson(self, form_data: MultiDict, senotypeid: str, predecessorid: str) -> dict:
         """
         Builds a Senotype submission JSON from the POSTed request form data.
         :param form_data: form data
+        :param senotypeid: id of the senotype to build
+        :param predecessorid: id of the predecessor of the senotype, for the case of
+                              a new version
         """
 
         dictsubmission = {}
-        id = form_data.get('senotypeid')
+
+        #id = form_data.get('senotypeid')
 
         # senotype
-        # Although the DOI ID should be available in a hidden input, there appears
-        # to be some issue. For now, parse the ID from the hydrated DOI field, which is
-        # always passed.
 
-        doi = form_data.get('doi',None)
+        # DOI
+        # Parse the ID from the hydrated DOI field.
+        doi = form_data.get('doi', None)
         if doi is not None:
             doiid = doi.split(' (')[0]
             doiurl = f'https://doi.org/{doiid}'
@@ -1287,8 +1304,8 @@ class SenLib:
             doiurl = None
 
         dictsenotype = {
-            "id": id,
-            "provenance": self.getprovenanceids(senotypeid=id),
+            "id": senotypeid,
+            "provenance": self.getprovenanceids(senotypeid=senotypeid, predecessorid=predecessorid),
             "doi": doiurl,
             "name": form_data.get('senotypename'),
             "definition": form_data.get('senotypedescription')
@@ -1309,18 +1326,57 @@ class SenLib:
                           "assertions": listassertions
                           }
 
-        return json.dumps(dictsubmission)
+        return dictsubmission
 
-    def writesubmission(self, form_data: MultiDict):
+    def writesubmission(self, form_data: MultiDict, new_version_id: str = ''):
         """
         Writes a senotype submission to the senlib database.
         :param form_data: form data
+        :param new_version_id: ID of the new version of an existing senotype.
+
+        If new_version_id has a value, then a new version was requested.
         """
 
-        senotypeid = form_data.get('senotypeid')
-        # Build the submission JSON.
-        self.submissionjson = self.buildsubmissionjson(form_data=form_data)
+        if new_version_id == '':
+            # Update existing senotype.
+            senotypeid = form_data.get('senotypeid')
+            predecessorid = None
+        else:
+            # Create a new version of the existing senotype.
+            senotypeid = new_version_id
+            predecessorid = form_data.get('senotypeid')
+
+        # Build the submission JSON, with updates to provenance as necessary.
+        self.submissionjson = self.buildsubmissionjson(form_data=form_data, senotypeid=senotypeid,
+                                                       predecessorid=predecessorid)
+
+        # If this is a new version of an existing senotype, remove the DOI associated
+        # with the predecessor version from the new version's data.
+        if new_version_id != '':
+            self.submissionjson['senotype']['doi'] = None
+
+        # Write (upsert) the new submission record to the senlib database.
         self.database.writesenotype(senotypeid=senotypeid, senotypejson=self.submissionjson)
+
+        # If this is a new version of an existing senotype, then update the provenance
+        # of the penultimate version of the senotype, which is now the predecessor of the
+        # new version.
+        if new_version_id != '':
+            self.updatesuccessor(senotypeid=predecessorid, successorid=new_version_id)
+
+    def updatesuccessor(self, senotypeid: str, successorid: str):
+        """
+        Updates the successor for an existing senotype, for the case in which a
+        new version of the senotype was requested.
+        :param senotypeid: senotype to update
+        :param successorid: new successor in provenance.
+
+        """
+
+        revisedjson = self.getsenotypejson(id=senotypeid)
+        revisedjson['senotype']['provenance']['successor'] = successorid
+
+        self.database.writesenotype(senotypeid=senotypeid, senotypejson=revisedjson)
 
     def __init__(self, cfg: AppConfig, userid: str):
 
