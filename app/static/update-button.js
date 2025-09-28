@@ -84,7 +84,8 @@ document.addEventListener("DOMContentLoaded", function () {
     updateForm.addEventListener("submit", function (e) {
 
         // Show spinner
-        var spinText = update_btn.title.includes('Update') ? 'Updating' : 'Creating';
+        const senotypeId = document.getElementById("senotypeid").value;
+        var spinText = (update_btn.title.includes('Update') ? 'Updating ' : 'Creating ') + senotypeId;
         setSpinner(spinnerId,spinnerLabelId,true,`${spinText}...`);
 
         // Remove previously added hidden inputs

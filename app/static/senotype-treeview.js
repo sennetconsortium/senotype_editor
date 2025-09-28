@@ -69,7 +69,6 @@ document.addEventListener('DOMContentLoaded', function() {
   // Function to check whether to allow the creation of a new version
   // of a senotype.
   function updateNewVersionBtnState(nodeObj, treeInstance) {
-    console.log(nodeObj.id);
     let newVersionBtn = document.getElementById('new-version-btn');
     if (!newVersionBtn || !nodeObj) return;
 
