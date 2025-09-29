@@ -117,7 +117,7 @@ function createExternalConfig(trunclength = 40) {
 }
 
 //Initialize the configuration.
-const trunclength = 35;
+const trunclength = 30;
 const EXTERNAL_CONFIG = createExternalConfig(trunclength);
 
 // --- Add, Remove, and EventListener Functions ---

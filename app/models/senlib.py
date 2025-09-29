@@ -742,7 +742,7 @@ class SenLib:
         if len(citationlist) > 0:
             form.citation.process(form.citation, [self.truncateddisplaytext(id=item['code'],
                                                                             description=item['term'],
-                                                                            trunclength=40)
+                                                                            trunclength=30)
                                                   for item in citationlist])
         else:
             form.citation.process([''])
@@ -752,7 +752,7 @@ class SenLib:
         if len(originlist) > 0:
             form.origin.process(form.origin, [self.truncateddisplaytext(id=item['code'],
                                                                         description=item['term'],
-                                                                        trunclength=40)
+                                                                        trunclength=30)
                                               for item in originlist])
         else:
             form.origin.process([''])
@@ -762,7 +762,7 @@ class SenLib:
         if len(datasetlist) > 0:
             form.dataset.process(form.dataset, [self.truncateddisplaytext(id=item['code'],
                                                                           description=item['term'],
-                                                                          trunclength=40)
+                                                                          trunclength=30)
                                                 for item in datasetlist])
         else:
             form.dataset.process([''])
