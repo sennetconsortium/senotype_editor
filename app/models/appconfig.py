@@ -1,6 +1,6 @@
 """
 Class for working with the Flask app.cfg file.
-app.cfg files for Flask apps differs from config files formatted for use by the ConfigParser package as follows:
+app.cfg files for Flask apps differ from the config files formatted for use by the ConfigParser package as follows:
 1. Flask configurations lack sections.
 2. String values are wrapped in single quotes, which ConfigParser treats as characters.
 
@@ -28,7 +28,7 @@ class AppConfig:
 
         """
         The configuration file contains a number of sensitive keys, including those for the
-        Globus clients for both HuBMAP and SenNet. The configuration file must be kept separate from the application
+        Globus client for SenNet. The configuration file must be kept separate from the application
         in either possible deployment:
         1. In a "bare-metal" deployment, in which the application is run from within a clone of the GitHub repository,
            the configuration file must not be in the repo.
@@ -36,7 +36,7 @@ class AppConfig:
            configuration file must not be in the container.
 
         In a "bare-metal" deployment, the application looks for the app.cfg file in a subfolder of the user root
-        named "donor-metadata".
+        named "senotype-editor".
         In a "containerized" deployment, the application looks for the app.cfg file in the /usr/src/app/instance
         folder, which is bound to a volume on the host machine.
         """

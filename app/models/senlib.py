@@ -8,6 +8,8 @@ Functions in the class:
    a. the application valueset table in the database
    b. data from external sources via API calls
    c. the flask session
+3. Build the data used by the Senotype treeview control.
+4. Write to the senlib database.
 
 
 """
@@ -17,7 +19,6 @@ from werkzeug.datastructures import MultiDict
 import requests
 import logging
 import pandas as pd
-import json
 
 # Application configuration object
 from models.appconfig import AppConfig
@@ -37,7 +38,7 @@ logger = logging.getLogger(__name__)
 
 class SenLib:
 
-    def _getsenotypejtree(self) -> dict:
+    def _getsenotypejtree(self) -> list[dict]:
         """
         Builds a JSON of annotated and grouped senotype IDs in jstree format, for use
         in the Senotype treeview in the Edit form.
@@ -103,7 +104,7 @@ class SenLib:
         icon_edit = '📝'
 
         # Obtain an (unordered) list of of all sentotype jsons.
-        senotype_jsons = self.database._getallsenotypejsons()
+        senotype_jsons = self.database.getallsenotypejsons()
 
         # Build maps used to organize senotypes by version:
         # All senotype IDs
@@ -234,7 +235,7 @@ class SenLib:
                 versions = str(version) + ' version'
             instructions = f"{name_map[root['id']]} ({versions}) - expand for details"
             grouped_roots.append({
-                "id": f"group{root['id']}", # name from latest version
+                "id": f"group{root['id']}",  # name from latest version
                 "text": instructions,
                 "children": [root],
                 # "state": {"opened": True},
@@ -285,7 +286,6 @@ class SenLib:
     def getassertionvalueset(self, predicate: str) -> pd.DataFrame:
         """
         Obtain the valueset associated with an assertion predicate.
-        :param dfvaluesets: valueset dataframe
         :param predicate: assertion predicate. Can be either an IRI or a term.
         """
 
@@ -332,44 +332,6 @@ class SenLib:
                 title = response.get('data').get('attributes').get('titles')[0].get('title', '')
 
             return f'{doi_url} ({title})'
-
-    def getstoredsimpleassertiondata(self, assertions: list, predicate: str) -> list:
-        """
-        Obtains information for the specified assertion from a Senotype submission
-        JSON.
-        :param assertions: list of assertion objects
-        :param predicate: assertion predicate key
-        :param senlib: SenLib interface
-
-        """
-
-        for assertion in assertions:
-
-            assertion_predicate = assertion.get('predicate')
-            iri = assertion_predicate.get('IRI')
-            term = assertion_predicate.get('term')
-            pred = ''
-            if iri == predicate:
-                pred = predicate
-            elif term == predicate:
-                pred = predicate
-
-            # Get descriptions for externally linked assertions (e.g., PMID) via API calls.
-            objects = []
-            if pred != '':
-                rawobjects = assertion.get('objects', [])
-                if pred == 'has_citation':
-                    objects = self.getcitationobjects(rawobjects)
-                elif pred == 'has_origin':
-                    objects = self.getoriginobjects(rawobjects)
-                elif pred == 'has_dataset':
-                    objects = self.getdatasetobjects(rawobjects)
-                elif pred == 'has_characterizing_marker_set':
-                    objects = self.getmarkerobjects(rawobjects)
-                else:
-                    objects = self.getassertionobjects(pred=pred, rawobjects=rawobjects)
-                return objects
-        return []
 
     def getstoredsimpleassertiondata(self, assertions: list, predicate: str) -> list:
         """
@@ -462,7 +424,7 @@ class SenLib:
 
         return {}
 
-    def truncateddisplaytext(self, id: str, description: str, trunclength: int) -> str:
+    def truncateddisplaytext(self, displayid: str, description: str, trunclength: int) -> str:
 
         """
         Builds a truncated display string.
@@ -470,11 +432,11 @@ class SenLib:
         if trunclength < 0:
             trunclength = len(description)
         if trunclength < len(description):
-            ellipsis = '...'
+            ell = '...'
         else:
-            ellipsis = ''
+            ell = ''
 
-        return f'{id} ({description[0:trunclength]}{ellipsis})'
+        return f'{displayid} ({description[0:trunclength]}{ell})'
 
     def getregmarkerobjects(self, assertions: list) -> list:
 
@@ -648,20 +610,20 @@ class SenLib:
         form.marker.process([''])
         form.regmarker.process([''])
 
-    def fetchfromdb(self, id: str, form):
+    def fetchfromdb(self, senotypeid: str, form):
 
         """
         Loads and formats data from an existing Senotype submission, obtained
         from session data.
 
-        :param id: senotype ID
+        :param senotypeid: senotype ID
         :param form: Edit Form
 
         """
-        form.senotypeid.data = id
+        form.senotypeid.data = senotypeid
 
         # Get senotype data
-        dictsenlib = self.getsenotypejson(id=id)
+        dictsenlib = self.getsenotypejson(id=senotypeid)
 
         senotype = dictsenlib.get('senotype')
         form.senotypename.data = senotype.get('name', '')
@@ -708,7 +670,7 @@ class SenLib:
 
         # Molecular observable (multiple possible values)
         observablelist = self.getstoredsimpleassertiondata(assertions=assertions,
-                                                      predicate='has_molecular_observable')
+                                                           predicate='has_molecular_observable')
         if len(observablelist) > 0:
             form.observable.process(form.observable, [item['term'] for item in observablelist])
         else:
@@ -740,7 +702,7 @@ class SenLib:
         # Citation (multiple possible values)
         citationlist = self.getstoredsimpleassertiondata(assertions=assertions, predicate='has_citation')
         if len(citationlist) > 0:
-            form.citation.process(form.citation, [self.truncateddisplaytext(id=item['code'],
+            form.citation.process(form.citation, [self.truncateddisplaytext(displayid=item['code'],
                                                                             description=item['term'],
                                                                             trunclength=30)
                                                   for item in citationlist])
@@ -750,7 +712,7 @@ class SenLib:
         # Origin (multiple possible values)
         originlist = self.getstoredsimpleassertiondata(assertions=assertions, predicate='has_origin')
         if len(originlist) > 0:
-            form.origin.process(form.origin, [self.truncateddisplaytext(id=item['code'],
+            form.origin.process(form.origin, [self.truncateddisplaytext(displayid=item['code'],
                                                                         description=item['term'],
                                                                         trunclength=30)
                                               for item in originlist])
@@ -760,7 +722,7 @@ class SenLib:
         # Dataset (multiple possible values)
         datasetlist = self.getstoredsimpleassertiondata(assertions=assertions, predicate='has_dataset')
         if len(datasetlist) > 0:
-            form.dataset.process(form.dataset, [self.truncateddisplaytext(id=item['code'],
+            form.dataset.process(form.dataset, [self.truncateddisplaytext(displayid=item['code'],
                                                                           description=item['term'],
                                                                           trunclength=30)
                                                 for item in datasetlist])
@@ -771,7 +733,7 @@ class SenLib:
         markerlist = self.getstoredsimpleassertiondata(assertions=assertions,
                                                        predicate='has_characterizing_marker_set')
         if len(markerlist) > 0:
-            form.marker.process(form.marker, [self.truncateddisplaytext(id=item['code'],
+            form.marker.process(form.marker, [self.truncateddisplaytext(displayid=item['code'],
                                                                         description=item['term'],
                                               trunclength=100)
                                               for item in markerlist])
@@ -787,7 +749,7 @@ class SenLib:
                 None,
                 [
                     {
-                        "marker": self.truncateddisplaytext(id=item['code'], description=item['term'],
+                        "marker": self.truncateddisplaytext(displayid=item['code'], description=item['term'],
                                                             trunclength=50),
                         "action": item['type']
                     }
@@ -998,7 +960,7 @@ class SenLib:
         # Citation
         citationlist = self.build_session_list(form_data=form_data, field_name='citation')
         if len(citationlist) > 0:
-            form.citation.process(None, [self.truncateddisplaytext(id=item['code'],
+            form.citation.process(None, [self.truncateddisplaytext(displayid=item['code'],
                                                                    description=item['term'],
                                                                    trunclength=40)
                                          for item in citationlist])
@@ -1008,7 +970,7 @@ class SenLib:
         # Origin
         originlist = self.build_session_list(form_data=form_data, field_name='origin')
         if len(originlist) > 0:
-            form.origin.process(None, [self.truncateddisplaytext(id=item['code'],
+            form.origin.process(None, [self.truncateddisplaytext(displayid=item['code'],
                                                                  description=item['term'],
                                                                  trunclength=50)
                                        for item in originlist])
@@ -1018,7 +980,7 @@ class SenLib:
         # Dataset
         datasetlist = self.build_session_list(form_data=form_data, field_name='dataset')
         if len(datasetlist) > 0:
-            form.dataset.process(None, [self.truncateddisplaytext(id=item['code'],
+            form.dataset.process(None, [self.truncateddisplaytext(displayid=item['code'],
                                                                   description=item['term'],
                                                                   trunclength=50)
                                         for item in datasetlist])
@@ -1028,7 +990,7 @@ class SenLib:
         # Specified markers
         markerlist = self.build_session_markerlist(form_data=form_data)
         if len(markerlist) > 0:
-            form.marker.process(None, [self.truncateddisplaytext(id=item['code'],
+            form.marker.process(None, [self.truncateddisplaytext(displayid=item['code'],
                                                                  description=item['term'],
                                                                  trunclength=100)
                                        for item in markerlist])
@@ -1041,7 +1003,7 @@ class SenLib:
         if len(regmarkerlist) > 0:
             form.regmarker.process(None, [
                     {
-                        "marker": self.truncateddisplaytext(id=item['code'], description=item['term'],
+                        "marker": self.truncateddisplaytext(displayid=item['code'], description=item['term'],
                                                             trunclength=50),
                         "action": item['type']
                     }
@@ -1140,7 +1102,7 @@ class SenLib:
                     }
                 assertion = {"predicate": predicate_object,
                              "objects": objects
-                            }
+                             }
                 assertions.append(assertion)
 
         return assertions
@@ -1288,10 +1250,6 @@ class SenLib:
                               a new version
         """
 
-        dictsubmission = {}
-
-        #id = form_data.get('senotypeid')
-
         # senotype
 
         # DOI
@@ -1409,4 +1367,3 @@ class SenLib:
         self.senotypetree = self._getsenotypejtree()
 
         self.submissionjson = {}
-

@@ -59,7 +59,7 @@ class SenLibMySql():
 
         return listids
 
-    def _getallsenotypejsons(self) -> List[dict]:
+    def getallsenotypejsons(self) -> List[dict]:
         """
         Obtains a list of all senotype jsons.
         """

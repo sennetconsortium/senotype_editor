@@ -1,3 +1,8 @@
+"""
+The dataset routes allow the Edit page to call the entity-api and SenNet Data Portal page
+and pass a request body that includes the Globus authentication token.
+
+"""
 from flask import redirect, session, Blueprint, Response
 import requests
 

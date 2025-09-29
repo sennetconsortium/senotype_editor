@@ -1,5 +1,7 @@
 """
-Edit route.
+Edit route:
+1. Loads the Edit page with data from an existing Senotype.
+2. Initiates a new Senotype, which will be written to the database via the Update route.
 
 """
 from flask import Blueprint, request, render_template, session, make_response, abort, current_app
@@ -38,11 +40,11 @@ def edit():
     # Github personal access token for authorized calls
     # github_token = cfg.getfield(key='GITHUB_TOKEN')
 
-    # Senlib interface
+    # Senlib interface that fetches senotype data and builds the Senotype treeeview.
     senlib = SenLib(cfg=cfg, userid=session['userid'])
 
     # Cache the assertions valueset dataframe for use by routes like valueset.
-    # The dataframe should not change during the current editing transaction.
+    # The valueset dataframe should not change during the current editing transaction.
     current_app.assertionvaluesets = senlib.assertionvaluesets
 
     # Check if we have session data for the form.
@@ -112,7 +114,7 @@ def edit():
 
         else:
             # Load from existing data.
-            senlib.fetchfromdb(id=id, form=form)
+            senlib.fetchfromdb(senotypeid=id, form=form)
 
     selected_node_id = request.form.get('selected_node_id') or request.args.get('selected_node_id')
     # Pass to the edit form the tree of senotype id information for the jstree control.

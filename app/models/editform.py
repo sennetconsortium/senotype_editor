@@ -1,5 +1,5 @@
 """
-Form used to manage Senotype JSONs.
+Form used to create and update Senotype JSONs.
 """
 
 
@@ -12,7 +12,9 @@ from models.appconfig import AppConfig
 from models.senlib import SenLib
 from models.stringnumber import stringisintegerorfloat
 
+
 def to_num(val):
+    # Tests whether strings are numbers.
     if val is None or val == "":
         return None
     try:
@@ -38,6 +40,7 @@ def validate_age(val) -> str:
         return 'Ages over 89 years must be set to 90 years.'
 
     return "ok"
+
 
 def validate_age_range(form, field):
     """
@@ -68,6 +71,7 @@ def validate_age_range(form, field):
     else:
         errors = ';'.join(s for s in [valuevalidate, lowerboundvalidate, upperboundvalidate] if s != "ok")
         raise ValidationError(errors)
+
 
 def validate_number(field):
     """
@@ -105,28 +109,14 @@ def validate_integer(field):
 
 # ----------------------
 # MAIN FORM
-def getchoices(sl: SenLib, predicate: str) -> list[tuple]:
-    """
-    Return a list of tuples for a valueset.
-    :param sl: the SenLib interface
-    :param predicate: assertion predicate. Can be either an IRI or a term.
-    """
-    # Get the DataFrame of valueset information corresponding to an assetion predicate.
-    dfchoices = sl.getvalueset(predicate=predicate)
-
-    # Buiild a list of tuples from the relevant columns of the DataFrame.
-    choices = list(zip(dfchoices['valueset_code'], dfchoices['valueset_term']))
-
-    # Add 'select' as an option. Must be a tuple for correct display in the form.
-    choices = [("select", "select")] + choices
-    return choices
-
 
 class RegMarkerEntryForm(Form):
 
-    # The regulating marker data is stored in lists in two hidden inputs:
-    # - the marker code
-    # - regulating action
+    """
+    Custom form class for regulating markers, which store data in two hidden inputs:
+    - the marker code
+    - the regulating action
+    """
 
     marker = StringField('Regulating Marker')
     action = StringField('Regulating Action')
@@ -136,13 +126,10 @@ class EditForm(Form):
 
     # Set up the Senlib interface to obtain valueset information.
 
-    # Read the app.cfg file outside the Flask application context.
-    cfg = AppConfig()
-
-    # Senlib interface.
+    # SENOTYPE TREEVIEW
 
     # The features of the Senotype treeview depend on whether the user is authorized
-    # to edit the senotype JSONs. The authorization compares the user's email address
+    # to edit senotype JSONs. The authorization compares the user's email address
     # from Globus (in a session variable) with the email stored with a Senotype JSON.
     def __init__(self, *args, **kwargs):
         super(EditForm, self).__init__(*args, **kwargs)
@@ -150,7 +137,7 @@ class EditForm(Form):
         from flask import session
         self.senlib = SenLib(cfg=AppConfig(), userid=session.get('userid', ''))
 
-    # SET DEFAULTS
+    # SET DEFAULTS FOR FIELDS
 
     # Senotype
     senotypeid = StringField('ID')

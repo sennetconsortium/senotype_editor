@@ -181,7 +181,7 @@ def update():
         # Trigger a reload of the edit form that refreshes with the updated data.
         form = EditForm(request.form)
         senlib = SenLib(cfg=cfg, userid=session['userid'])
-        senlib.fetchfromdb(id=update_id, form=form)
+        senlib.fetchfromdb(senotypeid=update_id, form=form)
         return render_template('edit.html',
                                form=form,
                                response={'tree_data': senlib.senotypetree},

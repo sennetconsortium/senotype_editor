@@ -1,5 +1,5 @@
 """
-Class for generic requests that uses an exponential retry loop.
+Class for generic API GET requests that uses an exponential retry loop.
 
 """
 # For retry loop
