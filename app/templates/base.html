@@ -12,6 +12,7 @@
       }
     </style>
     <style>
+      /* For spans used to display list elements */
       .list-field-display {
         border: 1px solid #d3d3d3;
         /*margin-left: 1px;*/
@@ -29,6 +30,7 @@
       }
     </style>
     <style>
+      /* to display symbols used to indicate type of regulation in regulating markers list */
       .action-symbol {
         font-weight: bold;
         font-size: 1 em;
@@ -43,6 +45,12 @@
         .label-left-margin {
           margin-left: 6px !important;
         }
+    </style>
+    <style>
+      /* Changes the according buttons toggle SVG color to white */
+      #btn-accordion::after {
+        filter: invert(1);
+      }
     </style>
     <script type="text/javascript">
       window.addEventListener('pageshow', function(event) {
@@ -98,18 +106,19 @@
   </head>
   <body>
     <!-- Menu navbar -->
-    <nav class="navbar" style="background-color: #F0FDF4;">
+    <nav class="navbar" style="background-color: #808080;">
       <div class="container-fluid">
         <div class="d-flex align-items-center w-100 position-relative" style="height: 57px;">
           <a class="navbar-brand d-flex align-items-center" href="{{ url_for('globus.globus') }}" style="margin-right: 1px; height: 57px;">
             <img src="static/editor.png" width="60" height="57" alt="Senotype Editor" style="border: 1px solid #ccc;">
           </a>
           <p class="mb-0 flex-grow-1 d-flex align-items-center"
-           style="color: #212529; background-color: #F0FDF4; font-size: 2.5em; height: 57px; line-height: 57px; margin-left: 1px;">
+           style="color: white; background-color: #808080; font-size: 2em; height: 40px; line-height: 40px; margin-left: 3px;">
             Senotype Editor
           </p>
+          <!-- Display the userid and name, obtained from Globus login.-->
           {% if session.userid and session.username %}
-            <span class="position-absolute end-0 me-3" style="color: #212529; font-size: 0.9em;">
+            <span class="position-absolute end-0 me-3" style="color: white; font-size: 1em;">
               {{ session.userid }} ({{ session.username }})
             </span>
           {% endif %}

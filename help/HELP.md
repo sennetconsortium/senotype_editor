@@ -1,0 +1,2 @@
+# Senotype Editor
+## Help file

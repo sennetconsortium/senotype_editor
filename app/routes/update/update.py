@@ -196,7 +196,7 @@ def update():
                     if err not in form_field.errors:
                         form_field.errors.append(err)
 
-        flash(f"Error: Validation failed during attempt to {result_action_root}e senotype with ID {id}. "
+        flash(f"Error: Validation failed during attempt to {result_action_root}e senotype with ID {update_id}. "
               f"Please check your inputs.", "danger")
 
         # Pass both the current form data (which, in general, will have been modified

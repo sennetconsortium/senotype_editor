@@ -12,36 +12,62 @@ from models.appconfig import AppConfig
 from models.senlib import SenLib
 from models.stringnumber import stringisintegerorfloat
 
+def to_num(val):
+    if val is None or val == "":
+        return None
+    try:
+        return float(val)
+    except ValueError:
+        raise ValidationError("Ages must be numbers.")
 
-def validate_age(form, field):
+
+def validate_age(val) -> str:
+
     """
     Custom validator for age.
 
     Assumes that age unit is years.
 
-    :param field: the age field
-    :return: Nothing or raises ValidationError
     """
 
-    age = field.data
-    if age is None:
-        return
+    if val is None:
+        return "ok"
+    if val < 0:
+        return 'Age must be positive.'
+    if val > 90:
+        return 'Ages over 89 years must be set to 90 years.'
 
-    if age.strip() == '':
-        return
+    return "ok"
 
-    if stringisintegerorfloat(age) == 'not a number':
-        raise ValidationError('Age must be a number.')
+def validate_age_range(form, field):
+    """
+    Validates that:
+    1. The age value, lowerbound, and upperbound are all ages.
+    1. The lowerbound is less than both the value and upperbound.
+    2. The age value is less than the upperbound.
 
-    agenum = float(age)
+    Assumes that the validateage validator is called prior.
 
-    if age is None:
-        age = 0
-    if agenum < 0:
-        raise ValidationError('Age must be positive.')
-    if agenum > 89:
-        raise ValidationError('Ages over 89 years must be set to 90 years.')
+    """
 
+    agevalue = to_num(form.agevalue.data)
+    lowerbound = to_num(form.agelowerbound.data)
+    upperbound = to_num(form.ageupperbound.data)
+
+    valuevalidate = validate_age(agevalue)
+    lowerboundvalidate = validate_age(lowerbound)
+    upperboundvalidate = validate_age(upperbound)
+
+    if valuevalidate == "ok" and lowerboundvalidate == "ok" and upperboundvalidate == "ok":
+        if lowerbound is not None and agevalue is not None and lowerbound > agevalue:
+            raise ValidationError('The age must be >= the age lower bound.')
+        if agevalue is not None and upperbound is not None and agevalue > upperbound:
+            raise ValidationError('The age must be <= the age upper bound.')
+        if lowerbound is not None and upperbound is not None and lowerbound > upperbound:
+            raise ValidationError('The age lower bound must be <= the age upper bound.')
+    else:
+        errors = ';'.join(s for s in [valuevalidate, lowerboundvalidate, upperboundvalidate] if s != "ok")
+        raise ValidationError(errors)
 
 def validate_number(field):
     """
@@ -151,9 +177,9 @@ class EditForm(Form):
     assay = FieldList(StringField('Assay'), min_entries=0)
 
     # Context assertions
-    agevalue = StringField('Value', validators=[validate_age])
-    agelowerbound = StringField('Lowerbound', validators=[validate_age])
-    ageupperbound = StringField('Upperbound', validators=[validate_age])
+    agevalue = StringField('Value', validators=[validate_age_range])
+    agelowerbound = StringField('Lowerbound', validators=[validate_age_range])
+    ageupperbound = StringField('Upperbound', validators=[validate_age_range])
     ageunit = StringField('Unit')
 
     # External assertions
