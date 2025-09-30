@@ -5,7 +5,10 @@ The Senotype Editor allows a user to manage the individual Senotype Library subm
 The Senotype Editor is a Single Page Application based in Python Flask, Jinja2, jquery, and JavaScript.
 
 # Help files
-User documentation files are located in the Help subdirectory of this repo.
+[User documentation files](https://github.com/sennetconsortium/senotype_editor/blob/main/docs/HELP.md) are located in the _docs_ folder of this repo.
+
+GitHub Pages has been configured to display this documentation in a link in the main navbar of the Editor. 
+The Pages link is https://sennetconsortium.github.io/senotype_editor/.
 
 # Local Development
 To run the Senotype Editor locally,
