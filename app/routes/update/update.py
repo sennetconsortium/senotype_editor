@@ -125,6 +125,7 @@ def update():
 
     selected_node_id = request.form.get('selected_node_id') or request.args.get('selected_node_id')
     update_id = ''
+    action = ''
 
     # result_action_root is used in the display text of the header div in the edit form. The
     # tense of the action's verb is set based on the state of the action.

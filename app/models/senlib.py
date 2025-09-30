@@ -270,7 +270,7 @@ class SenLib:
         senotype_parent = {
             "id": "Senotype",
             "text": "Senotype Library",
-            "children": grouped_roots + [new_node],
+            "children": [new_node] + grouped_roots,
             "state": {"opened": True},
             "a_attr": {"style": "color: black; font-style: normal; font-size: 1.5em",
                        "title": instructions,
