@@ -130,6 +130,8 @@ def update():
     # tense of the action's verb is set based on the state of the action.
     result_action_root = ''
 
+    isnewversion = False
+
     if selected_node_id == 'new':
         # The edit route minted a new SenNet ID, which is in the senotypeid input.
         update_id = request.form.get('senotypeid')
@@ -144,6 +146,7 @@ def update():
         if action == 'new_version':
             # Mint a new SenNet ID.
             update_id = senlib.getnewsenotypeid()
+            isnewversion = True
         else:
             update_id = selected_node_id
 
@@ -153,6 +156,10 @@ def update():
 
     # Load the edit form with the normalized form data.
     form = EditForm(normalized_form_data)
+
+    # If this is a new version, make sure that the current user is the submitter.
+    if isnewversion:
+        senlib.setuserassubmitter(form)
 
     # Clear any prior error messages.
     if 'flashes' in session:

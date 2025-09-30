@@ -1336,6 +1336,18 @@ class SenLib:
 
         self.database.writesenotype(senotypeid=senotypeid, senotypejson=revisedjson)
 
+    def setuserassubmitter(self, form):
+
+        """
+        Use the Globus authentication information to identify the user as the submitter.
+        :param: form: the edit form
+        """
+
+        form.submitterfirst.data = session['username'].split(' ')[0]
+        form.submitterlast.data = session['username'].split(' ')[1]
+        form.submitteremail.data = session['userid']
+
+
     def __init__(self, cfg: AppConfig, userid: str):
 
         """

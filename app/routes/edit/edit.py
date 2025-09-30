@@ -108,9 +108,11 @@ def edit():
             # privileges. Currently, a user is only allowed to edit unpublished
             # senotypes for which the user's email matches the submitter email in
             # the senotype JSON.
-            form.submitterfirst.data = session['username'].split(' ')[0]
-            form.submitterlast.data = session['username'].split(' ')[1]
-            form.submitteremail.data = session['userid']
+            senlib.setuserassubmitter()
+
+            #form.submitterfirst.data = session['username'].split(' ')[0]
+            #form.submitterlast.data = session['username'].split(' ')[1]
+            #form.submitteremail.data = session['userid']
 
         else:
             # Load from existing data.
