@@ -112,10 +112,17 @@
           <a class="navbar-brand d-flex align-items-center" href="{{ url_for('globus.globus') }}" style="margin-right: 1px; height: 57px;">
             <img src="static/editor.png" width="60" height="57" alt="Senotype Editor" style="border: 1px solid #ccc;">
           </a>
-          <p class="mb-0 flex-grow-1 d-flex align-items-center"
-           style="color: white; background-color: #6c757d; font-size: 2em; height: 40px; line-height: 40px; margin-left: 3px;">
-            Senotype Editor
-          </p>
+          <div class="d-flex align-items-center" style="margin-left: 3px;">
+            <p class="mb-0" style="color: white; background-color: #6c757d; font-size: 2em; height: 40px; line-height: 40px;">
+              Senotype Editor
+            </p>
+            <a href="https://sennetconsortium.github.io/senotype_editor/help/HELP.html"
+               target="_blank"
+               rel="noopener"
+               style="margin-left: 50px; color: #fff; font-size: 1em; text-decoration: underline;">
+              Help
+            </a>
+          </div>
           <!-- Display the userid and name, obtained from Globus login.-->
           {% if session.userid and session.username %}
             <span class="position-absolute end-0 me-3" style="color: white; font-size: 1em;">
@@ -124,7 +131,7 @@
           {% endif %}
         </div>
       </div>
-    </nav>
+</nav>
     {% block content %}
     {% endblock %}
     <!-- bottom -->
