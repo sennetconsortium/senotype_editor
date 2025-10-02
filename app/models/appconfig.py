@@ -37,12 +37,12 @@ class AppConfig:
 
         In a "bare-metal" deployment, the application looks for the app.cfg file in a subfolder of the user root
         named "senotype-editor".
-        In a "containerized" deployment, the application looks for the app.cfg file in the /usr/src/app/instance
+        In a "containerized" deployment, the application looks for the app.cfg file in the /usr/src/app
         folder, which is bound to a volume on the host machine.
         """
 
         # Try the volume folder first.
-        self.path = '/usr/src/app/instance'
+        self.path = '/usr/src/app'
         self.file = self.path + '/app.cfg'
         try:
             stream = open(self.file,'r')

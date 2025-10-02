@@ -1,0 +1,12 @@
+name: senotype_editor
+
+services:
+  senotype_editor:
+    build:
+      context: ../app
+      dockerfile: ../docker/Dockerfile
+    image: senotype_editor:local
+    ports:
+      - "5000:5000"
+    volumes:
+      - ~/senotype-editor/app.cfg:/usr/src/app/app.cfg  # Mount local app.cfg into usr/src/app/app.cfg inside the container
