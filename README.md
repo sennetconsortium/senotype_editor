@@ -27,6 +27,11 @@ To run the Senotype Editor locally,
 
 The User documentation will explain the functions of the Senotype Editor.
 
+# Docker deployment
+Run `docker compose up --build` in the _docker_ directory.
+
+The Docker configuration expects the **app.cfg** file to be in the directory _~/senotype-editor_.
+
 # Application Architecture
 The Senotype Editor's User Interface is based on:
 
