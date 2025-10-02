@@ -1,0 +1,7 @@
+/**
+ * senotype_editor - 
+ * @version v0.1.0
+ * @link 
+ * @date Thu Oct 02 2025 16:37:12 GMT-0400 (Eastern Daylight Time)
+ */
+.accordion-button{color:#2c2d2e !important;font-size:18px !important}.accordion-button:not(.collapsed){background-color:#eee !important}footer{border-top:solid 1px #dee2e7;background-color:#fcfcfc}footer a{color:var(--bs-gray-600)}footer a:hover{color:#000;text-decoration:underline}footer > div{display:flex;min-height:150px;justify-content:center;align-items:center}.input-cellBox{border:solid 1px #eee;padding:10px}@media (max-width:767px){.input-cellBox{width:98% !important;margin:10px auto}}@media (min-width:768px){.input-cellBox{margin:1%}}.input-cellBox h6{font-size:1rem;border-bottom:solid 1px #eee;padding-bottom:8px;margin-bottom:20px}@media (min-width:768px){.input-cellBox.col-md-2{width:15.5%}.input-cellBox.col-md-4{width:31.33333333%}.input-cellBox.col-md-6{width:48%}}@media (min-width:768px){.input-cellBox--age.col-md-6{width:53.5%}}.input-treeView{background-color:#fff;border:1px solid #ccc;border-radius:5px;border-top-left-radius:0;border-top-right-radius:0;padding:3px;position:relative;border-top:none}.input-treeView #senotype-tree{background-color:#fff;padding:3px;max-height:220px;overflow-y:auto;overflow-x:auto}.label-wide{text-align:right;text-transform:capitalize}.navbar{background-color:#505250}

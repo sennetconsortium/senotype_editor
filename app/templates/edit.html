@@ -26,14 +26,12 @@
     <!-- Senotype / Submission -->
     <div class="row">
       <!-- Senotype column -->
-        <div class="col-md-4" style="background-color: white; border: 1px solid #ccc; border-radius: 5px; padding: 3px; position:relative">
+        <div class="col-md-4 input-treeView">
           <div class="row">
             <div class="col-12">
               <div style="position: relative; width: 100%;">
                 <!--Senotype treeview -->
                 <div id="senotype-tree"
-                     style="background-color:white; padding: 3px; height: 220px;
-                     overflow-y: auto; overflow-x: auto;"
                     title="Expand the tree to navigate to a version of a Senotype">
                 </div>
 
@@ -72,7 +70,7 @@
             </button>
         </div>
       <!-- Submission column -->
-        <div class="col-md-8" style="background-color: #FEF2F2; border: 1px solid #ccc; border-radius: 5px; padding: 3px;">
+        <div class="col-md-8 mt-3">
             <h4 class="mb-3">Submitter</h4>
             <!-- Submitter fields -->
             <div class="row align-items-center mb-1">
@@ -150,7 +148,7 @@
                   </div>
             </div>
             <!-- DOI -->
-            <div class="row mb-1">
+            <div class="row mb-1 row-doi">
                   <div class="col-md-12">
                       {{ render_textarea_section(form, 'doi', 'doiSearchModal', '#FEF2F2', link_base_url='https://api.datacite.org/dois/', link_title='View DOI details', parse_code=False ) }}
                   </div>
@@ -161,27 +159,26 @@
           </div> <!-- col-md-8 (Submission column) -->
     </div> <!-- row (Main row) -->
     <!-- Simple Assertions section-->
-    <div class="row">
+    <div class="row mt-3">
         <!-- TAXON section-->
-        {{ render_fieldlist_section(form, "taxon", "taxonModal", col_class="col-md-2") }}
+        {{ render_fieldlist_section(form, "taxon", "taxonModal", col_class="col-md-2 input-cellBox") }}
         <!-- LOCATION section -->
-        {{ render_fieldlist_section(form, "location", "locationModal", col_class="col-md-2") }}
+        {{ render_fieldlist_section(form, "location", "locationModal", col_class="col-md-2 input-cellBox") }}
         <!-- CELL TYPE section -->
-        {{ render_fieldlist_section(form, "celltype", "celltypeModal",  col_class="col-md-2") }}
+        {{ render_fieldlist_section(form, "celltype", "celltypeModal",  col_class="col-md-2 input-cellBox") }}
         <!-- HALLMARK section -->
-        {{ render_fieldlist_section(form, "hallmark", "hallmarkModal",  col_class="col-md-4") }}
+        {{ render_fieldlist_section(form, "hallmark", "hallmarkModal",  col_class="col-md-3 input-cellBox") }}
         <!-- OBSERVABLE section -->
-        {{ render_fieldlist_section(form, "observable", "observableModal",  col_class="col-md-2") }}
+        {{ render_fieldlist_section(form, "observable", "observableModal",  col_class="col-md-2 input-cellBox") }}
     </div>
-    <div class="row">
+    <div class="row mt-3">
         <!-- INDUCER section -->
-        {{ render_fieldlist_section(form, "inducer", "inducerModal",  col_class="col-md-2") }}
+        {{ render_fieldlist_section(form, "inducer", "inducerModal",  col_class="col-md-2 input-cellBox") }}
         <!-- ASSAY section -->
-        {{ render_fieldlist_section(form, "assay", "assayModal",  col_class="col-md-4") }}
+        {{ render_fieldlist_section(form, "assay", "assayModal",  col_class="col-md-3 input-cellBox") }}
         <!-- CONTEXT assertion section -->
-        <div class="col-md-6" style="background-color: #FEF2F2; border: 1px solid #ccc; border-radius: 5px; padding: 3px;">
-            <div class="container">
-                <div class="row mb-3">
+        <div class="col-md-6 input-cellBox input-cellBox--age ">
+            <div class="row mb-3">
                     <h6><strong>Age</strong></h6>
                     <div class="col-3 d-flex align-items-center">
                         <strong>{{ form.agevalue.label }}</strong>
@@ -209,17 +206,16 @@
                         {{ form.ageunit(class="form-control ms-2", maxlength="5", disabled=True) }}
                     </div>
                 </div>
-            </div>
         </div>
     </div>
     <!-- PubMed citations/RRID origin/SenNet datasets -->
     <div class="row">
         <!-- CITATION section -->
-        {{ render_fieldlist_section(form, "citation", "citationSearchModal", is_external=True,  col_class="col-md-4", label_bg="#EBF6F9") }}
+        {{ render_fieldlist_section(form, "citation", "citationSearchModal", is_external=True,  col_class="col-md-4 input-cellBox", label_bg="#EBF6F9") }}
         <!-- ORIGIN section -->
-        {{ render_fieldlist_section(form, "origin", "originSearchModal", is_external=True,  col_class="col-md-4", label_bg="#EBF6F9") }}
+        {{ render_fieldlist_section(form, "origin", "originSearchModal", is_external=True,  col_class="col-md-4 input-cellBox", label_bg="#EBF6F9") }}
         <!-- DATASET section -->
-        {{ render_fieldlist_section(form, "dataset", "datasetSearchModal", is_external=True,  col_class="col-md-4", label_bg="#EBF6F9") }}
+        {{ render_fieldlist_section(form, "dataset", "datasetSearchModal", is_external=True,  col_class="col-md-4 input-cellBox", label_bg="#EBF6F9") }}
     </div>
     <!-- Specified Markers/Regulating Markers -->
     <div class="accordion" id="markerAccordion">
@@ -232,7 +228,7 @@
                     data-bs-target="#collapseMarkers"
                     aria-expanded="true"
                     aria-controls="collapseMarkers"
-                    style="background-color: #6c757d; color: #fff; justify-content: center; font-size: 0.9em;"
+                    style="justify-content: center; font-size: 0.9em;"
                     id="btn-accordion">
                     Markers
             </button>
@@ -386,10 +382,10 @@
 
 <!-- UPDATE FORM below edit_form -->
 <form id="update_form" method="post" action="/update" class="my-4">
-  <div class="d-flex justify-content-center">
-    <div style="display: flex; align-items: center;">
+  <div class="d-flex flex-row-reverse container-fluid">
+    <div class="mx-2">
       <!-- Update Button -->
-      <button id="update_btn" type="submit" class="btn btn-primary" disabled>
+      <button id="update_btn" type="submit" class="btn btn-primary rounded-0" disabled>
         Update
       </button>
       <!-- Spinner (Bootstrap) -->

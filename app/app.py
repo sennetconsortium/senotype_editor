@@ -94,15 +94,14 @@ class SenotypeUI:
 # For local development/testing
 # ###################################################################################################
 
+# Obtain the path to the configuration file.
+cfg = AppConfig()
+app = SenotypeUI(cfg.file, Path(__file__).absolute().parent.parent.parent).app
 
 if __name__ == "__main__":
-
-    # Obtain the path to the configuration file.
-    cfg = AppConfig()
-
     try:
-        donor_app = SenotypeUI(cfg.file, Path(__file__).absolute().parent.parent.parent).app
-        donor_app.run(host='0.0.0.0', port='5000')  # flask port
+        # donor_app = SenotypeUI(cfg.file, Path(__file__).absolute().parent.parent.parent).app
+        app.run(host='0.0.0.0', port='5000')  # flask port
     except Exception as e:
         print(str(e))
         logger.error(e, exc_info=True)

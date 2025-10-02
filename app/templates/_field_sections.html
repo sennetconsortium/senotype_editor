@@ -25,8 +25,8 @@ Arguments:
 - col_class - Bootstrap column class to use
 -->
 
-{% macro render_fieldlist_section(form, field_name, modal_id, label_bg="#FEF2F2", is_external=False, col_class="col-md-4", groups_token=None) %}
-<div class="{{ col_class }}" style="background-color: {{ label_bg }}; border: 1px solid #ccc; border-radius: 5px; padding: 3px;">
+{% macro render_fieldlist_section(form, field_name, modal_id, label_bg="#FEF2F2", is_external=False, col_class="col-md-4 card", groups_token=None) %}
+<div class="{{ col_class }}">
     {# header #}
     <strong style="margin-left: 12px;">{{ form[field_name].label }}</strong>
     <div class="d-flex align-items-start">
@@ -124,7 +124,7 @@ Renders a textarea field, analogous to the field lists used for the categorical 
 Use case: DOI field
 -->
 {% macro render_textarea_section(form, field_name, modal_id, label_bg="#EBF6F9", link_base_url=None, link_title=None, parse_code=False) %}
-<div style="background-color: {{ label_bg }};">
+<div class="input-textarea">
     <div class="d-flex align-items-center" id="{{ field_name }}-row">
         <label for="{{ form[field_name].id }}" class="me-2 mb-0 label-wide label-left-margin">
             {% set hidden_value = (form[field_name].data or '').split(' ')[0] %}
