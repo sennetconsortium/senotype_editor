@@ -70,7 +70,7 @@ $(function() {
                 el.style.pointerEvents = '';
                 el.style.opacity = '';
                 el.style.backgroundColor = '';
-                el.style.visibility = 'display';
+                el.style.display = 'inline-block';
             } else if (el.tagName === 'INPUT' && inputTypes.includes(el.type)) {
                 el.disabled = false;
                 el.style.backgroundColor = enabledColor;
@@ -93,7 +93,7 @@ $(function() {
                 el.style.opacity = 0.6;
                 el.style.backgroundColor = disableColor;
                 if (el.id.includes('link')) {
-                    el.style.visibility = 'hidden';
+                    el.style.display = 'none';
                 }
             } else if (el.tagName === 'INPUT' && inputTypes.includes(el.type)) {
                 el.disabled = true;
