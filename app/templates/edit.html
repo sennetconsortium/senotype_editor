@@ -71,11 +71,11 @@
             <h4 class="mb-3">Submitter</h4>
             <!-- Submitter fields -->
             <div class="row align-items-center mb-1">
-                  <div class="col-md-4 d-flex align-items-center">
+                  <div class="col-md-4 d-flex align-items-center mb-2">
                     <label for="{{ form.submitterfirst.id }}" class="me-2 mb-0 label-wide label-left-margin"><strong>{{ form.submitterfirst.label.text }}</strong></label>
                     {{ form.submitterfirst(class="form-control d-inline-block", style="width: 100%;") }}
                   </div>
-                  <div class="col-md-4 d-flex align-items-center">
+                  <div class="col-md-4 d-flex align-items-center mb-2">
                     <label for="{{ form.submitterlast.id }}" class="me-2 mb-0 label-wide label-left-margin"><strong>{{ form.submitterlast.label.text }}</strong></label>
                     {{ form.submitterlast(class="form-control d-inline-block", style="width: 100%;") }}
                   </div>
@@ -106,7 +106,7 @@
             <!-- Senotype id, name-->
             <div class="row align-items-center mb-2">
                 <!-- ID -->
-                <div class="col-md-4 d-flex align-items-center">
+                <div class="col-md-4 d-flex align-items-center mb-2">
                     <label for="{{ form.senotypeid.id }}" class="me-2 mb-0 label-wide label-left-margin"><strong>{{ form.senotypeid.label.text }}</strong></label>
                     {{ form.senotypeid(class="form-control") }}
                 </div>
@@ -177,28 +177,28 @@
         <div class="col-lg-6 input-cellBox input-cellBox--age ">
             <div class="row mb-3">
                     <h6><strong>Age</strong></h6>
-                    <div class="col-3 d-flex align-items-center">
+                    <div class="col-6 col-lg-3 d-flex align-items-center mb-lg-0 mb-2">
                         <strong>{{ form.agevalue.label }}</strong>
-                        {{ form.agevalue(class="form-control ms-2", type="number", maxlength="4", min="0", max="90", style="max-width:8ch;", disabled=True) }}
+                        {{ form.agevalue(class="form-control ms-2", type="number", maxlength="4", min="0", max="90", style="", disabled=True) }}
                     </div>
                     {% for error in form.agevalue.errors %}
                         <div class="text-danger">{{ error }}</div>
                     {% endfor %}
-                    <div class="col-3 d-flex align-items-center">
+                    <div class="col-6 col-lg-3 d-flex align-items-center mb-lg-0 mb-2">
                         <strong>{{ form.agelowerbound.label }}</strong>
-                        {{ form.agelowerbound(class="form-control ms-2", type="number", maxlength="4", min="0", max="90",style="max-width:8ch;", disabled=True) }}
+                        {{ form.agelowerbound(class="form-control ms-2", type="number", maxlength="4", min="0", max="90",style="max-width:15ch;", disabled=True) }}
                     </div>
                     {% for error in form.agelowerbound.errors %}
                         <div class="text-danger">{{ error }}</div>
                     {% endfor %}
-                    <div class="col-3 d-flex align-items-center">
+                    <div class="col-6 col-lg-3 d-flex align-items-center">
                         <strong>{{ form.ageupperbound.label }}</strong>
-                        {{ form.ageupperbound(class="form-control ms-2", type="number", maxlength="4",min="0", max="90", style="max-width:8ch;", disabled=True) }}
+                        {{ form.ageupperbound(class="form-control ms-2", type="number", maxlength="4",min="0", max="90", style="max-width:15ch;", disabled=True) }}
                     </div>
                     {% for error in form.ageupperbound.errors %}
                         <div class="text-danger">{{ error }}</div>
                     {% endfor %}
-                    <div class="col-3 d-flex align-items-center">
+                    <div class="col-6 col-lg-3 d-flex align-items-center">
                         <strong>{{ form.ageunit.label }}</strong>
                         {{ form.ageunit(class="form-control ms-2", maxlength="5", disabled=True) }}
                     </div>

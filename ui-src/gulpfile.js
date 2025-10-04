@@ -29,14 +29,6 @@ function css() {
 
 gulp.task('css', css)
 
-function touch() {
-    try {
-        exec('npm run css', (error, stdout, stderr) => {})
-    } catch (e) {}
-}
-
-gulp.task('touch', touch)
-
 exports.default = function () {
-    gulp.watch('css/**/*.styl', touch)
+    gulp.watch('css/**/*.styl', css)
 }
