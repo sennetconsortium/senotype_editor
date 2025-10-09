@@ -5,6 +5,8 @@ venv/
 **/*.bak
 \#*\#
 **~
+ui-src/node_modules
+.vscode
 
 # Ignore config file
 **/app.cfg
