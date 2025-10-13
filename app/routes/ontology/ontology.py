@@ -2,32 +2,28 @@
 Calls the hs-ontology API.
 
 """
-from flask import Blueprint, make_response
-from models.requestretry import RequestRetry
-from models.appconfig import AppConfig
+from flask import Blueprint
+from models.ontology_class import OntologyAPI
 
 ontology_blueprint = Blueprint('ontology', __name__, url_prefix='/ontology')
-
+ontapi = OntologyAPI()
 
 @ontology_blueprint.route('/genes/<subpath>')
 def ontology_genes_proxy(subpath):
-    api = RequestRetry()
-    cfg = AppConfig()
-    url = f"{cfg.getfield(key='UBKG_BASE_URL')}/genes/{subpath}"
-    response = api.getresponse(url=url, format='json')
-    if type(response) is dict:
-        return make_response('no genes found', 400)
-    else:
-        return response
+
+    endpoint = f'genes/{subpath}'
+    return ontapi.get_ontology_api_response(endpoint=endpoint,target='genes')
 
 
 @ontology_blueprint.route('/proteins/<subpath>')
 def ontology_proteins_proxy(subpath):
-    api = RequestRetry()
-    cfg = AppConfig()
-    url = f"{cfg.getfield(key='UBKG_BASE_URL')}/proteins/{subpath}"
-    response = api.getresponse(url=url, format='json')
-    if type(response) is dict:
-        return make_response('no proteins found', 400)
-    else:
-        return response
+
+    endpoint = f'proteins/{subpath}'
+    return ontapi.get_ontology_api_response(endpoint=endpoint, target='proteins')
+
+
+@ontology_blueprint.route('/celltypes/<subpath>')
+def ontology_proteins_proxy(subpath):
+
+    endpoint = f'celltypes/{subpath}'
+    return ontapi.get_ontology_api_response(endpoint=endpoint, target='celltypes')

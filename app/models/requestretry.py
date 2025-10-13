@@ -57,6 +57,9 @@ class RequestRetry:
             else:
                 raise ValueError(f'Invalid format {format}')
 
+        except requests.exceptions.ConnectionError as e:
+            self.error = e
+            raise e
         except Exception as e:
             self.error = e
             r.raise_for_status()
