@@ -2,8 +2,7 @@
 <!--base class html-->
 <html lang="en">
   <head>
-    <!-- Bootstrap 5 CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/static/css/main.css" rel="stylesheet">
     <link rel="icon" type="image/x-icon" href="/static/sennet.png">
     <style>
       .input-fixed-width {
@@ -37,20 +36,9 @@
       }
     </style>
     <style>
-        .label-wide {
-          width: 110px; /* Wide enough for 'Description' with bold font */
-          min-width: 110px;
-          display: inline-block;
-        }
         .label-left-margin {
           margin-left: 6px !important;
         }
-    </style>
-    <style>
-      /* Changes the according buttons toggle SVG color to white */
-      #btn-accordion::after {
-        filter: invert(1);
-      }
     </style>
     <script type="text/javascript">
       window.addEventListener('pageshow', function(event) {
@@ -106,40 +94,40 @@
   </head>
   <body>
     <!-- Menu navbar -->
-    <nav class="navbar" style="background-color: #6c757d;">
+    <nav class="navbar navbar-expand-lg navbar-dark" >
       <div class="container-fluid">
-        <div class="d-flex align-items-center w-100 position-relative" style="height: 57px;">
-          <a class="navbar-brand d-flex align-items-center" href="{{ url_for('globus.globus') }}" style="margin-right: 1px; height: 57px;">
-            <img src="static/editor.png" width="60" height="57" alt="Senotype Editor" style="border: 1px solid #ccc;">
-          </a>
-          <div class="d-flex align-items-center" style="margin-left: 3px;">
-            <p class="mb-0" style="color: white; background-color: #6c757d; font-size: 2em; height: 40px; line-height: 40px;">
-              Senotype Editor
-            </p>
+        <a href="#home" class="navbar-brand">
+          <img src="static/editor.png" width="60" height="57" alt="Senotype Editor" style="border: 1px solid #ccc;">
+          <span>Senotype Editor</span>
+        </a>
+        <button type="button" class="navbar-toggler collapsed" data-bs-toggle="collapse" data-bs-target="#senotype-navbar" aria-controls="senotype-navbar" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="justify-content-end navbar-collapse collapse" id="senotype-navbar">
+          <div class="navbar-nav mx-lg-4">
             <a href="https://sennetconsortium.github.io/senotype_editor/"
                target="_blank"
                rel="noopener"
-               style="margin-left: 50px; color: #fff; font-size: 1em; text-decoration: underline;">
+              >
               Help
             </a>
           </div>
-          <!-- Display the userid and name, obtained from Globus login.-->
-          {% if session.userid and session.username %}
-            <span class="position-absolute end-0 me-3" style="color: white; font-size: 1em;">
-              {{ session.userid }} ({{ session.username }})
-            </span>
-          {% endif %}
+          <div class="navbar-nav">
+            {% if session.userid and session.username %}
+            <span>{{ session.userid }} ({{ session.username }})</span>
+            {% endif %}
+          </div>
         </div>
       </div>
-</nav>
+    </nav>
+  
     {% block content %}
     {% endblock %}
     <!-- bottom -->
     <footer>
       <div class="text-center m-3">
-        <a href="https://github.com/sennetconsortium/senotype_editor">The Senotype Editor</a> © 2025 by
-        <a href="https://www.dbmi.pitt.edu/">Department of Biomedical Informatics, University of Pittsburgh</a>
-      is licensed under
+        <a href="https://github.com/sennetconsortium/senotype_editor">The Senotype Editor</a>&nbsp; &copy; 2025 by &nbsp;
+        <a href="https://www.dbmi.pitt.edu/">Department of Biomedical Informatics, University of Pittsburgh</a> &nbsp; is licensed under&nbsp;
         <a href="https://creativecommons.org/licenses/by/4.0/">Creative Commons Attribution 4.0 International</a>
         <img src="https://mirrors.creativecommons.org/presskit/icons/cc.svg" alt="" style="max-width: 1em; max-height: 1em; margin-left: .2em;">
         <img src="https://mirrors.creativecommons.org/presskit/icons/by.svg" alt="" style="max-width: 1em; max-height: 1em; margin-left: .2em;">

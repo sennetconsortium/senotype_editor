@@ -25,6 +25,7 @@ $(function() {
     if (!form) return;
     var elements = form.querySelectorAll('input, span, textarea, button, li');
     var update_btn = document.getElementById('update_btn');
+    const disableColor = '#e9ecef';
 
     elements.forEach(function(el) {
 
@@ -47,7 +48,7 @@ $(function() {
         'submitterlast','submitteremail','ageunit'];
         if (readonly.includes(el.id)) {
             el.disabled = true;
-            el.style.backgroundColor = '#eeeeee';
+            el.style.backgroundColor = disableColor;
             return;
         }
 
@@ -69,7 +70,7 @@ $(function() {
                 el.style.pointerEvents = '';
                 el.style.opacity = '';
                 el.style.backgroundColor = '';
-                el.style.visibility = 'display';
+                el.style.display = 'inline-block';
             } else if (el.tagName === 'INPUT' && inputTypes.includes(el.type)) {
                 el.disabled = false;
                 el.style.backgroundColor = enabledColor;
@@ -78,7 +79,7 @@ $(function() {
                 el.style.backgroundColor = enabledColor;
             } else if (el.tagName === 'BUTTON') {
                 el.disabled = false;
-                el.style.visibility = 'visible';
+                el.style.display = 'block';
             } else if (el.tagName === 'LI') {
                 el.style.background = enabledColor;
             }
@@ -90,25 +91,25 @@ $(function() {
             if (el.tagName === 'SPAN') {
                 el.style.pointerEvents = 'none';
                 el.style.opacity = 0.6;
-                el.style.backgroundColor = '#eeeeee';
+                el.style.backgroundColor = disableColor;
                 if (el.id.includes('link')) {
-                    el.style.visibility = 'hidden';
+                    el.style.display = 'none';
                 }
             } else if (el.tagName === 'INPUT' && inputTypes.includes(el.type)) {
                 el.disabled = true;
-                el.style.backgroundColor = '#eeeeee';
+                el.style.backgroundColor = disableColor;
             } else if (el.tagName === 'TEXTAREA') {
                 el.disabled = true;
-                el.style.backgroundColor = '#eeeeee';
+                el.style.backgroundColor = disableColor;
             } else if (el.tagName === 'BUTTON') {
                 el.disabled = true;
                 if (alwaysVisible.includes(el.id)) {
-                    el.style.visibility = 'visible';
+                    el.style.display = 'block';
                 } else {
-                    el.style.visibility = 'hidden';
+                    el.style.display = 'none';
                 }
             } else if (el.tagName === 'LI') {
-                el.style.background = '#eeeeee';
+                el.style.background = disableColor;
             }
         }
     });

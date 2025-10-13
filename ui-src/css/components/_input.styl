@@ -1,0 +1,69 @@
+.input 
+  &-cellBox 
+    border solid 1px $col-light-grey
+    padding 10px 
+    +bp-md-mx()
+      width 98% !important
+      margin 10px auto
+    +bp-lg()
+      margin 1%
+    h6 
+      font-size 1rem
+      border-bottom solid 1px $col-light-grey
+      padding-bottom 8px
+      margin-bottom 20px
+
+    +bp-lg()
+      &.col-md-2
+        width 15.5%
+      &.col-md-4 
+        width 31.33333333%
+      &.col-md-6
+        width 48%
+    &--HM
+      +bp-lg()
+        &.col-md-3 
+          width 28%
+    &--age
+      max-width 98% !important
+      &.col-lg-6
+        +bp-lg()
+          width 52%
+
+  &-treeView 
+    background-color white
+    padding 0 !important
+    position relative
+    max-height 270px
+    border 1px solid lightgrey
+    border-radius 5px
+    border-top-left-radius 0
+    border-top-right-radius 0
+    border-top none
+    border-left none
+    overflow-y auto 
+    overflow-x hidden
+    > .row 
+      height 80%
+    
+    button 
+      float right 
+      margin-right 10px
+
+    #senotype-tree
+      background-color white
+      padding 3px
+      max-height 225px
+      overflow auto
+
+
+.label-wide
+  +bp-xlg()
+    min-width 90px
+  +bp-lg()
+    display inline-block
+  text-align right 
+  text-transform capitalize
+
+
+  

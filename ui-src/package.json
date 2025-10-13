@@ -1,0 +1,27 @@
+{
+  "name": "senotype_editor",
+  "version": "0.1.0",
+  "private": true,
+  "homepage": "https://github.com/sennetconsortium/senotype_editor",
+  "devDependencies": {
+    "gulp": "^4.0.2",
+    "loglevel": "^1.8.1",
+    "prettier": "^2.8.1",
+    "stylus": "^0.59.0"
+  },
+  "scripts": {
+    "css": "gulp css",
+    "start": "gulp"
+  },
+  "prettier": {
+    "singleQuote": true,
+    "jsxSingleQuote": true,
+    "semi": false,
+    "tabWidth": 2,
+    "trailingComma": "none"
+  },
+  "dependencies": {
+    "gulp-header": "^2.0.9",
+    "gulp-stylus": "^3.0.0"
+  }
+}
