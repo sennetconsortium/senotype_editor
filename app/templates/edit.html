@@ -162,7 +162,7 @@
         <!-- LOCATION section -->
         {{ render_fieldlist_section(form, "location", "locationModal", col_class="col-md-2 input-cellBox") }}
         <!-- CELL TYPE section -->
-        {{ render_fieldlist_section(form, "celltype", "celltypeModal",  col_class="col-md-2 input-cellBox") }}
+        {{ render_fieldlist_section(form, "celltype", "celltypeSearchModal", show_code=False,  col_class="col-md-2 input-cellBox", label_bg="#EBF6F9") }}
         <!-- HALLMARK section -->
         {{ render_fieldlist_section(form, "hallmark", "hallmarkModal",  col_class="col-md-3 input-cellBox input-cellBox--HM") }}
         <!-- OBSERVABLE section -->
@@ -208,11 +208,11 @@
     <!-- PubMed citations/RRID origin/SenNet datasets -->
     <div class="row">
         <!-- CITATION section -->
-        {{ render_fieldlist_section(form, "citation", "citationSearchModal", is_external=True,  col_class="col-md-4 input-cellBox", label_bg="#EBF6F9") }}
+        {{ render_fieldlist_section(form, "citation", "citationSearchModal", show_code=True,  col_class="col-md-4 input-cellBox", label_bg="#EBF6F9") }}
         <!-- ORIGIN section -->
-        {{ render_fieldlist_section(form, "origin", "originSearchModal", is_external=True,  col_class="col-md-4 input-cellBox", label_bg="#EBF6F9") }}
+        {{ render_fieldlist_section(form, "origin", "originSearchModal", show_code=True,  col_class="col-md-4 input-cellBox", label_bg="#EBF6F9") }}
         <!-- DATASET section -->
-        {{ render_fieldlist_section(form, "dataset", "datasetSearchModal", is_external=True,  col_class="col-md-4 input-cellBox", label_bg="#EBF6F9") }}
+        {{ render_fieldlist_section(form, "dataset", "datasetSearchModal", show_code=True,  col_class="col-md-4 input-cellBox", label_bg="#EBF6F9") }}
     </div>
     <!-- Specified Markers/Regulating Markers -->
     <div class="accordion" id="markerAccordion">
@@ -253,7 +253,7 @@
      assay-->
 {{ valueset_modal("taxonModal", "Taxon", "taxon-modal-list") }}
 {{ valueset_modal("locationModal", "Location", "location-modal-list") }}
-{{ valueset_modal("celltypeModal", "Cell type", "celltype-modal-list") }}
+<!--{{ valueset_modal("celltypeModal", "Cell type", "celltype-modal-list") }}-->
 {{ valueset_modal("hallmarkModal", "Hallmark", "hallmark-modal-list") }}
 {{ valueset_modal("observableModal", "Observable", "observable-modal-list") }}
 {{ valueset_modal("inducerModal", "Inducer", "inducer-modal-list") }}
@@ -295,6 +295,15 @@
     explore_url="https://commons.datacite.org/",
     explore_text="Explore DataCite Commons",
     results_id="doi-search-results"
+) }}
+<!-- Modal for external UBKG API search for cell type -->
+{{ search_modal(
+    modal_id="celltypeSearchModal",
+    modal_label="Search UBKG for cell type",
+    input_id="celltype-search-input",
+    explore_url="",
+    explore_text="",
+    results_id="celltype-search-results"
 ) }}
 <!-- Modal for external ubkg-api search for adding single specified marker-->
 <div class="modal fade" id="markerSearchModal" tabindex="-1" aria-labelledby="markerSearchModalLabel">

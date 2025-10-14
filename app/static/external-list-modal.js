@@ -35,8 +35,10 @@ add modal:
 function createExternalConfig(trunclength = 40) {
     return {
         dataset: {
+            // Corresponds to a SenNet dataset.
             apiSearch: query => `/dataset/${encodeURIComponent(query)}`,
             parseApiResult: (data, query) => {
+                // There will be, at most, one dataset.
                 const sennetid = data.sennetid || query;
                 const uuid = data.uuid || '';
                 const description = data.title || data.name || sennetid || '';
@@ -48,10 +50,13 @@ function createExternalConfig(trunclength = 40) {
                 }];
             },
             link: info => ({
+                // Because this is in the existing Globus auth session,
+                // go directly to the dataset's detail page in the Data Portal.
                 href: `https://data.sennetconsortium.org/dataset?uuid=${encodeURIComponent(info.uuid)}`,
                 title: 'View dataset details'
             }),
             displayText: info => {
+                // Display both the SenNet ID and part of the description.
                 const desc = info.description || '';
                 if (desc.length > trunclength - 3) {
                     return `${info.id} (${desc.slice(0, trunclength - 3)}...)`;
@@ -60,6 +65,11 @@ function createExternalConfig(trunclength = 40) {
             }
         },
         citation: {
+            // Corresponds to a PubMed citation.
+            // Synchronous, two-step workflow with EUtils:
+            // 1. Use eSearch to find the publication in the NCBI data.
+            // 2. Use eSummary to obtain the title of the publication, if it exists.
+            // Specify JSON response format.
             apiSearch: query =>
                 `https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&retmode=json&term=${encodeURIComponent(query)}`,
             parseApiResult: async (data) => {
@@ -69,6 +79,7 @@ function createExternalConfig(trunclength = 40) {
                     `https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&retmode=json&id=${pmids.join(',')}`
                 );
                 const summaryData = await summaryRes.json();
+                // Eutils has array-based responses.
                 return pmids.map(pmid => ({
                     id: `PMID:${pmid}`,
                     description: summaryData.result[pmid]?.title || pmid
@@ -87,6 +98,8 @@ function createExternalConfig(trunclength = 40) {
             }
         },
         origin: {
+            // Corresponds to an origin from SciCrunch Resolver, in JSON format.
+            // ElasticSearch query.
             apiSearch: query =>
                 `https://scicrunch.org/resolver/${encodeURIComponent(query)}.json`,
             parseApiResult: data => {
@@ -111,6 +124,40 @@ function createExternalConfig(trunclength = 40) {
                     return `${info.id} (${desc.slice(0, trunclength - 3)}...)`;
                 }
                 return `${info.id} (${desc})`;
+            }
+        },
+        celltype: {
+            // Corresponds to the response from the ontology API.
+            // Display only the preferred term.
+            apiSearch: query =>
+                `/ontology/celltypes/${encodeURIComponent(query)}`,
+            parseApiResult: data => {
+                // Response will be a list of JSON objects.
+                let items = [];
+                if (data && Array.isArray(data)) {
+                    // Map over array and extract cell_type objects.
+                    items = data
+                        .map(item => item.cell_type)
+                        .filter(Boolean); // remove undefined/null
+                } else if (data.cell_type) {
+                    // Single object
+                    items = [data.cell_type];
+                }
+                return items.map(item => ({
+                    id: item.id || item.identifier || '',
+                    description: item.name || item.identifier || ''
+                }));
+            },
+            link: info => ({
+                href: `http://purl.obolibrary.org/obo/${encodeURIComponent(info.id.replace(/^CL:/, 'CL_'))}`,
+                title: 'View celltype details'
+            }),
+            displayText: info => {
+                const desc = info.description || '';
+                if (desc.length > trunclength - 3) {
+                    return `${desc.slice(0, trunclength - 3)}...`;
+                }
+                return `${desc}`;
             }
         }
     };
@@ -201,7 +248,6 @@ function setupExternalModalSearch(type) {
 
     // Obtain the configuration for the assertion type.
     const config = EXTERNAL_CONFIG[type];
-
     let lastSearch = '';
     const searchInput = document.getElementById(`${type}-search-input`);
     const resultsDiv = document.getElementById(`${type}-search-results`);
@@ -263,5 +309,5 @@ function setupExternalModalSearch(type) {
 
 // --- Initialize all external modals ---
 document.addEventListener('DOMContentLoaded', function () {
-    ['dataset', 'citation', 'origin'].forEach(setupExternalModalSearch);
+    ['dataset', 'citation', 'origin','celltype'].forEach(setupExternalModalSearch);
 });

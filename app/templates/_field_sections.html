@@ -21,11 +21,11 @@ Arguments:
 - modal_id - the id in edit.html of the modal div used to add new values of field_name
              to the associated list
 - label_bg - label background hex code
-- is_external - whether the field's term has to be obtained via call to external api
+- show_code - whether to include the code for the list item in the display
 - col_class - Bootstrap column class to use
 -->
 
-{% macro render_fieldlist_section(form, field_name, modal_id, label_bg="#FEF2F2", is_external=False, col_class="col-md-4 card", groups_token=None) %}
+{% macro render_fieldlist_section(form, field_name, modal_id, label_bg="#FEF2F2", show_code=False, col_class="col-md-4 card", groups_token=None) %}
 <div class="{{ col_class }}">
     {# header #}
     <strong style="margin-left: 12px;">{{ form[field_name].label }}</strong>
@@ -34,7 +34,7 @@ Arguments:
             <!-- Parse code from value provided by WTForms field. -->
             {% for field in form[field_name] %}
                 {% set full_value = field.data %}
-                {% if is_external %}
+                {% if show_code %}
                     {% set display_value = full_value %}
                 {% else %}
                     {% set display_value = full_value.split('(')[1][0:-1] if '(' in full_value else full_value %}
@@ -58,6 +58,10 @@ Arguments:
                     {% if field_name == "origin" %}
                         <!-- Placeholder for the origin link button, id is unique per hidden_value -->
                         <span class="origin-link-placeholder ms-2" id="origin-link-{{ hidden_value | e }}"></span>
+                    {% endif %}
+                    {% if field_name == "celltype" %}
+                        <!-- Placeholder for the celltype link button, id is unique per hidden_value -->
+                        <span class="celltype-link-placeholder ms-2" id="celltype-link-{{ hidden_value | e }}"></span>
                     {% endif %}
                     <!-- Button to remove this value from the list -->
                     <button type="button" class="btn btn-sm btn-danger ms-2" style="width: 2.5em;" onclick="removeValue(this)"> - </button>
@@ -113,6 +117,19 @@ Arguments:
                     '#origin-list input[type="hidden"]',
                     'View origin details',
                     '.origin-link-placeholder'
+                );
+            });
+        </script>
+    {% elif field_name == "celltype" %}
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                addLinkButtons(
+                    'http://purl.obolibrary.org/obo/',
+                    '#celltype-list input[type="hidden"]',
+                    'View celltype details',
+                    '.celltype-link-placeholder',
+                    parse_code=false,
+                    replace_colon_with_underscore=true
                 );
             });
         </script>

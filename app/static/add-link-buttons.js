@@ -5,14 +5,19 @@
  * @param {string} link_title - The title attribute for the anchor.
  * @param {string} target_selector - Selector for the placeholder (e.g. '.dataset-link-placeholder').
  * @param {boolean} parse_code - If true, use the part of the hidden input's value after the ':' character.
+ * @param {boolean} replace_colon_with_underscore - If true, replace the colon in the code with an underscore.
  */
-function addLinkButtons(url_base, hidden_input_selector, link_title, target_selector, parse_code) {
+function addLinkButtons(url_base, hidden_input_selector, link_title, target_selector, parse_code, replace_colon_with_underscore) {
     document.querySelectorAll(hidden_input_selector).forEach(function(hiddenInput) {
         var hiddenValue = hiddenInput.value;
         var code = hiddenValue;
 
         if (parse_code && hiddenValue.includes(':')) {
             code = hiddenValue.split(':')[1];
+        }
+
+        if (replace_colon_with_underscore) {
+            code = code.replace(':', '_');
         }
 
         // For textarea, parent container is not <li>
