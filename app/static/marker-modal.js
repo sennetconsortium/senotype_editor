@@ -72,6 +72,7 @@ function addMarker(id, description) {
 // Modal search logic (fetching marker IDs, then their descriptions)
 // Validates marker by calling /ontology/genes/{id} or /ontology/proteins/{id} before adding
 document.addEventListener('DOMContentLoaded', function () {
+    document.getElementById('marker-type-gene').checked = true;
     let lastMarkerSearch = '';
     var searchInput = document.getElementById('marker-search-input');
     if (!searchInput) {
