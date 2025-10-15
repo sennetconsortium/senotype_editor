@@ -8,7 +8,20 @@
  * @param {boolean} replace_colon_with_underscore - If true, replace the colon in the code with an underscore.
  */
 function addLinkButtons(url_base, hidden_input_selector, link_title, target_selector, parse_code=false, replace_colon_with_underscore=false) {
+
+    // Find every parent element (li or .d-flex) that contains at least one hidden input
+    const parents = new Set();
     document.querySelectorAll(hidden_input_selector).forEach(function(hiddenInput) {
+        const parent = hiddenInput.closest('.d-flex') || hiddenInput.parentElement;
+        if (parent) parents.add(parent);
+    });
+
+    // For each parent, attach the link using only the first hidden input
+    parents.forEach(function(parent) {
+
+        const hiddenInput = parent.querySelector('input[type="hidden"]');
+        if (!hiddenInput) return;
+
         var hiddenValue = hiddenInput.value;
         var code = hiddenValue;
 
@@ -24,12 +37,21 @@ function addLinkButtons(url_base, hidden_input_selector, link_title, target_sele
         var parent = hiddenInput.closest('.d-flex') || hiddenInput.parentElement;
         if (!parent) return;
 
+        // Special case for markers.
+        // A marker can be either a gene or a protein.
+        var url = url_base + encodeURIComponent(code);
+        if (hiddenValue.includes('HGNC')) {
+            url ='https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/' + encodeURIComponent(code);
+        } else if (hiddenValue.includes('UNIPROTKB')) {
+            url='https://www.uniprot.org/uniprotkb/' + encodeURIComponent(code.split(":")[1]);
+        }
+
         var placeholder = parent.querySelector(target_selector);
         if (placeholder) {
             var link = document.createElement('a');
             link.className = 'btn btn-sm btn-outline-primary ms-2';
             link.style.width = '2.5em';
-            link.href = url_base + encodeURIComponent(code);
+            link.href = url;
             link.target = '_blank';
             link.title = link_title;
             link.setAttribute('aria-label', link_title);
