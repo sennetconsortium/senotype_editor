@@ -128,7 +128,6 @@ function createExternalConfig(trunclength = 40) {
         },
         celltype: {
             // Corresponds to the response from the ontology API.
-            // Display only the preferred term.
             apiSearch: query =>
                 `/ontology/celltypes/${encodeURIComponent(query)}`,
             parseApiResult: data => {
@@ -155,9 +154,10 @@ function createExternalConfig(trunclength = 40) {
             displayText: info => {
                 const desc = info.description || '';
                 if (desc.length > trunclength - 3) {
-                    return `${desc.slice(0, trunclength - 3)}...`;
+                return `${info.id} (${desc})`;
+                    return `${info.id} (${desc.slice(0, trunclength - 3)}...)`;
                 }
-                return `${desc}`;
+                return `${info.id} (${desc})`;
             }
         }
     };

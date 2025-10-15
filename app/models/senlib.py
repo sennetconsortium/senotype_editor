@@ -14,7 +14,7 @@ Functions in the class:
 
 """
 
-from flask import session, current_app
+from flask import session, current_app, request
 from werkzeug.datastructures import MultiDict
 import requests
 import logging
@@ -28,6 +28,7 @@ from models.senlib_mysql import SenLibMySql
 
 # For external API requests
 from models.requestretry import RequestRetry
+
 
 # Configure consistent logging. This is done at the beginning of each module instead of with a superclass of
 # logger to avoid the need to overload function calls to logger.
@@ -365,6 +366,8 @@ class SenLib:
                     objects = self.getdatasetobjects(rawobjects)
                 elif pred == 'has_characterizing_marker_set':
                     objects = self.getmarkerobjects(rawobjects)
+                elif pred == 'has_cell_type':
+                    objects = self.getcelltypeobjects(rawobjects)
                 else:
                     objects = self.getassertionobjects(pred=pred, rawobjects=rawobjects)
                 return objects
@@ -547,6 +550,25 @@ class SenLib:
 
         return oret
 
+    def getcelltypeobjects(self, rawobjects: list) -> list:
+
+        """
+        Calls the UBKG API to obtain descriptions for cell types.
+        :param: rawobjects - a list of cell type objects
+        """
+        api = RequestRetry()
+        base_url = f"{request.host_url.rstrip('/')}/ontology/celltypes/"
+        oret = []
+        for o in rawobjects:
+            code = o.get('code').split(':')[1]
+            url = f'{base_url}{code}'
+            celltype = api.getresponse(url=url, format='json')
+            # celltypes returns a list of JSON objects
+            if len(celltype) > 0:
+                name = celltype[0].get('cell_type').get('name', '')
+                oret.append({"code": f'CL:{code}', "term": name})
+        return oret
+
     def getassertionobjects(self, pred: str, rawobjects: list) -> list:
 
         """
@@ -657,7 +679,10 @@ class SenLib:
         # Cell type (one possible value)
         celltypelist = self.getstoredsimpleassertiondata(assertions=assertions, predicate='has_cell_type')
         if len(celltypelist) > 0:
-            form.celltype.process(form.celltype, [item['term'] for item in celltypelist])
+            form.celltype.process(form.celltype, [self.truncateddisplaytext(displayid=item['code'],
+                                                                        description=item['term'],
+                                                                        trunclength=100)
+                                              for item in celltypelist])
         else:
             form.celltype.process([''])
 
@@ -830,7 +855,7 @@ class SenLib:
                 {
                     "code": item,
                     "term": (
-                        "" if assertion in ['has_citation', 'has_origin', 'has_dataset']
+                        "" if assertion in ['has_citation', 'has_origin', 'has_dataset','has_cell_type']
                         else valueset[valueset['valueset_code'] == item]['valueset_term'].iloc[0]
                     )
                 }
@@ -844,6 +869,8 @@ class SenLib:
                 objects = self.getoriginobjects(rawobjects)
             elif assertion == 'has_dataset':
                 objects = self.getdatasetobjects(rawobjects)
+            elif assertion == 'has_cell_type':
+                objects = self.getcelltypeobjects(rawobjects)
             else:
                 objects = rawobjects
 
@@ -924,8 +951,12 @@ class SenLib:
 
         # Cell type
         celltypelist = self.build_session_list(form_data=form_data, field_name='celltype')
+
         if len(celltypelist) > 0:
-            form.celltype.process(None, [f"{item['code']} ({item['term']})" for item in celltypelist])
+            form.celltype.process(None, [self.truncateddisplaytext(displayid=item['code'],
+                                                                   description=item['term'],
+                                                                   trunclength=40)
+                                         for item in celltypelist])
         else:
             form.celltype.process(None, [''])
 

@@ -7,7 +7,7 @@
  * @param {boolean} parse_code - If true, use the part of the hidden input's value after the ':' character.
  * @param {boolean} replace_colon_with_underscore - If true, replace the colon in the code with an underscore.
  */
-function addLinkButtons(url_base, hidden_input_selector, link_title, target_selector, parse_code, replace_colon_with_underscore) {
+function addLinkButtons(url_base, hidden_input_selector, link_title, target_selector, parse_code=false, replace_colon_with_underscore=false) {
     document.querySelectorAll(hidden_input_selector).forEach(function(hiddenInput) {
         var hiddenValue = hiddenInput.value;
         var code = hiddenValue;
