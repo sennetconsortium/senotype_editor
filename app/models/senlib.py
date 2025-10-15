@@ -568,7 +568,7 @@ class SenLib:
                     'term': f'{code} ({term})'
                 }
             )
-            return listret
+        return listret
 
     def setdefaults(self, form):
 
