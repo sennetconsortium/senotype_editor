@@ -110,10 +110,6 @@ def edit():
             # the senotype JSON.
             senlib.setuserassubmitter(form)
 
-            #form.submitterfirst.data = session['username'].split(' ')[0]
-            #form.submitterlast.data = session['username'].split(' ')[1]
-            #form.submitteremail.data = session['userid']
-
         else:
             # Load from existing data.
             senlib.fetchfromdb(senotypeid=id, form=form)

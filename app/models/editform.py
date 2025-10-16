@@ -159,7 +159,7 @@ class EditForm(Form):
     location = FieldList(StringField('Location'), min_entries=0)
     celltype = FieldList(StringField('Cell type'), min_entries=0)
     hallmark = FieldList(StringField('Hallmark'), min_entries=0)
-    observable = FieldList(StringField('Molecular Observable'), min_entries=0)
+    observable = FieldList(StringField('Microenvironment'), min_entries=0)
     inducer = FieldList(StringField('Inducer'), min_entries=0)
     assay = FieldList(StringField('Assay'), min_entries=0)
 
@@ -168,6 +168,13 @@ class EditForm(Form):
     agelowerbound = StringField('Lowerbound', validators=[validate_age_range])
     ageupperbound = StringField('Upperbound', validators=[validate_age_range])
     ageunit = StringField('Unit')
+    ageunit.data = 'year'
+
+    bmivalue = StringField('Value')
+    bmilowerbound = StringField('Lowerbound')
+    bmiupperbound = StringField('Upperbound')
+    bmiunit = StringField('Unit')
+    bmiunit.data = 'kg/m2'
 
     # External assertions
     # Citations

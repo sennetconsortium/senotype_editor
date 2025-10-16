@@ -45,7 +45,7 @@ $(function() {
 
         // Readonly controls are always disabled.
         var readonly = ['senotypeid','submitterfirst',
-        'submitterlast','submitteremail','ageunit'];
+        'submitterlast','submitteremail','ageunit','bmiunit'];
         if (readonly.includes(el.id)) {
             el.disabled = true;
             el.style.backgroundColor = disableColor;

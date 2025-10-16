@@ -169,15 +169,15 @@
     </div>
     <div class="row mt-3">
         <!-- HALLMARK section -->
-        {{ render_fieldlist_section(form, "hallmark", "hallmarkModal",  col_class="col-md-3 input-cellBox input-cellBox--HM") }}
-        <!-- OBSERVABLE section -->
-        {{ render_fieldlist_section(form, "observable", "observableModal",  col_class="col-md-2 input-cellBox") }}
+        {{ render_fieldlist_section(form, "hallmark", "hallmarkModal",  col_class="col-md-4 input-cellBox input-cellBox--HM") }}
         <!-- ASSAY section -->
         {{ render_fieldlist_section(form, "assay", "assayModal",  col_class="col-lg-3 col-6 input-cellBox") }}
+        <!-- OBSERVABLE section -->
+        {{ render_fieldlist_section(form, "observable", "observableModal",  col_class="col-md-2 input-cellBox") }}
     </div>
     <div class="row mt-3">
-                <!-- CONTEXT assertion section -->
-        <div class="col-lg-6 input-cellBox input-cellBox--age ">
+        <!-- CONTEXT - age assertion section -->
+        <div class="col-lg-5 input-cellBox input-cellBox--age ">
             <div class="row mb-3">
                     <h6><strong>Age</strong></h6>
                     <div class="col-6 col-lg-3 d-flex align-items-center mb-lg-0 mb-2">
@@ -203,7 +203,37 @@
                     {% endfor %}
                     <div class="col-6 col-lg-3 d-flex align-items-center">
                         <strong>{{ form.ageunit.label }}</strong>
-                        {{ form.ageunit(class="form-control ms-2", maxlength="5", disabled=True) }}
+                        {{ form.ageunit(class="form-control ms-2", maxlength="5", disabled="disabled") }}
+                    </div>
+                </div>
+        </div>
+        <div class="col-lg-5 input-cellBox input-cellBox--bmi ">
+            <div class="row mb-3">
+                    <h6><strong>BMI</strong></h6>
+                    <div class="col-6 col-lg-3 d-flex align-items-center mb-lg-0 mb-2">
+                        <strong>{{ form.bmivalue.label }}</strong>
+                        {{ form.bmivalue(class="form-control ms-2", type="number", maxlength="4", min="0", max="90", style="", disabled=True) }}
+                    </div>
+                    {% for error in form.bmivalue.errors %}
+                        <div class="text-danger">{{ error }}</div>
+                    {% endfor %}
+                    <div class="col-6 col-lg-3 d-flex align-items-center mb-lg-0 mb-2">
+                        <strong>{{ form.bmilowerbound.label }}</strong>
+                        {{ form.bmilowerbound(class="form-control ms-2", type="number", maxlength="4", min="0", max="90",style="max-width:15ch;", disabled=True) }}
+                    </div>
+                    {% for error in form.bmilowerbound.errors %}
+                        <div class="text-danger">{{ error }}</div>
+                    {% endfor %}
+                    <div class="col-6 col-lg-3 d-flex align-items-center">
+                        <strong>{{ form.bmiupperbound.label }}</strong>
+                        {{ form.bmiupperbound(class="form-control ms-2", type="number", maxlength="4",min="0", max="90", style="max-width:15ch;", disabled=True) }}
+                    </div>
+                    {% for error in form.bmiupperbound.errors %}
+                        <div class="text-danger">{{ error }}</div>
+                    {% endfor %}
+                    <div class="col-6 col-lg-3 d-flex align-items-center">
+                        <strong>{{ form.bmiunit.label }}</strong>
+                        {{ form.bmiunit(class="form-control ms-2", maxlength="5", disabled="disabled") }}
                     </div>
                 </div>
         </div>
@@ -543,5 +573,4 @@ display with transparent background--apparently, a known bug in this scenario. -
 <script src="{{ url_for('static', filename='regmarker-modal.js') }}"></script>
 <script src="{{ url_for('static', filename='regmarker-csv.js') }}"></script>
 <script src="{{ url_for('static', filename='doi-modal.js') }}"></script>
-
 {% endblock %}

@@ -562,6 +562,7 @@ class SenLib:
         for o in rawobjects:
             code = o.get('code').split(':')[1]
             url = f'{base_url}{code}'
+            print(url)
             celltype = api.getresponse(url=url, format='json')
             # celltypes returns a list of JSON objects
             if len(celltype) > 0:
@@ -622,6 +623,11 @@ class SenLib:
         form.agelowerbound.data = ''
         form.ageupperbound.data = ''
         form.ageunit.data = 'year'
+
+        form.bmivalue.data = ''
+        form.bmilowerbound.data = ''
+        form.bmiupperbound.data = ''
+        form.bmiunit.data = 'kg/m2'
 
         # External assertions
         form.citation.process([''])
@@ -722,7 +728,15 @@ class SenLib:
             form.agevalue.data = age.get('value', '')
             form.agelowerbound.data = age.get('lowerbound', '')
             form.ageupperbound.data = age.get('upperbound', '')
-            form.ageunit.data = age.get('unit', '')
+        form.ageunit.data = 'year'
+
+        # BMI
+        bmi = self.getstoredcontextassertiondata(assertions=assertions, predicate='has_context', context='BMI')
+        if bmi != {}:
+            form.bmivalue.data = bmi.get('value', '')
+            form.bmilowerbound.data = bmi.get('lowerbound', '')
+            form.bmiupperbound.data = bmi.get('upperbound', '')
+        form.bmiunit.data = 'kg/m2'
 
         # Citation (multiple possible values)
         citationlist = self.getstoredsimpleassertiondata(assertions=assertions, predicate='has_citation')
