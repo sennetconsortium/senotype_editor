@@ -49,7 +49,7 @@ def validate_form(form):
         'location-',
         'celltype-',
         'hallmark-',
-        'observable-',
+        'microenvironment-',
         'inducer-',
         'assay-',
         'citation-',

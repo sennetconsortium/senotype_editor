@@ -159,9 +159,11 @@ class EditForm(Form):
     location = FieldList(StringField('Location'), min_entries=0)
     celltype = FieldList(StringField('Cell type'), min_entries=0)
     hallmark = FieldList(StringField('Hallmark'), min_entries=0)
-    observable = FieldList(StringField('Microenvironment'), min_entries=0)
     inducer = FieldList(StringField('Inducer'), min_entries=0)
     assay = FieldList(StringField('Assay'), min_entries=0)
+
+    # The microenvironment input will use a jstree control.
+    ftu = SelectField('FTU', choices=[])
 
     # Context assertions
     agevalue = StringField('Value', validators=[validate_age_range])

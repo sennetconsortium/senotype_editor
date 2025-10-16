@@ -115,8 +115,12 @@ def edit():
             senlib.fetchfromdb(senotypeid=id, form=form)
 
     selected_node_id = request.form.get('selected_node_id') or request.args.get('selected_node_id')
-    # Pass to the edit form the tree of senotype id information for the jstree control.
+
+    # Pass to the edit form:
+    # 1. the tree of senotype id information for the jstree control
+    # 2. where applicable, information for the microenvironment/FTU jstree
     return render_template('edit.html',
                            form=form,
-                           response={'tree_data': senlib.senotypetree},
+                           response={'tree_data': senlib.senotypetree,
+                                     'ftutree_data': senlib.ftutree},
                            selected_node_id=selected_node_id)

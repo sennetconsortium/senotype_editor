@@ -21,7 +21,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // List of list element IDs to track for changes (these are in edit_form, not modals)
     const listIds = [
-        "taxon-list", "location-list", "celltype-list", "hallmark-list", "observable-list", "inducer-list",
+        "taxon-list", "location-list", "celltype-list", "hallmark-list", "microenvironment-list", "inducer-list",
         "assay-list", "citation-list", "origin-list", "dataset-list", "marker-list", "regmarker-list"
     ];
 

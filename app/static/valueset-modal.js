@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', function() {
     initValuesetModal('located_in', 'location');
     initValuesetModal('has_cell_type','celltype');
     initValuesetModal('has_hallmark', 'hallmark');
-    initValuesetModal('has_molecular_observable', 'observable');
+    initValuesetModal('has_molecular_microenvironment', 'microenvironment');
     initValuesetModal('has_inducer', 'inducer');
     initValuesetModal('has_assay', 'assay');
     initValuesetModal('has_sex', 'sex');

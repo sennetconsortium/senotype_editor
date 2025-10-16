@@ -20,6 +20,7 @@ import requests
 import logging
 import pandas as pd
 
+
 # Application configuration object
 from models.appconfig import AppConfig
 
@@ -28,7 +29,6 @@ from models.senlib_mysql import SenLibMySql
 
 # For external API requests
 from models.requestretry import RequestRetry
-
 
 # Configure consistent logging. This is done at the beginning of each module instead of with a superclass of
 # logger to avoid the need to overload function calls to logger.
@@ -368,6 +368,8 @@ class SenLib:
                     objects = self.getmarkerobjects(rawobjects)
                 elif pred == 'has_cell_type':
                     objects = self.getcelltypeobjects(rawobjects)
+                elif pred == 'has_ftu':
+                    objects = self.getftuobjects(rawobjects)
                 else:
                     objects = self.getassertionobjects(pred=pred, rawobjects=rawobjects)
                 return objects
@@ -569,6 +571,20 @@ class SenLib:
                 oret.append({"code": f'CL:{code}', "term": name})
         return oret
 
+    def getftuobjects(self, rawobjects: list) -> list:
+        """
+        Uses the FTU object to obtain information on Functional Tissue Unit
+        :param: rawobjects - a list of specified marker objects.
+        """
+
+        oret = []
+        for o in rawobjects:
+            code = o.get('code').split(':')[1]
+            # Obtain the term from the FTU object.
+            oret.append({"code": f'CL:{code}', "term": "TBD"})
+
+        return oret
+
     def getassertionobjects(self, pred: str, rawobjects: list) -> list:
 
         """
@@ -613,7 +629,7 @@ class SenLib:
         form.location.process([''])
         form.celltype.process([''])
         form.hallmark.process([''])
-        form.observable.process([''])
+        form.ftu.process([''])
         form.inducer.process([''])
         form.assay.process([''])
 
@@ -683,6 +699,12 @@ class SenLib:
         else:
             form.location.process([''])
 
+        ftulist = self.getstoredsimpleassertiondata(assertions=assertions, predicate='has_ftu')
+        if len(ftulist) > 0:
+            form.ftu.process(form.ftu, [item['term'] for item in ftulist])
+        else:
+            form.ftu.process([''])
+
         # Cell type (one possible value)
         celltypelist = self.getstoredsimpleassertiondata(assertions=assertions, predicate='has_cell_type')
         if len(celltypelist) > 0:
@@ -700,13 +722,13 @@ class SenLib:
         else:
             form.hallmark.process([''])
 
-        # Molecular observable (multiple possible values)
-        observablelist = self.getstoredsimpleassertiondata(assertions=assertions,
-                                                           predicate='has_molecular_observable')
-        if len(observablelist) > 0:
-            form.observable.process(form.observable, [item['term'] for item in observablelist])
+        # FTU
+        ftulist = self.getstoredsimpleassertiondata(assertions=assertions,
+                                                    predicate='has_ftu')
+        if len(ftulist) > 0:
+            form.ftu.process(form.ftu, [item['term'] for item in ftulist])
         else:
-            form.observable.process([''])
+            form.ftu.process([''])
 
         # Inducer (multiple possible values)
         inducerlist = self.getstoredsimpleassertiondata(assertions=assertions, predicate='has_inducer')
@@ -893,6 +915,8 @@ class SenLib:
                 objects = self.getdatasetobjects(rawobjects)
             elif assertion == 'has_cell_type':
                 objects = self.getcelltypeobjects(rawobjects)
+            elif assertion == 'has_ftu':
+                objects = self.getftuobjects(rawobjects)
             else:
                 objects = rawobjects
 
@@ -989,12 +1013,12 @@ class SenLib:
         else:
             form.hallmark.process(None, [''])
 
-        # Molecular observable
-        observablelist = self.build_session_list(form_data=form_data, field_name='observable')
-        if len(observablelist) > 0:
-            form.observable.process(None, [f"{item['code']} ({item['term']})" for item in observablelist])
+        # Molecular microenvironment
+        microenvironmentlist = self.build_session_list(form_data=form_data, field_name='microenvironment')
+        if len(microenvironmentlist) > 0:
+            form.microenvironment.process(None, [f"{item['code']} ({item['term']})" for item in microenvironmentlist])
         else:
-            form.observable.process(None, [''])
+            form.microenvironment.process(None, [''])
 
         # Inducer
         inducerlist = self.build_session_list(form_data=form_data, field_name='inducer')
@@ -1430,5 +1454,8 @@ class SenLib:
 
         # JSON for the senotype jstree
         self.senotypetree = self._getsenotypejtree()
+
+        # JSON for the FTU jstree
+        self.ftutree = current_app.ftutree
 
         self.submissionjson = {}

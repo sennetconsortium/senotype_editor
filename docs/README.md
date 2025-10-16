@@ -164,7 +164,7 @@ Valueset-based assertions include:
 | location             | UBERON     |
 | cell type            | CL         |
 | hallmark             | SENOTYPE   |
-| molecular observable | SENOTYPE   |
+| molecular microenvironment | SENOTYPE   |
 | inducer              | SENOTYPE   |
 | assay                | OBI        |
 
