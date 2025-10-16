@@ -158,26 +158,27 @@
     <!-- Simple Assertions section-->
     <div class="row mt-3">
         <!-- TAXON section-->
-        {{ render_fieldlist_section(form, "taxon", "taxonModal", col_class="col-md-2 input-cellBox") }}
+        {{ render_fieldlist_section(form, "taxon", "taxonModal", col_class="col-md-1 input-cellBox") }}
         <!-- LOCATION section -->
         {{ render_fieldlist_section(form, "location", "locationModal", col_class="col-md-2 input-cellBox") }}
         <!-- CELL TYPE section -->
-        {{ render_fieldlist_section(form, "celltype", "celltypeSearchModal", show_code=True, col_class="col-md-5 input-cellBox", label_bg="#EBF6F9") }}
+        {{ render_fieldlist_section(form, "celltype", "celltypeSearchModal", show_code=True, col_class="col-md-3 input-cellBox", label_bg="#EBF6F9") }}
         <!-- INDUCER section -->
-        {{ render_fieldlist_section(form, "inducer", "inducerModal",  col_class="col-lg-2 col-6 input-cellBox") }}
-
+        {{ render_fieldlist_section(form, "inducer", "inducerModal",  col_class="col-md-2 col-3 input-cellBox") }}
+        <!-- HALLMARK section -->
+        {{ render_fieldlist_section(form, "hallmark", "hallmarkModal",  col_class="col-md-2 input-cellBox input-cellBox--HM") }}
     </div>
     <div class="row mt-3">
-        <!-- HALLMARK section -->
-        {{ render_fieldlist_section(form, "hallmark", "hallmarkModal",  col_class="col-md-4 input-cellBox input-cellBox--HM") }}
         <!-- ASSAY section -->
-        {{ render_fieldlist_section(form, "assay", "assayModal",  col_class="col-lg-3 col-6 input-cellBox") }}
+        {{ render_fieldlist_section(form, "assay", "assayModal",  col_class="col-lg-3 col-4 input-cellBox") }}
+        <!-- SEX assertion section -->
+        {{ render_fieldlist_section(form, "sex", "sexModal", col_class="col-md-2 input-cellBox") }}
         <!-- OBSERVABLE section -->
         {{ render_fieldlist_section(form, "observable", "observableModal",  col_class="col-md-2 input-cellBox") }}
     </div>
     <div class="row mt-3">
         <!-- CONTEXT - age assertion section -->
-        <div class="col-lg-5 input-cellBox input-cellBox--age ">
+        <div class="col-lg-4 input-cellBox input-cellBox--age ">
             <div class="row mb-3">
                     <h6><strong>Age</strong></h6>
                     <div class="col-6 col-lg-3 d-flex align-items-center mb-lg-0 mb-2">
@@ -207,7 +208,8 @@
                     </div>
                 </div>
         </div>
-        <div class="col-lg-5 input-cellBox input-cellBox--bmi ">
+        <!-- CONTEXT - BMI assertion section -->
+        <div class="col-lg-4 input-cellBox input-cellBox--bmi ">
             <div class="row mb-3">
                     <h6><strong>BMI</strong></h6>
                     <div class="col-6 col-lg-3 d-flex align-items-center mb-lg-0 mb-2">
@@ -237,7 +239,7 @@
                     </div>
                 </div>
         </div>
-    </div>
+     </div>
     <!-- PubMed citations/RRID origin/SenNet datasets -->
     <div class="row">
         <!-- CITATION section -->
@@ -282,13 +284,15 @@
      hallmark
      observable
      inducer
-     assay-->
+     assay
+     sex (next to age and bmi)-->
 {{ valueset_modal("taxonModal", "Taxon", "taxon-modal-list") }}
 {{ valueset_modal("locationModal", "Location", "location-modal-list") }}
 {{ valueset_modal("hallmarkModal", "Hallmark", "hallmark-modal-list") }}
 {{ valueset_modal("observableModal", "Observable", "observable-modal-list") }}
 {{ valueset_modal("inducerModal", "Inducer", "inducer-modal-list") }}
 {{ valueset_modal("assayModal", "Assay", "assay-modal-list") }}
+{{ valueset_modal("sexModal", "Sex", "sex-modal-list") }}
 
 <!-- Search modals for external API searches -->
 <!-- Modal for external API search for PubMed citation-->

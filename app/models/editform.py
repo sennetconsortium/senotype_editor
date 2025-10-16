@@ -176,6 +176,8 @@ class EditForm(Form):
     bmiunit = StringField('Unit')
     bmiunit.data = 'kg/m2'
 
+    sex = FieldList(StringField('Sex'), min_entries=0, label='Sex')
+
     # External assertions
     # Citations
     citation = FieldList(StringField('Citation'), min_entries=0)
