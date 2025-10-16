@@ -166,8 +166,8 @@
         <!-- LOCATION section -->
         {{ render_fieldlist_section(form, "location", "locationModal", col_class="col-md-2 input-cellBox") }}
         <!-- FTU section -->
-        {{ render_fieldlist_section(form, "ftu", "ftuSearchModal", col_class="col-md-3 input-cellBox", label_bg="#EBF6F9") }}
-        <!-- CELL TYPE section -->
+        {{ render_fieldlist_section(form, "ftu", "ftuSearchModal", label_bg="#EBF6F9", show_code=False, col_class="col-md-2 input-cellBox") }}
+         <!-- CELL TYPE section -->
         {{ render_fieldlist_section(form, "celltype", "celltypeSearchModal", show_code=True, col_class="col-md-3 input-cellBox", label_bg="#EBF6F9") }}
      </div>
     <div class="row mt-3">
@@ -352,8 +352,9 @@
             </div>
             <div class="modal-body">
                 <input type="text" id="ftu-search-input" class="form-control" placeholder="Enter query...">
-                <div id="ftu-search-results" class="mt-3">
-                    <!-- Search results appear here -->
+                <div class="modal-body">
+                    <div id="ftu-tree" style="min-height:300px;">
+                    </div>
                 </div>
             </div>
         </div>
@@ -596,4 +597,5 @@ display with transparent background--apparently, a known bug in this scenario. -
 <script src="{{ url_for('static', filename='regmarker-modal.js') }}"></script>
 <script src="{{ url_for('static', filename='regmarker-csv.js') }}"></script>
 <script src="{{ url_for('static', filename='doi-modal.js') }}"></script>
+<script src="{{ url_for('static', filename='ftu-modal.js') }}"></script>
 {% endblock %}
