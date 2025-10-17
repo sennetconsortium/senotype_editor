@@ -783,7 +783,7 @@ class SenLib:
         if len(originlist) > 0:
             form.origin.process(form.origin, [self.truncateddisplaytext(displayid=item['code'],
                                                                         description=item['term'],
-                                                                        trunclength=30)
+                                                                        trunclength=25)
                                               for item in originlist])
         else:
             form.origin.process([''])
@@ -793,7 +793,7 @@ class SenLib:
         if len(datasetlist) > 0:
             form.dataset.process(form.dataset, [self.truncateddisplaytext(displayid=item['code'],
                                                                           description=item['term'],
-                                                                          trunclength=30)
+                                                                          trunclength=25)
                                                 for item in datasetlist])
         else:
             form.dataset.process([''])

@@ -1,7 +1,7 @@
 <!--
 Renders a field in a jstree control.
 -->
-{% macro render_jstree_section(field_name, modal_id, label_bg="#FEF2F2", col_class="col-md-3 card") %}
+{% macro render_jstree_section(field_name, modal_id, label_bg="#FEF2F2", col_class="col-md-6 card") %}
 <div class="{{ col_class }}">
     <strong style="margin-left: 12px;">Functional Tissue Unit paths</strong>
     <div class="d-flex align-items-start">
@@ -9,6 +9,15 @@ Renders a field in a jstree control.
              style="min-height:50px; max-height:300px; overflow:auto; border:1px solid #ccc; background:#fff; flex: 1 1 auto; margin-left: 12px;">
             {# Main jsTree will be initialized by JS #}
         </div>
+        <!-- Button to clear the jsTree content -->
+        <button type="button"
+                title="Clear {{ field_name }} tree"
+                aria-label="Clear {{ field_name }} tree"
+                class="btn btn-sm ms-2"
+                id="clear-{{ field_name }}-tree-btn"
+                style="background-color: #dc3545; color: #fff; margin-top:8px; width:2.5em;">
+            <span aria-hidden="true">&times;</span>
+        </button>
         <!-- Add button that triggers the jsTree modal that will allow addition of new nodes to the jstree-->
         <button type="button"
                 title="Add {{ field_name }}"
@@ -57,6 +66,20 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
+
+    // CLEAR TREE BUTTON
+    document.getElementById('clear-{{ field_name }}-tree-btn').addEventListener('click', function() {
+        var mainTree = $.jstree.reference('#{{ field_name }}-tree');
+        if (mainTree) {
+            // Remove all nodes
+            var allNodes = mainTree.get_json('#', {flat:true});
+            allNodes.forEach(function(node) {
+                if (mainTree.get_node(node.id)) {
+                    mainTree.delete_node(node.id);
+                }
+            });
+        }
+    });
 
     // MODAL TREE SETUP
     // This is for the jstree in the modal form.

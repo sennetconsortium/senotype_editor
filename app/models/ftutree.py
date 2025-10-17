@@ -85,13 +85,12 @@ class FTUTree:
             ftu_node = organ_node["children"][ftu_val]
 
             # FTU Part node (under FTU).
-            # Include only parts with UBERON codes.
-            if 'UBERON' in ftu_part_iri:
-                ftu_node["children"].append({
-                    "id": f"{ftu_node['id']}_part_{ftu_part_val}",
-                    "text": ftu_part_label,
-                    "data": {"value": ftu_part_val, "iri": ftu_part_iri},
-                })
+
+            ftu_node["children"].append({
+                "id": f"{ftu_node['id']}_part_{ftu_part_val}",
+                "text": ftu_part_label,
+                "data": {"value": ftu_part_val, "iri": ftu_part_iri},
+            })
 
         # Convert children dicts to lists for jsTree
         jstree = []
