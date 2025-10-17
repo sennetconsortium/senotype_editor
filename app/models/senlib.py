@@ -1456,6 +1456,6 @@ class SenLib:
         self.senotypetree = self._getsenotypejtree()
 
         # JSON for the FTU jstree
-        self.ftutree = current_app.ftutree
+        #self.ftutree = current_app.allftutree
 
         self.submissionjson = {}

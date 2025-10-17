@@ -3,11 +3,11 @@
 {% block content %}
 <!--Data for treeviews passed from the edit route in Flask:
     1. Senotype tree
-    2. FTU tree
+    2. Complete 2D FTU tree used by the FTU search modal
 -->
 <script>
     window.tree_data = {{ response.tree_data|tojson|safe }};
-    window.ftutree_data = {{ response.ftutree_data|tojson|safe }};
+    window.allftutree_data = {{ response.allftutree_data|tojson|safe }};
 </script>
 
 <!-- JINJA RENDERING MACROS-->
@@ -347,13 +347,13 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="ftuSearchModalLabel">Search FTU tree for FTU</h5>
+                <h5 class="modal-title" id="ftuSearchModalLabel">Search 2D FTU tree for FTU</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
                 <input type="text" id="ftu-search-input" class="form-control" placeholder="Enter query...">
                 <div class="modal-body">
-                    <div id="ftu-tree" style="min-height:300px;">
+                    <div id="allftu-tree" style="min-height:300px;">
                     </div>
                 </div>
             </div>

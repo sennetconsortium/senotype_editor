@@ -1,16 +1,22 @@
-// FTU jsTree selection handling and list management
+/*
+    Manages the function of the modal form used to select a FTU path (organ,
+    FTU, FTU part) for a senotype.
+    Uses a jstree control to display the full 2D FTU hierarchy.
+*/
 
 document.addEventListener('DOMContentLoaded', function() {
-    // Initialize FTU jsTree and selection handler
-    if (window.ftutree_data) {
-        $('#ftu-tree').jstree({
+    // Initialize the 2D FTU jsTree and selection handler
+    if (window.allftutree_data) {
+        $('#allftu-tree').jstree({
             'core' : {
-                'data' : ftutree_data
+                'data' : allftutree_data
             }
         });
-        $('#ftu-tree').on("changed.jstree", function (e, data) {
+        // If the user selects a node in the complete 2D FTU jstree, add the corresponding
+        // FTU path to the senotype FTU jstree.
+        $('#allftu-tree').on("changed.jstree", function (e, data) {
             if (data.selected.length) {
-                var node = $('#ftu-tree').jstree(true).get_node(data.selected[0]);
+                var node = $('#allftu-tree').jstree(true).get_node(data.selected[0]);
                 addFtuToList(node.id, node.text);
                 document.activeElement.blur();
                 // Try Bootstrap 5 way first

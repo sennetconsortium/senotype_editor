@@ -118,9 +118,9 @@ def edit():
 
     # Pass to the edit form:
     # 1. the tree of senotype id information for the jstree control
-    # 2. where applicable, information for the microenvironment/FTU jstree
+    # 2. information for the complete 2D FTU jstree
     return render_template('edit.html',
                            form=form,
                            response={'tree_data': senlib.senotypetree,
-                                     'ftutree_data': senlib.ftutree},
+                                     'allftutree_data': current_app.allftutree},
                            selected_node_id=selected_node_id)

@@ -1,13 +1,18 @@
-// Functions for management of field lists that are populated via the Senlib
-// valuesets.
+/*
+Functions for management of field lists that are populated via valuesets in the
+senlib database.
+
+A Jinja template macro (_valueset_modal_macro.html) builds a modal component with
+a list that this script populates. The list contains valueset elements. When
+the user selects a value in a list, the script adds a corresponding list element.
+*/
 
 document.addEventListener('DOMContentLoaded', function() {
-    // Build the content of the modal sections associated with simple assertions.
+    // Build the content of the modal sections associated with valueset-based assertions.
     initValuesetModal('in_taxon', 'taxon');
     initValuesetModal('located_in', 'location');
     initValuesetModal('has_cell_type','celltype');
     initValuesetModal('has_hallmark', 'hallmark');
-    initValuesetModal('has_molecular_microenvironment', 'microenvironment');
     initValuesetModal('has_inducer', 'inducer');
     initValuesetModal('has_assay', 'assay');
     initValuesetModal('has_sex', 'sex');

@@ -66,7 +66,7 @@ class SenotypeUI:
         self.app.config['PERMANENT_SESSION_LIFETIME'] = 300 * 60
 
         # Obtain the 2D FTU hierarchy for use in jstree objects.
-        self.app.ftutree = FTUTree().ftutree
+        self.app.allftutree = FTUTree().ftutree
 
         # Custom 400 error handler.
         @self.app.errorhandler(400)
