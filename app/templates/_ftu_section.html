@@ -1,16 +1,15 @@
 <!--
-Renders a jstree field, analogous to the field lists used for the categorical fields.
-Use case: ftu field
+Renders a field in a jstree control.
 -->
 {% macro render_jstree_section(field_name, modal_id, label_bg="#FEF2F2", col_class="col-md-3 card") %}
 <div class="{{ col_class }}">
-    <strong style="margin-left: 12px;">Functional Tissue Unit path</strong>
+    <strong style="margin-left: 12px;">Functional Tissue Unit paths</strong>
     <div class="d-flex align-items-start">
         <div id="{{ field_name }}-tree"
-             style="min-height:100px; max-height:300px; overflow:auto; border:1px solid #ccc; background:#fff; flex: 1 1 auto; margin-left: 12px;">
+             style="min-height:50px; max-height:300px; overflow:auto; border:1px solid #ccc; background:#fff; flex: 1 1 auto; margin-left: 12px;">
             {# Main jsTree will be initialized by JS #}
         </div>
-        <!-- Add button that triggers the jsTree modal -->
+        <!-- Add button that triggers the jsTree modal that will allow addition of new nodes to the jstree-->
         <button type="button"
                 title="Add {{ field_name }}"
                 aria-label="Add {{ field_name }}"
@@ -44,8 +43,11 @@ Use case: ftu field
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     // MAIN FTU TREE SETUP
+    // This is the treeview for the FTU input in the main edit.html.
+    // The treeview content comes from the request of the edit route.
     var mainTreeData = window["{{ field_name }}_tree_data"];
-    // Defensive: If null/undefined, use empty array
+
+    // Set default in case of no data for tree.
     if (!mainTreeData) mainTreeData = [];
     if (!$.jstree.reference('#{{ field_name }}-tree')) {
         $('#{{ field_name }}-tree').jstree({
@@ -54,13 +56,16 @@ document.addEventListener('DOMContentLoaded', function() {
                 'check_callback': true // Enables dynamic create_node
             }
         });
-        console.log("Main {{ field_name }}-tree initialized with data:", mainTreeData);
     }
 
     // MODAL TREE SETUP
+    // This is for the jstree in the modal form.
+    // The jstree is populated by the allftutree_data variable in the response
+    // from the edit route, which corresponds to the entire 2D FTU hierarchy.
     var modal = document.getElementById('{{ modal_id }}');
     if (modal) {
         modal.addEventListener('show.bs.modal', function () {
+            // Destroy/recreate modal tree for fresh state
             if ($.jstree.reference('#modal-{{ field_name }}-tree')) {
                 $('#modal-{{ field_name }}-tree').jstree('destroy');
             }
@@ -70,37 +75,61 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             });
 
+            // CHANGE EVENT HANDLER
+            // If the user selects a node in the modal ftu jstree,
+            // 1. Obtain the full node path, including parents.
+            // 2. Add the full node path to the main ftu jstree.
+
             $('#modal-{{ field_name }}-tree').off("changed.jstree").on("changed.jstree", function (e, data) {
                 if (data.selected.length) {
-                    var selectedNode = $('#modal-{{ field_name }}-tree').jstree(true).get_node(data.selected[0]);
-                    var mainTreeRef = $.jstree.reference('#{{ field_name }}-tree');
-                    console.log("mainTreeRef:", mainTreeRef);
-                    if (!mainTreeRef) {
-                        // Try to (re-)initialize the main tree
-                        if (window["{{ field_name }}_tree_data"]) {
-                            $('#{{ field_name }}-tree').jstree({
-                                'core': {
-                                    'data': window["{{ field_name }}_tree_data"],
-                                    'check_callback': true
-                                }
-                            });
-                            mainTreeRef = $.jstree.reference('#{{ field_name }}-tree');
-                            console.log("Main {{ field_name }}-tree re-initialized in handler.");
-                        }
+                    var modalTree = $('#modal-{{ field_name }}-tree').jstree(true);
+                    var mainTree = $.jstree.reference('#{{ field_name }}-tree');
+                    if (!mainTree) {
+                        // Defensive: initialize
+                        $('#{{ field_name }}-tree').jstree({
+                            'core': {
+                                'data': [],
+                                'check_callback': true
+                            }
+                        });
+                        mainTree = $.jstree.reference('#{{ field_name }}-tree');
                     }
-                    if (mainTreeRef) {
-                        if (!mainTreeRef.get_node(selectedNode.id)) {
-                            mainTreeRef.create_node("#", {
-                                id: selectedNode.id,
-                                text: selectedNode.text,
-                                data: selectedNode.data || {}
+
+                    var selectedNode = modalTree.get_node(data.selected[0]);
+
+                    // Get full path of node ids from root to selected node
+                    var pathIds = modalTree.get_path(selectedNode, false, true); // separator=false returns array of ids
+                    // get_path gives an array of ids (if separator omitted and true passed)
+
+                    // Or, if get_path is not available, build manually:
+                    // var pathIds = [];
+                    // var currNode = selectedNode;
+                    // while(currNode && currNode.id) {
+                    //     pathIds.unshift(currNode.id);
+                    //     currNode = modalTree.get_node(currNode.parent);
+                    //     if(!currNode || currNode.id === '#') break;
+                    // }
+
+                    // Now, iterate through pathIds, and add any missing nodes to mainTree
+                    var parentId = '#';
+                    pathIds.forEach(function(nodeId) {
+                        if (!mainTree.get_node(nodeId)) {
+                            // Get node info from modal tree
+                            var node = modalTree.get_node(nodeId);
+                            mainTree.create_node(parentId, {
+                                id: node.id,
+                                text: node.text,
+                                data: node.data || {}
                             });
                         }
-                        mainTreeRef.deselect_all();
-                        mainTreeRef.select_node(selectedNode.id);
-                    } else {
-                        console.error("Main {{ field_name }}-tree not found or not initialized, even after fallback.");
-                    }
+                        parentId = nodeId;
+                    });
+
+                    // Select the leaf node
+                    mainTree.deselect_all();
+                    mainTree.select_node(selectedNode.id);
+
+                    // Hide modal
                     document.activeElement.blur();
                     var bsModal = bootstrap.Modal.getInstance(modal);
                     if (bsModal) bsModal.hide();

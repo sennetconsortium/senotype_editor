@@ -9,7 +9,7 @@
 <script>
     window.tree_data = {{ response.tree_data|tojson|safe }};
     window.allftutree_data = {{ response.allftutree_data|tojson|safe }};
-    window.ftu_tree_data = {{ response.ftutree_data|tojson|safe }};
+    window.ftu_tree_data = {{ response.ftu_tree_data|default([])|tojson|safe }};
 
 </script>
 
