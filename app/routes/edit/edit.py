@@ -122,5 +122,6 @@ def edit():
     return render_template('edit.html',
                            form=form,
                            response={'tree_data': senlib.senotypetree,
-                                     'allftutree_data': current_app.allftutree},
+                                     'allftutree_data': current_app.allftutree,
+                                     'ftutree_data': None},
                            selected_node_id=selected_node_id)

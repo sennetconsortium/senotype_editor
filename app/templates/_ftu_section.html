@@ -1,0 +1,113 @@
+<!--
+Renders a jstree field, analogous to the field lists used for the categorical fields.
+Use case: ftu field
+-->
+{% macro render_jstree_section(field_name, modal_id, label_bg="#FEF2F2", col_class="col-md-3 card") %}
+<div class="{{ col_class }}">
+    <strong style="margin-left: 12px;">Functional Tissue Unit path</strong>
+    <div class="d-flex align-items-start">
+        <div id="{{ field_name }}-tree"
+             style="min-height:100px; max-height:300px; overflow:auto; border:1px solid #ccc; background:#fff; flex: 1 1 auto; margin-left: 12px;">
+            {# Main jsTree will be initialized by JS #}
+        </div>
+        <!-- Add button that triggers the jsTree modal -->
+        <button type="button"
+                title="Add {{ field_name }}"
+                aria-label="Add {{ field_name }}"
+                class="btn btn-sm ms-2"
+                style="background-color: #0d6efd; color: #fff; margin-top:8px; width:2.5em; margin-right:12px;"
+                data-bs-toggle="modal"
+                data-bs-target="#{{ modal_id }}">
+            +
+        </button>
+    </div>
+</div>
+<!-- Modal for search for adding FTU -->
+<div class="modal fade" id="{{ modal_id }}" tabindex="-1" aria-labelledby="{{ modal_id }}Label" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="{{ modal_id }}Label">
+                    Select Functional Tissue Unit (FTU) Path
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <!-- jsTree container; ID must match what your script expects -->
+                <div id="modal-{{ field_name }}-tree"
+                     style="min-height:300px; max-height:500px; overflow:auto; border:1px solid #ccc; background:#fff;">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // MAIN FTU TREE SETUP
+    var mainTreeData = window["{{ field_name }}_tree_data"];
+    // Defensive: If null/undefined, use empty array
+    if (!mainTreeData) mainTreeData = [];
+    if (!$.jstree.reference('#{{ field_name }}-tree')) {
+        $('#{{ field_name }}-tree').jstree({
+            'core': {
+                'data': mainTreeData,
+                'check_callback': true // Enables dynamic create_node
+            }
+        });
+        console.log("Main {{ field_name }}-tree initialized with data:", mainTreeData);
+    }
+
+    // MODAL TREE SETUP
+    var modal = document.getElementById('{{ modal_id }}');
+    if (modal) {
+        modal.addEventListener('show.bs.modal', function () {
+            if ($.jstree.reference('#modal-{{ field_name }}-tree')) {
+                $('#modal-{{ field_name }}-tree').jstree('destroy');
+            }
+            $('#modal-{{ field_name }}-tree').jstree({
+                'core': {
+                    'data': window.allftutree_data
+                }
+            });
+
+            $('#modal-{{ field_name }}-tree').off("changed.jstree").on("changed.jstree", function (e, data) {
+                if (data.selected.length) {
+                    var selectedNode = $('#modal-{{ field_name }}-tree').jstree(true).get_node(data.selected[0]);
+                    var mainTreeRef = $.jstree.reference('#{{ field_name }}-tree');
+                    console.log("mainTreeRef:", mainTreeRef);
+                    if (!mainTreeRef) {
+                        // Try to (re-)initialize the main tree
+                        if (window["{{ field_name }}_tree_data"]) {
+                            $('#{{ field_name }}-tree').jstree({
+                                'core': {
+                                    'data': window["{{ field_name }}_tree_data"],
+                                    'check_callback': true
+                                }
+                            });
+                            mainTreeRef = $.jstree.reference('#{{ field_name }}-tree');
+                            console.log("Main {{ field_name }}-tree re-initialized in handler.");
+                        }
+                    }
+                    if (mainTreeRef) {
+                        if (!mainTreeRef.get_node(selectedNode.id)) {
+                            mainTreeRef.create_node("#", {
+                                id: selectedNode.id,
+                                text: selectedNode.text,
+                                data: selectedNode.data || {}
+                            });
+                        }
+                        mainTreeRef.deselect_all();
+                        mainTreeRef.select_node(selectedNode.id);
+                    } else {
+                        console.error("Main {{ field_name }}-tree not found or not initialized, even after fallback.");
+                    }
+                    document.activeElement.blur();
+                    var bsModal = bootstrap.Modal.getInstance(modal);
+                    if (bsModal) bsModal.hide();
+                }
+            });
+        });
+    }
+});
+</script>
+{% endmacro %}

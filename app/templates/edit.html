@@ -4,10 +4,13 @@
 <!--Data for treeviews passed from the edit route in Flask:
     1. Senotype tree
     2. Complete 2D FTU tree used by the FTU search modal
+    3. FTU tree used by the FTU input
 -->
 <script>
     window.tree_data = {{ response.tree_data|tojson|safe }};
     window.allftutree_data = {{ response.allftutree_data|tojson|safe }};
+    window.ftu_tree_data = {{ response.ftutree_data|tojson|safe }};
+
 </script>
 
 <!-- JINJA RENDERING MACROS-->
@@ -23,6 +26,7 @@
 {% from "_valueset_modal_macro.html" import valueset_modal %}
 <!-- Renders "external search modals"--i.e., modals that call external APIs -->
 {% from "_search_modal_macro.html" import search_modal %}
+{% from "_ftu_section.html" import render_jstree_section %}
 
 <!-- START OF PAGE -->
 <!-- EDIT FORM -->
@@ -162,13 +166,13 @@
     <!-- Simple Assertions section-->
     <div class="row mt-3">
         <!-- TAXON section-->
-        {{ render_fieldlist_section(form, "taxon", "taxonModal", col_class="col-md-1 input-cellBox") }}
+        {{ render_fieldlist_section(form, "taxon", "taxonModal", col_class="col-md-2 input-cellBox") }}
+        <!-- FTU section -->
+        {{ render_jstree_section('ftu', 'ftuSearchModal', col_class="col-md-3 input-cellBox") }}
         <!-- LOCATION section -->
         {{ render_fieldlist_section(form, "location", "locationModal", col_class="col-md-2 input-cellBox") }}
-        <!-- FTU section -->
-        {{ render_fieldlist_section(form, "ftu", "ftuSearchModal", label_bg="#EBF6F9", show_code=False, col_class="col-md-2 input-cellBox") }}
-         <!-- CELL TYPE section -->
-        {{ render_fieldlist_section(form, "celltype", "celltypeSearchModal", show_code=True, col_class="col-md-3 input-cellBox", label_bg="#EBF6F9") }}
+        <!-- CELL TYPE section -->
+        {{ render_fieldlist_section(form, "celltype", "celltypeSearchModal", show_code=True, col_class="col-md-2 input-cellBox", label_bg="#EBF6F9") }}
      </div>
     <div class="row mt-3">
         <!-- INDUCER section -->
@@ -342,24 +346,7 @@
     explore_text="Explore Cell Ontology",
     results_id="celltype-search-results"
 ) }}
-<!-- Modal for search for adding FTU -->
-<div class="modal fade" id="ftuSearchModal" tabindex="-1" aria-labelledby="ftuSearchModalLabel">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="ftuSearchModalLabel">Search 2D FTU tree for FTU</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <input type="text" id="ftu-search-input" class="form-control" placeholder="Enter query...">
-                <div class="modal-body">
-                    <div id="allftu-tree" style="min-height:300px;">
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+
 <!-- Modal for external ubkg-api search for adding single specified marker-->
 <div class="modal fade" id="markerSearchModal" tabindex="-1" aria-labelledby="markerSearchModalLabel">
     <div class="modal-dialog">
@@ -597,5 +584,4 @@ display with transparent background--apparently, a known bug in this scenario. -
 <script src="{{ url_for('static', filename='regmarker-modal.js') }}"></script>
 <script src="{{ url_for('static', filename='regmarker-csv.js') }}"></script>
 <script src="{{ url_for('static', filename='doi-modal.js') }}"></script>
-<script src="{{ url_for('static', filename='ftu-modal.js') }}"></script>
 {% endblock %}

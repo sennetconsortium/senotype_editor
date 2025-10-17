@@ -162,8 +162,8 @@ class EditForm(Form):
     inducer = FieldList(StringField('Inducer'), min_entries=0)
     assay = FieldList(StringField('Assay'), min_entries=0)
 
-    # The microenvironment input will use a jstree control.
-    ftu = SelectField('FTU', choices=[])
+    # The FTU input will use a jstree control.
+    ftu = SelectField('FTU path', choices=[])
 
     # Context assertions
     agevalue = StringField('Value', validators=[validate_age_range])
