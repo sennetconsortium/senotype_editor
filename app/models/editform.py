@@ -163,7 +163,7 @@ class EditForm(Form):
     assay = FieldList(StringField('Assay'), min_entries=0)
 
     # The FTU input will use a jstree control.
-    ftu = SelectField('FTU path', choices=[])
+    # ftu = SelectField('FTU path', choices=[])
 
     # Context assertions
     agevalue = StringField('Value', validators=[validate_age_range])

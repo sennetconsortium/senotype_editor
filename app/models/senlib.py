@@ -19,6 +19,7 @@ from werkzeug.datastructures import MultiDict
 import requests
 import logging
 import pandas as pd
+import json
 
 
 # Application configuration object
@@ -98,6 +99,8 @@ class SenLib:
            edit a senotype. Authorization is based on the user's Globus userid.
 
         """
+
+        logging.info('Building senotype tree')
 
         # Node icons
         icon_locked = '🔒'
@@ -328,6 +331,9 @@ class SenLib:
         else:
             doi = doi_url.split('https://doi.org/')[1]
             url = f'https://api.datacite.org/dois/{doi}'
+
+            logger.info(f'Getting DataCite information for {doi}')
+
             response = api.getresponse(url=url, format='json')
             if response is not None:
                 title = response.get('data').get('attributes').get('titles')[0].get('title', '')
@@ -365,6 +371,7 @@ class SenLib:
                 elif pred == 'has_dataset':
                     objects = self.getdatasetobjects(rawobjects)
                 elif pred == 'has_characterizing_marker_set':
+                    logger.info('Getting information on specified markers from ontology API')
                     objects = self.getmarkerobjects(rawobjects)
                 elif pred == 'has_cell_type':
                     objects = self.getcelltypeobjects(rawobjects)
@@ -383,6 +390,8 @@ class SenLib:
         """
         api = RequestRetry()
         base_url = 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&retmode=json&id='
+
+        logging.info('Getting citation data from NCBI EUtils')
 
         oret = []
         for o in rawobjects:
@@ -457,6 +466,7 @@ class SenLib:
 
             if predicate_term in ['up_regulates', 'down_regulates', 'inconclusively_regulates']:
                 rawobjects = assertion.get('objects')
+                logger.info('Getting information on regulating markers from ontology API')
                 listret = self.getmarkerobjects(rawobjects=rawobjects)
 
                 for o in listret:
@@ -472,6 +482,8 @@ class SenLib:
         """
         api = RequestRetry()
         base_url = 'https://scicrunch.org/resolver/'
+
+        logger.info('Getting origin information from SciCrunch Resolver')
 
         oret = []
         for o in rawobjects:
@@ -496,6 +508,8 @@ class SenLib:
         base_url = 'https://entity.api.sennetconsortium.org/entities/'
         token = session['groups_token']
         headers = {"Authorization": f'Bearer {token}'}
+
+        logger.info('Getting dataset information from SenNet entity-api')
 
         oret = []
         for o in rawobjects:
@@ -560,6 +574,9 @@ class SenLib:
         """
         api = RequestRetry()
         base_url = f"{request.host_url.rstrip('/')}/ontology/celltypes/"
+
+        logger.info('Getting celltype information from ontology API')
+
         oret = []
         for o in rawobjects:
             code = o.get('code').split(':')[1]
@@ -629,7 +646,6 @@ class SenLib:
         form.location.process([''])
         form.celltype.process([''])
         form.hallmark.process([''])
-        form.ftu.process([''])
         form.inducer.process([''])
         form.assay.process([''])
 
@@ -699,12 +715,6 @@ class SenLib:
         else:
             form.location.process([''])
 
-        ftulist = self.getstoredsimpleassertiondata(assertions=assertions, predicate='has_ftu')
-        if len(ftulist) > 0:
-            form.ftu.process(form.ftu, [item['term'] for item in ftulist])
-        else:
-            form.ftu.process([''])
-
         # Cell type (one possible value)
         celltypelist = self.getstoredsimpleassertiondata(assertions=assertions, predicate='has_cell_type')
         if len(celltypelist) > 0:
@@ -721,14 +731,6 @@ class SenLib:
             form.hallmark.process(form.hallmark, [item['term'] for item in hallmarklist])
         else:
             form.hallmark.process([''])
-
-        # FTU
-        ftulist = self.getstoredsimpleassertiondata(assertions=assertions,
-                                                    predicate='has_ftu')
-        if len(ftulist) > 0:
-            form.ftu.process(form.ftu, [item['term'] for item in ftulist])
-        else:
-            form.ftu.process([''])
 
         # Inducer (multiple possible values)
         inducerlist = self.getstoredsimpleassertiondata(assertions=assertions, predicate='has_inducer')
@@ -773,7 +775,7 @@ class SenLib:
         if len(citationlist) > 0:
             form.citation.process(form.citation, [self.truncateddisplaytext(displayid=item['code'],
                                                                             description=item['term'],
-                                                                            trunclength=30)
+                                                                            trunclength=25)
                                                   for item in citationlist])
         else:
             form.citation.process([''])
@@ -1012,13 +1014,6 @@ class SenLib:
             form.hallmark.process(None, [f"{item['code']} ({item['term']})" for item in hallmarklist])
         else:
             form.hallmark.process(None, [''])
-
-        # Molecular microenvironment
-        microenvironmentlist = self.build_session_list(form_data=form_data, field_name='microenvironment')
-        if len(microenvironmentlist) > 0:
-            form.microenvironment.process(None, [f"{item['code']} ({item['term']})" for item in microenvironmentlist])
-        else:
-            form.microenvironment.process(None, [''])
 
         # Inducer
         inducerlist = self.build_session_list(form_data=form_data, field_name='inducer')
@@ -1299,10 +1294,40 @@ class SenLib:
 
         return assertions
 
-    def buildassertions(self, form_data: MultiDict) -> list:
+    def buildftuassertions(self, ftu_tree:dict) -> list:
+        """
+        Build a set of assertions between the senotype and Functional Tissue Unit
+        paths.
+        :param ftu_tree: dict of FTU jstree information
+        """
+
+        assertions = []
+
+        # Denormalize the tree node data at the level of ftu_part.
+        ftu_paths = []
+        for organ_node in ftu_tree:
+            organ_code = organ_node['data']['value'].replace('_', ':')
+            for ftu_node in organ_node.get('children', []):
+                ftu_code = ftu_node['data']['value'].replace('_', ':')
+                for part_node in ftu_node.get('children', []):
+                    part_code = part_node['data']['value'].replace('_', ':')
+                    ftu_paths.append({
+                        "organ": organ_code,
+                        "ftu": ftu_code,
+                        "ftu_part": part_code
+                    })
+
+        predicate = {"term": "has_ftu_path"}
+        assertions = [{"predicate": predicate,
+                      "objects": ftu_paths}]
+
+        return assertions
+
+    def buildassertions(self, form_data: MultiDict, ftu_tree: dict) -> list:
         """
         Builds the assertions object of a senotype submission JSON
         :param form_data: form data
+        :param ftu_tree: dict of FTU information
         """
 
         # Simple assertions, including specific markers
@@ -1316,15 +1341,21 @@ class SenLib:
         if len(contextassertions) > 0:
             assertions = assertions + contextassertions
 
+        # FTU assertions
+        ftuassertions = self.buildftuassertions(ftu_tree=ftu_tree)
+        if len(ftuassertions) > 0:
+            assertions = assertions + ftuassertions
+
         return assertions
 
-    def buildsubmissionjson(self, form_data: MultiDict, senotypeid: str, predecessorid: str) -> dict:
+    def buildsubmissionjson(self, form_data: MultiDict, senotypeid: str, predecessorid: str, ftu_tree: dict) -> dict:
         """
         Builds a Senotype submission JSON from the POSTed request form data.
         :param form_data: form data
         :param senotypeid: id of the senotype to build
         :param predecessorid: id of the predecessor of the senotype, for the case of
                               a new version
+        :param ftu_tree: dict of FTU jstree information
         """
 
         # senotype
@@ -1353,8 +1384,8 @@ class SenLib:
                          "email": form_data.get('submitteremail')
                          }
 
-        # simple assertions
-        listassertions = self.buildassertions(form_data=form_data)
+        # assertions
+        listassertions = self.buildassertions(form_data=form_data, ftu_tree=ftu_tree)
 
         dictsubmission = {"senotype": dictsenotype,
                           "submitter": dictsubmitter,
@@ -1363,10 +1394,11 @@ class SenLib:
 
         return dictsubmission
 
-    def writesubmission(self, form_data: MultiDict, new_version_id: str = ''):
+    def writesubmission(self, form_data: MultiDict, ftu_tree: dict, new_version_id: str = ''):
         """
         Writes a senotype submission to the senlib database.
         :param form_data: form data
+        :param ftu_tree: dict of FTU jstree information.
         :param new_version_id: ID of the new version of an existing senotype.
 
         If new_version_id has a value, then a new version was requested.
@@ -1383,7 +1415,7 @@ class SenLib:
 
         # Build the submission JSON, with updates to provenance as necessary.
         self.submissionjson = self.buildsubmissionjson(form_data=form_data, senotypeid=senotypeid,
-                                                       predecessorid=predecessorid)
+                                                       predecessorid=predecessorid, ftu_tree=ftu_tree)
 
         # If this is a new version of an existing senotype, remove the DOI associated
         # with the predecessor version from the new version's data.
@@ -1424,7 +1456,6 @@ class SenLib:
         form.submitterlast.data = session['username'].split(' ')[1]
         form.submitteremail.data = session['userid']
 
-
     def __init__(self, cfg: AppConfig, userid: str):
 
         """
@@ -1454,8 +1485,5 @@ class SenLib:
 
         # JSON for the senotype jstree
         self.senotypetree = self._getsenotypejtree()
-
-        # JSON for the FTU jstree
-        #self.ftutree = current_app.allftutree
 
         self.submissionjson = {}

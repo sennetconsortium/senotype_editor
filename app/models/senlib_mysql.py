@@ -44,6 +44,8 @@ class SenLibMySql():
 
         listids = []
 
+        logger.info('Fetching senotype ids')
+
         rows = self._fetch(query='SELECT * FROM senotype')
         for row in rows:
             senotypeid = row[0]
@@ -65,6 +67,9 @@ class SenLibMySql():
         """
 
         listjson = []
+
+        logger.info('Fetching senotypes')
+
         rows = self._fetch(query='SELECT * FROM senotype')
         for row in rows:
             senotypejson = json.loads(row[1])
@@ -92,6 +97,7 @@ class SenLibMySql():
         :return: the senotype json
         """
 
+        logger.info(f'Fetching senotype for {id}')
         rows = self._fetch(query=f'SELECT * FROM senotype where senotypeid="{id}"')
         for row in rows:
             return json.loads(row[1])
@@ -118,6 +124,7 @@ class SenLibMySql():
         params = (senotypeid, senotypejson)
 
         try:
+            logger.info(f'Updating senotype for {senotypeid}')
             cursor.execute(sql, params)
             # Commit the transaction
             self.conn.commit()
@@ -147,6 +154,8 @@ class SenLibMySql():
                 host=self.db_host,
                 database=self.db_name
             )
+
+            logger.info(f'Connected to {self.db_name} as {self.db_user}')
 
             # Get IDs for all senlib JSONs.
             self.senlibjsonids = self._getsenotypeids()

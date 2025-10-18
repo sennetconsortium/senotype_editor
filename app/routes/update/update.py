@@ -5,11 +5,20 @@ from flask import Blueprint, request, render_template, flash, redirect, session,
 
 from werkzeug.datastructures import MultiDict
 
+import json
 
 # Helper classes
 from models.appconfig import AppConfig
 from models.senlib import SenLib
 from models.editform import EditForm
+
+import logging
+
+# Configure consistent logging. This is done at the beginning of each module instead of with a superclass of
+# logger to avoid the need to overload function calls to logger.
+logging.basicConfig(format='[%(asctime)s] %(levelname)s in %(module)s: %(message)s',
+                    level=logging.INFO, datefmt='%Y-%m-%d %H:%M:%S')
+logger = logging.getLogger(__name__)
 
 update_blueprint = Blueprint('update', __name__, url_prefix='/update')
 
@@ -49,7 +58,6 @@ def validate_form(form):
         'location-',
         'celltype-',
         'hallmark-',
-        'microenvironment-',
         'inducer-',
         'assay-',
         'citation-',
@@ -180,9 +188,16 @@ def update():
         if action == 'new_version':
             new_version_id = update_id
 
+        # Obtain information on the selected FTU path.
+        ftu_tree_json = request.form.get('ftu_tree_json')
+        if ftu_tree_json:
+            ftu_tree = json.loads(ftu_tree_json)
+        else:
+            ftu_tree = []
+
         # Write to the database. If new_version_id has a value, then the writesubmission
         # script will also update the provenance of the penultimate version.
-        senlib.writesubmission(form_data=form.data, new_version_id=new_version_id)
+        senlib.writesubmission(form_data=form.data, new_version_id=new_version_id, ftu_tree=ftu_tree)
 
         flash(f'Successfully {result_action_root}ed senotype with ID {update_id}.')
 

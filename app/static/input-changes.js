@@ -63,6 +63,13 @@ document.addEventListener('DOMContentLoaded', function() {
   editForm.addEventListener('input', handleInputChange);
   editForm.addEventListener('change', handleInputChange);
 
+  // Listen for jsTree changes
+  if (window.$ && $.jstree && $('#ftu-tree').length) {
+    $('#ftu-tree').on('changed.jstree', function (e, data) {
+      handleInputChange();
+    });
+  }
+
   // Handles the case of the edit form being loaded in response to validation
   // errors from an attempted create/update.
   checkForEnabled();

@@ -5,6 +5,7 @@ Edit route:
 
 """
 from flask import Blueprint, request, render_template, session, make_response, abort, current_app
+import json
 
 # The EditForm WTForm
 from models.editform import EditForm
@@ -12,6 +13,14 @@ from models.editform import EditForm
 # Helper classes
 from models.appconfig import AppConfig
 from models.senlib import SenLib
+
+import logging
+
+# Configure consistent logging. This is done at the beginning of each module instead of with a superclass of
+# logger to avoid the need to overload function calls to logger.
+logging.basicConfig(format='[%(asctime)s] %(levelname)s in %(module)s: %(message)s',
+                    level=logging.INFO, datefmt='%Y-%m-%d %H:%M:%S')
+logger = logging.getLogger(__name__)
 
 edit_blueprint = Blueprint('edit', __name__, url_prefix='/edit')
 
@@ -61,6 +70,12 @@ def edit():
         # Populate the form with session data--i.e., the data for the submission that
         # the user is attempting to add or update.
         form = EditForm(data=form_data)
+        # Obtain information on the selected FTU path.
+        ftu_tree_json = request.form.get('ftu_tree_json')
+        if ftu_tree_json:
+            ftu_tree = json.loads(ftu_tree_json)
+        else:
+            ftu_tree = []
         senlib.getsessiondata(form=form, form_data=form_data)
 
         # Re-inject validation errors from the failed update.

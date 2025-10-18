@@ -109,6 +109,23 @@ document.addEventListener("DOMContentLoaded", function () {
             updateForm.appendChild(hidden);
         });
 
+        // --- JSTREE SERIALIZATION: FTU TREE ---
+        // Assumes your main FTU tree has id="ftu-tree"
+        var ftuTreeRef = $.jstree.reference('#ftu-tree');
+        if (ftuTreeRef) {
+            var ftuTreeData = ftuTreeRef.get_json('#', {flat: false});
+            // Remove previous if present
+            let prevInput = updateForm.querySelector("input[name='ftu_tree_json']");
+            if (prevInput) prevInput.remove();
+            // Add new hidden input
+            let input = document.createElement("input");
+            input.type = "hidden";
+            input.name = "ftu_tree_json";
+            input.value = JSON.stringify(ftuTreeData);
+            input.className = "cloned-edit-input";
+            updateForm.appendChild(input);
+        }
+
         // Add an action field to identify the button that triggered the update.
         // Remove any previous action input
         const prevAction = updateForm.querySelector("input[name='action']");
