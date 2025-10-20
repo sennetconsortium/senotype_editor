@@ -111,6 +111,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         // --- JSTREE SERIALIZATION: FTU TREE ---
         // Assumes your main FTU tree has id="ftu-tree"
+        console.log('serializing ftu tree');
         var ftuTreeRef = $.jstree.reference('#ftu-tree');
         if (ftuTreeRef) {
             var ftuTreeData = ftuTreeRef.get_json('#', {flat: false});
@@ -121,6 +122,7 @@ document.addEventListener("DOMContentLoaded", function () {
             let input = document.createElement("input");
             input.type = "hidden";
             input.name = "ftu_tree_json";
+            input.id = "ftu_tree_json";
             input.value = JSON.stringify(ftuTreeData);
             input.className = "cloned-edit-input";
             updateForm.appendChild(input);

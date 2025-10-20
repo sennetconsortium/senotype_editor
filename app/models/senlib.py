@@ -375,8 +375,6 @@ class SenLib:
                     objects = self.getmarkerobjects(rawobjects)
                 elif pred == 'has_cell_type':
                     objects = self.getcelltypeobjects(rawobjects)
-                elif pred == 'has_ftu':
-                    objects = self.getftuobjects(rawobjects)
                 else:
                     objects = self.getassertionobjects(pred=pred, rawobjects=rawobjects)
                 return objects
@@ -490,11 +488,12 @@ class SenLib:
             code = o.get('code')
             rrid = code.split(':')[1]
             url = f'{base_url}{rrid}.json'
-            origin = api.getresponse(url=url, format='json')
-            hits = origin.get('hits')
-            if hits is not None:
-                description = hits.get('hits')[0].get('_source').get('item').get('description', '')
-            oret.append({"code": code, "term": description})
+            #origin = api.getresponse(url=url, format='json')
+            #hits = origin.get('hits')
+            #if hits is not None:
+                #description = hits.get('hits')[0].get('_source').get('item').get('description', '')
+            #oret.append({"code": code, "term": description})
+            oret.append({"code": code, "term": "debug"})
 
         return oret
 
@@ -588,20 +587,6 @@ class SenLib:
                 oret.append({"code": f'CL:{code}', "term": name})
         return oret
 
-    def getftuobjects(self, rawobjects: list) -> list:
-        """
-        Uses the FTU object to obtain information on Functional Tissue Unit
-        :param: rawobjects - a list of specified marker objects.
-        """
-
-        oret = []
-        for o in rawobjects:
-            code = o.get('code').split(':')[1]
-            # Obtain the term from the FTU object.
-            oret.append({"code": f'CL:{code}', "term": "TBD"})
-
-        return oret
-
     def getassertionobjects(self, pred: str, rawobjects: list) -> list:
 
         """
@@ -624,6 +609,112 @@ class SenLib:
                 }
             )
         return listret
+
+    def _getnodetext(self, val:str) ->str:
+
+        """
+        Obtains the term for a senotype ftu jstree node from the allftu jstree.
+        """
+
+        allftutree = current_app.allftutree
+        for organ in allftutree:
+            organ_data = organ.get('data')
+            if val == organ_data.get('value'):
+                return organ.get('text')
+            else:
+                ftus = organ.get('children')
+                for ftu in ftus:
+                    ftu_data = ftu.get('data')
+                    if val == ftu_data.get('value'):
+                        return ftu.get('text')
+
+                    ftuparts = ftu.get('children')
+                    for ftupart in ftuparts:
+                        ftupart_data = ftupart.get('data')
+                        if val == ftupart_data.get('value'):
+                            return ftupart.get('text')
+
+    def buildftutree(self, assertions: list) -> list[dict]:
+        """
+        Builds an ftutree json from the 'has_ftu_path' assertions.
+        :param assertions: assertion list from senotype
+
+        FTU assertions are denormalized to the ftu part to allow for linking
+        to different levels of the FTU hierarchy--e.g.,
+
+        {"organ": "UBERON:XXXX",
+        "ftu": "",
+        "ftu_part": ""
+        } for an organ
+
+        {"organ": "UBERON:XXXX",
+        "ftu": "UBERON:YYYY",
+        "ftu_part": ""
+        } for a FTU
+
+        {"organ": "UBERON:XXXX",
+        "ftu": "UBERON:YYYY",
+        "ftu_part": "UBERON:ZZZZ" or "CL:AAAA"
+        } for a FTU part
+
+        The colon in codes is replaced with underscore to conform to IRIs in the
+        2D FTU CSV.
+        """
+
+        iribase = 'http://purl.obolibrary.org/obo/'
+        organs = {}
+        for assertion in assertions:
+            predicate = assertion.get('predicate').get('term')
+            if predicate == 'has_ftu_path':
+                objects = assertion.get('objects')
+
+                for object in objects:
+                    organ_val = object.get('organ').replace(':', '_')
+                    ftu_val = object.get('ftu')
+                    if ftu_val != '':
+                        ftu_val = ftu_val.replace(':', '_')
+                    ftu_part_val = object.get('ftu_part','')
+                    if ftu_part_val != '':
+                        ftu_part_val = ftu_part_val.replace(':', '_')
+
+                    if organ_val not in organs:
+                        organs[organ_val] = {
+                            "id": f"organ_{organ_val}",
+                            "text": self._getnodetext(organ_val),
+                            "data": {"value": organ_val, "iri": f"{iribase}{organ_val}"},
+                            "children": {},
+                            "state": {"opened": True}
+                            }
+                    organ_node = organs[organ_val]
+
+                    # FTU node (under organ)
+                    if ftu_val != '':
+                        if ftu_val not in organ_node["children"]:
+                            organ_node["children"][ftu_val] = {
+                                "id": f"{organ_node['id']}_ftu_{ftu_val}",
+                                "text": self._getnodetext(ftu_val),
+                                "data": {"value": ftu_val, "iri": f"{iribase}{ftu_val}"},
+                                "children": [],
+                                "state": {"opened": True}
+                            }
+                        ftu_node = organ_node["children"][ftu_val]
+
+                    # FTU Part node (under FTU).
+                    if ftu_part_val != '':
+                        ftu_node["children"].append({
+                            "id": f"{ftu_node['id']}_part_{ftu_part_val}",
+                            "text": self._getnodetext(ftu_part_val),
+                            "data": {"value": ftu_part_val, "iri": f"{iribase}{ftu_part_val}"},
+                            "state": {"opened": True}
+                        })
+
+                # Convert children dicts to lists for jsTree
+                jstree = []
+                for organ in organs.values():
+                    organ['children'] = list(organ['children'].values())
+                    jstree.append(organ)
+
+                return jstree
 
     def setdefaults(self, form):
 
@@ -670,6 +761,8 @@ class SenLib:
         # Markers
         form.marker.process([''])
         form.regmarker.process([''])
+
+        self.ftutree = []
 
     def fetchfromdb(self, senotypeid: str, form):
 
@@ -830,6 +923,9 @@ class SenLib:
         else:
             form.regmarker.process(None, [''])
 
+        # Build an FTU treeview JSON from the ftupath data.
+        self.ftutree = self.buildftutree(assertions=assertions)
+
     def getnewsenotypeid(self) -> str:
         """
         Calls the uuid-api to obtain a new SenNet ID.
@@ -917,8 +1013,6 @@ class SenLib:
                 objects = self.getdatasetobjects(rawobjects)
             elif assertion == 'has_cell_type':
                 objects = self.getcelltypeobjects(rawobjects)
-            elif assertion == 'has_ftu':
-                objects = self.getftuobjects(rawobjects)
             else:
                 objects = rawobjects
 
@@ -1299,6 +1393,25 @@ class SenLib:
         Build a set of assertions between the senotype and Functional Tissue Unit
         paths.
         :param ftu_tree: dict of FTU jstree information
+
+        Assertion objects are denormalized to the level of ftu part to allow for selection
+        at different levels of the hierarchy--e.g.,
+
+        {"organ": "UBERON:XXXX",
+        "ftu": "",
+        "ftu_part": ""
+        } for an organ
+
+        {"organ": "UBERON:XXXX",
+        "ftu": "UBERON:YYYY",
+        "ftu_part": ""
+        } for a FTU
+
+        {"organ": "UBERON:XXXX",
+        "ftu": "UBERON:YYYY",
+        "ftu_part": "UBERON:ZZZZ" or "CL:AAAA"
+        } for a FTU part
+
         """
 
         assertions = []
@@ -1307,15 +1420,31 @@ class SenLib:
         ftu_paths = []
         for organ_node in ftu_tree:
             organ_code = organ_node['data']['value'].replace('_', ':')
-            for ftu_node in organ_node.get('children', []):
-                ftu_code = ftu_node['data']['value'].replace('_', ':')
-                for part_node in ftu_node.get('children', []):
-                    part_code = part_node['data']['value'].replace('_', ':')
-                    ftu_paths.append({
-                        "organ": organ_code,
-                        "ftu": ftu_code,
-                        "ftu_part": part_code
-                    })
+            ftu_nodes = organ_node.get('children', [])
+            if len(ftu_nodes) == 0:
+                ftu_paths.append({
+                    "organ": organ_code,
+                    "ftu": "",
+                    "ftu_part": ""
+                })
+            else:
+                for ftu_node in organ_node.get('children', []):
+                    ftu_code = ftu_node['data']['value'].replace('_', ':')
+                    ftu_part_nodes = ftu_node.get('children', [])
+                    if len(ftu_part_nodes) == 0:
+                        ftu_paths.append({
+                            "organ": organ_code,
+                            "ftu": ftu_code,
+                            "ftu_part": ""
+                        })
+                    else:
+                        for part_node in ftu_node.get('children', []):
+                            part_code = part_node['data']['value'].replace('_', ':')
+                            ftu_paths.append({
+                                "organ": organ_code,
+                                "ftu": ftu_code,
+                                "ftu_part": part_code
+                            })
 
         predicate = {"term": "has_ftu_path"}
         assertions = [{"predicate": predicate,

@@ -38,17 +38,6 @@ def edit():
 
     # Get IDs for existing Senotype submissions.
 
-    # Logic for using the senlib GitHub repo. (Deprecated)
-    # Get the URLs to the senlib repo.
-    # Base URL for the repo
-    # senlib_url = cfg.getfield(key='SENOTYPE_URL')
-    # URL to the Senotype Editor valueset CSV, stored in the senlib repo
-    # valueset_url = cfg.getfield(key='VALUESET_URL')
-    # URL to the folder for Senotype Submissions in the senlib repo
-    # json_url = cfg.getfield(key='JSON_URL')
-    # Github personal access token for authorized calls
-    # github_token = cfg.getfield(key='GITHUB_TOKEN')
-
     # Senlib interface that fetches senotype data and builds the Senotype treeeview.
     senlib = SenLib(cfg=cfg, userid=session['userid'])
 
@@ -66,17 +55,22 @@ def edit():
     form_data = session.pop('form_data', None)
     form_errors = session.pop('form_errors', None)
 
+    # Current state of the FTU paths input.
+    ftu_tree_json = session.pop('ftu_tree_json', None)
+    if ftu_tree_json:
+        ftu_tree = json.loads(ftu_tree_json)
+    else:
+        ftu_tree = []
+    senlib.ftutree = ftu_tree
+
     if form_data:
         # Populate the form with session data--i.e., the data for the submission that
         # the user is attempting to add or update.
+
         form = EditForm(data=form_data)
-        # Obtain information on the selected FTU path.
-        ftu_tree_json = request.form.get('ftu_tree_json')
-        if ftu_tree_json:
-            ftu_tree = json.loads(ftu_tree_json)
-        else:
-            ftu_tree = []
         senlib.getsessiondata(form=form, form_data=form_data)
+
+        # Obtain information on the selected FTU path.
 
         # Re-inject validation errors from the failed update.
         if form_errors:
@@ -87,12 +81,8 @@ def edit():
 
     elif request.method == 'GET':
 
-        # This scenario occurs on the initial load of the form as a result of the
-        # redirect from Globus login.
-
-        # Clear session variables related to prior senotype edits.
-        session.pop('form_data', None)
-        session.pop('form_errors', None)
+        # This scenario occurs on the initial load of the form as a result of a
+        # redirect--either from Globus login or from a failed update.
 
         # Load an empty form.
         form = EditForm()
@@ -134,9 +124,11 @@ def edit():
     # Pass to the edit form:
     # 1. the tree of senotype id information for the jstree control
     # 2. information for the complete 2D FTU jstree
+    # 3. information for the senotype's FTU jstree
+    print(senlib.ftutree)
     return render_template('edit.html',
                            form=form,
                            response={'tree_data': senlib.senotypetree,
                                      'allftutree_data': current_app.allftutree,
-                                     'ftutree_data': None},
+                                     'ftu_tree_data': senlib.ftutree},
                            selected_node_id=selected_node_id)

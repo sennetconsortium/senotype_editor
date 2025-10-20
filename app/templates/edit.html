@@ -3,13 +3,14 @@
 {% block content %}
 <!--Data for treeviews passed from the edit route in Flask:
     1. Senotype tree
-    2. Complete 2D FTU tree used by the FTU search modal
-    3. FTU tree used by the FTU input
+    2. Complete 2D FTU tree used by the treeview in the FTU search modal
+    3. FTU tree used by the treeview for the FTU input
 -->
 <script>
     window.tree_data = {{ response.tree_data|tojson|safe }};
-    window.allftutree_data = {{ response.allftutree_data|tojson|safe }};
+    window.allftutree_data = {{ response.allftutree_data|default([])|tojson|safe }};
     window.ftu_tree_data = {{ response.ftu_tree_data|default([])|tojson|safe }};
+    console.log(window.ftu_tree_data);
 
 </script>
 

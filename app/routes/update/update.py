@@ -1,7 +1,7 @@
 """
 Updates the Senotype repository by writing/overwriting a submission JSON file.
 """
-from flask import Blueprint, request, render_template, flash, redirect, session, url_for
+from flask import Blueprint, request, render_template, flash, redirect, session, url_for, current_app
 
 from werkzeug.datastructures import MultiDict
 
@@ -205,9 +205,16 @@ def update():
         form = EditForm(request.form)
         senlib = SenLib(cfg=cfg, userid=session['userid'])
         senlib.fetchfromdb(senotypeid=update_id, form=form)
+
+        # Pass to the edit form:
+        # 1. the tree of senotype id information for the jstree control
+        # 2. information for the complete 2D FTU jstree
+        # 3. information for the senotype's FTU jstree
         return render_template('edit.html',
                                form=form,
-                               response={'tree_data': senlib.senotypetree},
+                               response={'tree_data': senlib.senotypetree,
+                                         'allftutree_data': current_app.allftutree,
+                                         'ftu_tree_data': senlib.ftutree},
                                selected_node_id=update_id)
 
     else:
@@ -219,6 +226,7 @@ def update():
                     if err not in form_field.errors:
                         form_field.errors.append(err)
 
+
         flash(f"Error: Validation failed during attempt to {result_action_root}e senotype with ID {update_id}. "
               f"Please check your inputs.", "danger")
 
@@ -228,7 +236,13 @@ def update():
         session['form_errors'] = form.errors
         session['form_data'] = form.data
 
+        session['ftu_tree_json'] = request.form.get('ftu_tree_json')
+
         # Redirect to the edit form, which will set the focus of the treeview back
         # to the original node.
         selected_node_id = request.form.get('selected_node_id') or request.args.get('selected_node_id')
+
+        # Save FTU tree JSON to session for reload
+        session['ftu_tree_json'] = request.form.get('ftu_tree_json')
+
         return redirect(url_for('edit.edit', selected_node_id=selected_node_id))
