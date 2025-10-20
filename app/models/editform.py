@@ -4,7 +4,7 @@ Form used to create and update Senotype JSONs.
 
 
 from wtforms import (Form, SelectField, validators, ValidationError,
-                     TextAreaField, FieldList, StringField, FormField, RadioField)
+                     TextAreaField, FieldList, StringField, FormField, HiddenField)
 from wtforms.validators import Email
 
 # Helper classes
@@ -193,3 +193,6 @@ class EditForm(Form):
 
     # Regulating markers
     regmarker = FieldList(FormField(RegMarkerEntryForm), min_entries=0, label='Regulating Marker')
+
+    # Hidden field used to validate whether at least one FTU path was selected.
+    ftu_tree_json = HiddenField('FTU Tree JSON')

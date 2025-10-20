@@ -1,7 +1,7 @@
 <!--
 Renders a field in a jstree control.
 -->
-{% macro render_jstree_section(field_name, modal_id, label_bg="#FEF2F2", col_class="col-md-6 card") %}
+{% macro render_jstree_section(form, field_name, modal_id, label_bg="#FEF2F2", col_class="col-md-6 card") %}
 <div class="{{ col_class }}">
     <strong style="margin-left: 12px;">Functional Tissue Unit path</strong>
     <div class="d-flex align-items-start">
@@ -28,6 +28,12 @@ Renders a field in a jstree control.
                 data-bs-target="#{{ modal_id }}">
             +
         </button>
+        <!-- Validation errors -->
+        {% if form.ftu_tree_json.errors %}
+            {% for error in form.ftu_tree_json.errors %}
+                <div class="text-danger">{{ error }}</div>
+            {% endfor %}
+        {% endif %}
     </div>
 </div>
 <!-- Modal for search for adding FTU -->
@@ -78,6 +84,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     mainTree.delete_node(node.id);
                 }
             });
+            // Trigger input change handling after clearing tree
+            handleInputChange();
         }
     });
 

@@ -98,6 +98,12 @@ def validate_form(form):
             else:
                 errname = base_name
             errors[base_name] = [f'At least one {errname} required.']
+
+    # Verify that at least one FTU path was selected in the jstree.
+    ftu_tree_json = session.pop('ftu_tree_json', None)
+    if not ftu_tree_json:
+        errors['ftu_tree_json'] = ['At least one ftu path must be selected.']
+
     return errors
 
 
