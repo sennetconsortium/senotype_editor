@@ -488,12 +488,11 @@ class SenLib:
             code = o.get('code')
             rrid = code.split(':')[1]
             url = f'{base_url}{rrid}.json'
-            #origin = api.getresponse(url=url, format='json')
-            #hits = origin.get('hits')
-            #if hits is not None:
-                #description = hits.get('hits')[0].get('_source').get('item').get('description', '')
-            #oret.append({"code": code, "term": description})
-            oret.append({"code": code, "term": "debug"})
+            origin = api.getresponse(url=url, format='json')
+            hits = origin.get('hits')
+            if hits is not None:
+                description = hits.get('hits')[0].get('_source').get('item').get('description', '')
+            oret.append({"code": code, "term": description})
 
         return oret
 

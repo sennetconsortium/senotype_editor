@@ -125,7 +125,6 @@ def edit():
     # 1. the tree of senotype id information for the jstree control
     # 2. information for the complete 2D FTU jstree
     # 3. information for the senotype's FTU jstree
-    print(senlib.ftutree)
     return render_template('edit.html',
                            form=form,
                            response={'tree_data': senlib.senotypetree,

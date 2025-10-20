@@ -169,5 +169,12 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 });
+// Clicking a node loads the IRI
+$('#ftu-tree').on('activate_node.jstree', function (e, data) {
+    // Check that data.node and data.node.data.iri exist
+    if (data.node && data.node.data && data.node.data.iri) {
+        window.open(data.node.data.iri, '_blank');
+    }
+});
 </script>
 {% endmacro %}
