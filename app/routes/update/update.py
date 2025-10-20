@@ -101,7 +101,7 @@ def validate_form(form):
 
     # Verify that at least one FTU path was selected in the jstree.
     ftu_tree_json = form.ftu_tree_json.data
-    if ftu_tree_json is None:
+    if ftu_tree_json == '[]':
         errors['ftu_tree_json'] = ['At least one ftu path must be selected.']
     return errors
 

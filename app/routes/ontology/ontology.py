@@ -27,3 +27,9 @@ def ontology_celltypes_proxy(subpath):
 
     endpoint = f'celltypes/{subpath}'
     return ontapi.get_ontology_api_response(endpoint=endpoint, target='celltypes')
+
+@ontology_blueprint.route('/diagnoses/<subpath>')
+def ontology_diagnoses_proxy(subpath):
+
+    endpoint = f'/terms/{subpath}/codes'
+    return ontapi.get_ontology_api_response(endpoint=endpoint, target='diagnoses')

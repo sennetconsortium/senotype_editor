@@ -10,7 +10,6 @@
     window.tree_data = {{ response.tree_data|tojson|safe }};
     window.allftutree_data = {{ response.allftutree_data|default([])|tojson|safe }};
     window.ftu_tree_data = {{ response.ftu_tree_data|default([])|tojson|safe }};
-    console.log(window.ftu_tree_data);
 
 </script>
 
@@ -248,6 +247,9 @@
                     </div>
                 </div>
         </div>
+        <!-- DIAGNOSIS assertion section -->
+        {{ render_fieldlist_section(form, "diagnosis", "diagnosisModal", col_class="col-md-2 input-cellBox") }}
+
      </div>
     <!-- PubMed citations/RRID origin/SenNet datasets -->
     <div class="row">
@@ -293,7 +295,8 @@
      hallmark
      inducer
      assay
-     sex (next to age and bmi)-->
+     sex (next to age and bmi)
+     -->
 {{ valueset_modal("taxonModal", "Taxon", "taxon-modal-list") }}
 {{ valueset_modal("locationModal", "Location", "location-modal-list") }}
 {{ valueset_modal("hallmarkModal", "Hallmark", "hallmark-modal-list") }}
@@ -346,6 +349,15 @@
     explore_url="https://www.ebi.ac.uk/ols4/ontologies/cl?tab=classes",
     explore_text="Explore Cell Ontology",
     results_id="celltype-search-results"
+) }}
+<!-- Modal for external UBKG API search for diagnosis -->
+{{ search_modal(
+    modal_id="diagnosisSearchModal",
+    modal_label="Search UBKG for diagnosis",
+    input_id="diagnosis-search-input",
+    explore_url="https://www.ebi.ac.uk/ols4/ontologies/doid?tab=classes",
+    explore_text="Explore Disease Ontology",
+    results_id="diagnosis-search-results"
 ) }}
 
 <!-- Modal for external ubkg-api search for adding single specified marker-->

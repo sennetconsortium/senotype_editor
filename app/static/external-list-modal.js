@@ -126,6 +126,36 @@ function createExternalConfig(trunclength = 40) {
                 return `${info.id} (${desc})`;
             }
         },
+        diagnosis: {
+            // Corresponds to the response from the ontology API.
+            apiSearch: query =>
+                `/ontology/diagnoses/${encodeURIComponent(query)}`,
+            parseApiResult: data => {
+                // Response will be a list of JSON objects.
+                let items = [];
+                if (data && Array.isArray(data)) {
+                    // Map over array and extract cell_type objects.
+                    items = data
+                        .map(item => item.code)
+                        .filter(Boolean); // remove undefined/null
+                } else if (data.code) {
+                    // Single object
+                    items = [data.code];
+                }
+                return items.map(item => ({
+                    id: item.code || '',
+                    description: item.code || ''
+                }));
+            },
+            link: info => ({
+                href: `http://purl.obolibrary.org/obo/${encodeURIComponent(info.id)}`,
+                title: 'View diagnoses'
+            }),
+            displayText: info => {
+                const desc = info.description || '';
+                return `${info.id} (${desc})`;
+            }
+        },
         celltype: {
             // Corresponds to the response from the ontology API.
             apiSearch: query =>
@@ -246,6 +276,7 @@ function addExternal(type, info) {
 
 function setupExternalModalSearch(type) {
 
+    console.log(type);
     // Obtain the configuration for the assertion type.
     const config = EXTERNAL_CONFIG[type];
     let lastSearch = '';
@@ -309,5 +340,5 @@ function setupExternalModalSearch(type) {
 
 // --- Initialize all external modals ---
 document.addEventListener('DOMContentLoaded', function () {
-    ['dataset', 'citation', 'origin','celltype'].forEach(setupExternalModalSearch);
+    ['dataset', 'citation', 'origin','celltype','diagnosis'].forEach(setupExternalModalSearch);
 });

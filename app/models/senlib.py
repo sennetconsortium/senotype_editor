@@ -375,6 +375,8 @@ class SenLib:
                     objects = self.getmarkerobjects(rawobjects)
                 elif pred == 'has_cell_type':
                     objects = self.getcelltypeobjects(rawobjects)
+                elif pred == 'has_diagnosis':
+                    objects = self.getdiagnosisobjects(rawobjects)
                 else:
                     objects = self.getassertionobjects(pred=pred, rawobjects=rawobjects)
                 return objects
@@ -586,6 +588,28 @@ class SenLib:
                 oret.append({"code": f'CL:{code}', "term": name})
         return oret
 
+    def getdiagnosisobjects(self, rawobjects: list) -> list:
+
+        """
+        Calls the UBKG API to obtain descriptions for diagnoses.
+        :param: rawobjects - a list of diagnosis objects
+        """
+        api = RequestRetry()
+        base_url = f"{request.host_url.rstrip('/')}/ontology/diagnoses/"
+
+        logger.info('Getting diagnosis information from ontology API')
+
+        oret = []
+        for o in rawobjects:
+            code = o.get('code').split(':')[1]
+            url = f'{base_url}{code}'
+            diagnoses = api.getresponse(url=url, format='json')
+            # diagnoses returns a list of JSON objects
+            if len(diagnoses) > 0:
+                term = diagnoses[0].get('diagnosis').get('name', '')
+                oret.append({"code": code, "term": term})
+        return oret
+
     def getassertionobjects(self, pred: str, rawobjects: list) -> list:
 
         """
@@ -763,6 +787,8 @@ class SenLib:
 
         self.ftutree = []
 
+        form.diagnosis.process([''])
+
     def fetchfromdb(self, senotypeid: str, form):
 
         """
@@ -925,6 +951,16 @@ class SenLib:
         # Build an FTU treeview JSON from the ftupath data.
         self.ftutree = self.buildftutree(assertions=assertions)
 
+        # Diagnosis (multiple values)
+        diagnosislist = self.getstoredsimpleassertiondata(assertions=assertions, predicate='has_diagnosis')
+        if len(diagnosislist) > 0:
+            form.diagnosis.process(form.diagnosis, [self.truncateddisplaytext(displayid=item['code'],
+                                                                            description=item['term'],
+                                                                            trunclength=20)
+                                                  for item in diagnosislist])
+        else:
+            form.diagnosis.process([''])
+
     def getnewsenotypeid(self) -> str:
         """
         Calls the uuid-api to obtain a new SenNet ID.
@@ -996,7 +1032,7 @@ class SenLib:
                 {
                     "code": item,
                     "term": (
-                        "" if assertion in ['has_citation', 'has_origin', 'has_dataset','has_cell_type']
+                        "" if assertion in ['has_citation', 'has_origin', 'has_dataset','has_cell_type','has_diagnosis']
                         else valueset[valueset['valueset_code'] == item]['valueset_term'].iloc[0]
                     )
                 }
@@ -1012,6 +1048,8 @@ class SenLib:
                 objects = self.getdatasetobjects(rawobjects)
             elif assertion == 'has_cell_type':
                 objects = self.getcelltypeobjects(rawobjects)
+            elif assertion == 'has_diagnosis':
+                objects = self.getdiagnosisobjects(rawobjects)
             else:
                 objects = rawobjects
 
@@ -1177,6 +1215,16 @@ class SenLib:
             )
         else:
             form.regmarker.process(None, [])
+
+        diagnosislist = self.build_session_list(form_data=form_data, field_name='diagnosis')
+
+        if len(diagnosislist) > 0:
+            form.diagnosis.process(None, [self.truncateddisplaytext(displayid=item['code'],
+                                                                   description=item['term'],
+                                                                   trunclength=20)
+                                         for item in diagnosislist])
+        else:
+            form.diagnosis.process(None, [''])
 
     def getprovenanceids(self, senotypeid: str, predecessorid: str) -> dict:
         """
