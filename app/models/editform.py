@@ -195,4 +195,5 @@ class EditForm(Form):
     regmarker = FieldList(FormField(RegMarkerEntryForm), min_entries=0, label='Regulating Marker')
 
     # Hidden field used to validate whether at least one FTU path was selected.
+    # This field works with the update-button.js and the update route.
     ftu_tree_json = HiddenField('FTU Tree JSON')

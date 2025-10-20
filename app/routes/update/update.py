@@ -100,10 +100,9 @@ def validate_form(form):
             errors[base_name] = [f'At least one {errname} required.']
 
     # Verify that at least one FTU path was selected in the jstree.
-    ftu_tree_json = session.pop('ftu_tree_json', None)
-    if not ftu_tree_json:
+    ftu_tree_json = form.ftu_tree_json.data
+    if ftu_tree_json is None:
         errors['ftu_tree_json'] = ['At least one ftu path must be selected.']
-
     return errors
 
 
@@ -232,7 +231,6 @@ def update():
                     if err not in form_field.errors:
                         form_field.errors.append(err)
 
-
         flash(f"Error: Validation failed during attempt to {result_action_root}e senotype with ID {update_id}. "
               f"Please check your inputs.", "danger")
 
@@ -242,6 +240,7 @@ def update():
         session['form_errors'] = form.errors
         session['form_data'] = form.data
 
+        # Get the state of the FTU path selection.
         session['ftu_tree_json'] = request.form.get('ftu_tree_json')
 
         # Redirect to the edit form, which will set the focus of the treeview back
