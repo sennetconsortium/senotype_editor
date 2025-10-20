@@ -248,7 +248,7 @@
                 </div>
         </div>
         <!-- DIAGNOSIS assertion section -->
-        {{ render_fieldlist_section(form, "diagnosis", "diagnosisModal", col_class="col-md-2 input-cellBox") }}
+        {{ render_fieldlist_section(form, "diagnosis", "diagnosisSearchModal", col_class="col-md-3 input-cellBox") }}
 
      </div>
     <!-- PubMed citations/RRID origin/SenNet datasets -->
@@ -355,7 +355,7 @@
     modal_id="diagnosisSearchModal",
     modal_label="Search UBKG for diagnosis",
     input_id="diagnosis-search-input",
-    explore_url="https://www.ebi.ac.uk/ols4/ontologies/doid?tab=classes",
+    explore_url="https://disease-ontology.org",
     explore_text="Explore Disease Ontology",
     results_id="diagnosis-search-results"
 ) }}

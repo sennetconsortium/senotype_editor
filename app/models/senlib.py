@@ -530,7 +530,8 @@ class SenLib:
         """
 
         api = RequestRetry()
-        base_url = 'https://ontology.api.hubmapconsortium.org/'
+        cfg = AppConfig()
+        base_url = cfg.getfield('UBKG_BASE_URL')
 
         oret = []
         for o in rawobjects:
@@ -544,7 +545,7 @@ class SenLib:
             else:
                 endpoint = 'proteins'
 
-            url = f'{base_url}{endpoint}/{markerid}'
+            url = f'{base_url}/{endpoint}/{markerid}'
 
             resp = api.getresponse(url=url, format='json')
             # Defensive: check if resp is a list and not empty

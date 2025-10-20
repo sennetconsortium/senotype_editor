@@ -28,8 +28,27 @@ def ontology_celltypes_proxy(subpath):
     endpoint = f'celltypes/{subpath}'
     return ontapi.get_ontology_api_response(endpoint=endpoint, target='celltypes')
 
+
 @ontology_blueprint.route('/diagnoses/<subpath>')
 def ontology_diagnoses_proxy(subpath):
 
-    endpoint = f'/terms/{subpath}/codes'
-    return ontapi.get_ontology_api_response(endpoint=endpoint, target='diagnoses')
+    # Returns information on a diagnosis based on a search string.
+
+    # First get the DOID code corresponding to the search term.
+    endpoint = f'terms/{subpath}/codes'
+    response = ontapi.get_ontology_api_response(endpoint=endpoint, target='diagnoses')
+    # The response is either a list of dicts or a dict with a message key.
+    doi_response = []
+    if type(response) is list:
+        for r in response:
+            sab = r.get('code').split(':')[0]
+            code = r.get('code')
+            if sab in ['DOID']:
+                # Get the PT for the diagnosis code.
+                endpoint2 = f"codes/{code}/terms"
+                response2 = ontapi.get_ontology_api_response(endpoint=endpoint2, target='diagnoses')
+                terms = response2.get('terms')
+                for t in terms:
+                    if t.get('term_type') == 'PT':
+                        doi_response.append({'code': code, 'term': t.get('term')})
+    return doi_response

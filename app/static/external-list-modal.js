@@ -132,28 +132,30 @@ function createExternalConfig(trunclength = 40) {
                 `/ontology/diagnoses/${encodeURIComponent(query)}`,
             parseApiResult: data => {
                 // Response will be a list of JSON objects.
-                let items = [];
-                if (data && Array.isArray(data)) {
-                    // Map over array and extract cell_type objects.
-                    items = data
-                        .map(item => item.code)
-                        .filter(Boolean); // remove undefined/null
-                } else if (data.code) {
-                    // Single object
-                    items = [data.code];
+                if (Array.isArray(data)) {
+                    return data.map(item => ({
+                        id: item.code || '',
+                        description: item.term || '',
+                    }));
+                } else if (data && data.code) {
+                    return [{
+                        id: data.code,
+                        description: data.term
+                    }];
                 }
-                return items.map(item => ({
-                    id: item.code || '',
-                    description: item.code || ''
-                }));
+                return [];
             },
             link: info => ({
-                href: `http://purl.obolibrary.org/obo/${encodeURIComponent(info.id)}`,
+                href: `http://purl.obolibrary.org/obo/${encodeURIComponent(info.id.replace(/^DOID:/, 'DOID_'))}`,
                 title: 'View diagnoses'
             }),
             displayText: info => {
                 const desc = info.description || '';
+                if (desc.length > trunclength - 3) {
                 return `${info.id} (${desc})`;
+                    return `${info.id} (${desc.slice(0, trunclength - 3)}...)`;
+                }
+                return `${desc}`;
             }
         },
         celltype: {
@@ -276,7 +278,6 @@ function addExternal(type, info) {
 
 function setupExternalModalSearch(type) {
 
-    console.log(type);
     // Obtain the configuration for the assertion type.
     const config = EXTERNAL_CONFIG[type];
     let lastSearch = '';
@@ -287,7 +288,7 @@ function setupExternalModalSearch(type) {
     searchInput.addEventListener('input', async function() {
         const query = this.value.trim();
         resultsDiv.innerHTML = '';
-        if (query.length > 2 && query !== lastSearch) {
+        if (query.length > 0 && query !== lastSearch) {
             lastSearch = query;
             resultsDiv.innerHTML = `<div class="text-muted">Searching ...</div>`;
             try {

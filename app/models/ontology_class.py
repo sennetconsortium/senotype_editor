@@ -23,6 +23,9 @@ class OntologyAPI:
         url = f"{self.urlbase}/{endpoint}"
         response = api.getresponse(url=url, format='json')
         if type(response) is dict:
-            return make_response(f'no {target} found', 400)
+            if response.get('message') is not None:
+                return make_response(f'no {target} found', 400)
+            else:
+                return response
         else:
             return response
