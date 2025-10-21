@@ -129,7 +129,7 @@ function createExternalConfig(trunclength = 40) {
         diagnosis: {
             // Corresponds to the response from the ontology API.
             apiSearch: query =>
-                `/ontology/diagnoses/${encodeURIComponent(query)}`,
+                `/ontology/diagnoses/${encodeURIComponent(query)}/term`,
             parseApiResult: data => {
                 // Response will be a list of JSON objects.
                 if (Array.isArray(data)) {

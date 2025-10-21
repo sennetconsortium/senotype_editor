@@ -596,18 +596,21 @@ class SenLib:
         :param: rawobjects - a list of diagnosis objects
         """
         api = RequestRetry()
+        cfg = AppConfig()
         base_url = f"{request.host_url.rstrip('/')}/ontology/diagnoses/"
 
         logger.info('Getting diagnosis information from ontology API')
 
         oret = []
         for o in rawobjects:
-            code = o.get('code').split(':')[1]
-            url = f'{base_url}{code}'
+            code = o.get('code')
+            url = f'{base_url}{code}/code'
+            print(url)
             diagnoses = api.getresponse(url=url, format='json')
             # diagnoses returns a list of JSON objects
+            print(diagnoses)
             if len(diagnoses) > 0:
-                term = diagnoses[0].get('diagnosis').get('name', '')
+                term = diagnoses[0].get('term')
                 oret.append({"code": code, "term": term})
         return oret
 
@@ -834,7 +837,7 @@ class SenLib:
         else:
             form.location.process([''])
 
-        # Cell type (one possible value)
+        # Cell type (multiple values)
         celltypelist = self.getstoredsimpleassertiondata(assertions=assertions, predicate='has_cell_type')
         if len(celltypelist) > 0:
             form.celltype.process(form.celltype, [self.truncateddisplaytext(displayid=item['code'],
@@ -952,8 +955,9 @@ class SenLib:
         # Build an FTU treeview JSON from the ftupath data.
         self.ftutree = self.buildftutree(assertions=assertions)
 
-        # Diagnosis (multiple values)
+        print('FETCHFROMDB')
         diagnosislist = self.getstoredsimpleassertiondata(assertions=assertions, predicate='has_diagnosis')
+
         if len(diagnosislist) > 0:
             form.diagnosis.process(form.diagnosis, [self.truncateddisplaytext(displayid=item['code'],
                                                                             description=item['term'],

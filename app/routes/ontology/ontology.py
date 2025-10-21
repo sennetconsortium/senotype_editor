@@ -29,8 +29,8 @@ def ontology_celltypes_proxy(subpath):
     return ontapi.get_ontology_api_response(endpoint=endpoint, target='celltypes')
 
 
-@ontology_blueprint.route('/diagnoses/<subpath>')
-def ontology_diagnoses_proxy(subpath):
+@ontology_blueprint.route('/diagnoses/<subpath>/term')
+def ontology_diagnoses_proxy_term(subpath):
 
     # Returns information on a diagnosis based on a search string.
 
@@ -52,3 +52,19 @@ def ontology_diagnoses_proxy(subpath):
                     if t.get('term_type') == 'PT':
                         doi_response.append({'code': code, 'term': t.get('term')})
     return doi_response
+
+@ontology_blueprint.route('/diagnoses/<subpath>/code')
+def ontology_diagnoses_proxy_code(subpath):
+    # Returns information on a diagnosis based on a code.
+
+    endpoint = f'codes/{subpath}/terms'
+    response = ontapi.get_ontology_api_response(endpoint=endpoint, target='diagnoses')
+
+    doi_response = []
+    terms = response.get('terms')
+    for t in terms:
+        if t.get('term_type') == 'PT':
+            doi_response.append({'code': subpath, 'term': t.get('term')})
+
+    return doi_response
+
