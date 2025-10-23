@@ -335,7 +335,15 @@ class SenLib:
             logger.info(f'Getting DataCite information for {doi}')
 
             response = api.getresponse(url=url, format='json')
-            if response is not None:
+            response = None
+            if response is None:
+                urlheartbeat = 'https://api.datacite.org/heartbeat'
+                responseheartbeat = api.getresponse(url=urlheartbeat)
+                if responseheartbeat == 'OK':
+                    title = 'unknown title'
+                else:
+                    title = 'invalid response from DataCite API'
+            else:
                 title = response.get('data').get('attributes').get('titles')[0].get('title', '')
 
             return f'{doi_url} ({title})'
@@ -401,10 +409,12 @@ class SenLib:
             citation = api.getresponse(url=url, format='json')
             result = citation.get('result')
             title = ''
-            if result is not None:
+            if result is None:
                 entry = result.get(pmid)
                 if entry is not None:
                     title = entry.get('title', '')
+            else:
+                title = "unknown"
             oret.append({"code": code, "term": title})
 
         return oret
@@ -492,8 +502,10 @@ class SenLib:
             url = f'{base_url}{rrid}.json'
             origin = api.getresponse(url=url, format='json')
             hits = origin.get('hits')
-            if hits is not None:
+            if hits is None:
                 description = hits.get('hits')[0].get('_source').get('item').get('description', '')
+            else:
+                description = 'unknown'
             oret.append({"code": code, "term": description})
 
         return oret
@@ -583,6 +595,7 @@ class SenLib:
             code = o.get('code').split(':')[1]
             url = f'{base_url}{code}'
             celltype = api.getresponse(url=url, format='json')
+
             # celltypes returns a list of JSON objects
             if len(celltype) > 0:
                 name = celltype[0].get('cell_type').get('name', '')
@@ -605,7 +618,6 @@ class SenLib:
         for o in rawobjects:
             code = o.get('code')
             url = f'{base_url}{code}/code'
-            print(url)
             diagnoses = api.getresponse(url=url, format='json')
             # diagnoses returns a list of JSON objects
             print(diagnoses)
@@ -1668,3 +1680,24 @@ class SenLib:
         self.senotypetree = self._getsenotypejtree()
 
         self.submissionjson = {}
+
+        api = RequestRetry()
+        urlheartbeat = 'https://api.datacite.org/heartbeat'
+        self.datacitestatus = api.getresponse(url=urlheartbeat)
+        print(self.datacitestatus)
+        logger.info(f'DataCite status = {self.datacitestatus}')
+
+        urlubkgstatus =cfg.getfield('UBKG_BASE_URL')
+        status = api.getresponse(url=urlubkgstatus)
+        if 'Hello!' in status:
+            self.ubkgstatus = 'OK'
+        else:
+            self.ubkgstatus = 'NOT OK'
+        logger.info(f'UBKG API status = {self.ubkgstatus}')
+
+
+
+
+
+
+

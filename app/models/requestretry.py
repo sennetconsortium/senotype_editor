@@ -15,7 +15,7 @@ class RequestRetry:
         self.url = ''
         self.error = None
 
-    def getresponse(self, url: str, format: str, headers: dict = None) -> dict:
+    def getresponse(self, url: str, format: str = None, headers: dict = None) -> dict:
         """
         Obtains a response from a REST API.
         Employs a retry loop in case of timeout or other failures.
@@ -52,10 +52,8 @@ class RequestRetry:
                 self.responsejson = r.json()
                 self.error = None
                 return self.responsejson
-            elif format == 'csv':
-                return r.text
             else:
-                raise ValueError(f'Invalid format {format}')
+                return r.text
 
         except requests.exceptions.ConnectionError as e:
             self.error = e
