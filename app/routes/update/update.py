@@ -64,7 +64,8 @@ def validate_form(form):
         'origin-',
         'dataset-',
         'marker-',
-        'regmarker-'
+        'regmarker-',
+        'microenvironment-'
     ]
     errors = {}
 

@@ -158,6 +158,7 @@ class EditForm(Form):
     taxon = FieldList(StringField('Taxon'), min_entries=0, label='Taxon')
     location = FieldList(StringField('Location'), min_entries=0)
     celltype = FieldList(StringField('Cell type'), min_entries=0)
+    microenvironment = FieldList(StringField('Microenvironment'), min_entries=0)
     hallmark = FieldList(StringField('Hallmark'), min_entries=0)
     inducer = FieldList(StringField('Inducer'), min_entries=0)
     assay = FieldList(StringField('Assay'), min_entries=0)

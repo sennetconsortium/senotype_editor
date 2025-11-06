@@ -776,6 +776,7 @@ class SenLib:
         form.taxon.process([''])
         form.location.process([''])
         form.celltype.process([''])
+        form.microenvironment.process([''])
         form.hallmark.process([''])
         form.inducer.process([''])
         form.assay.process([''])
@@ -860,6 +861,13 @@ class SenLib:
                                               for item in celltypelist])
         else:
             form.celltype.process([''])
+
+        # Microenvironment (multiple possible values)
+        microenvironmentlist = self.getstoredsimpleassertiondata(assertions=assertions, predicate='has_microenvironment')
+        if len(microenvironmentlist) > 0:
+            form.microenvironment.process(form.microenvironment, [item['term'] for item in microenvironmentlist])
+        else:
+            form.microenvironment.process([''])
 
         # Hallmark (multiple possible values)
         hallmarklist = self.getstoredsimpleassertiondata(assertions=assertions, predicate='has_hallmark')
@@ -1157,6 +1165,13 @@ class SenLib:
                                          for item in celltypelist])
         else:
             form.celltype.process(None, [''])
+
+        # Microenvironment
+        microenvironmentlist = self.build_session_list(form_data=form_data, field_name='microenvironment')
+        if len(microenvironmentlist) > 0:
+            form.microenvironment.process(None, [f"{item['code']} ({item['term']})" for item in microenvironmentlist])
+        else:
+            form.microenvironment.process(None, [''])
 
         # Hallmark
         hallmarklist = self.build_session_list(form_data=form_data, field_name='hallmark')

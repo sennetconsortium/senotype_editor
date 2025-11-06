@@ -11,6 +11,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Build the content of the modal sections associated with valueset-based assertions.
     initValuesetModal('in_taxon', 'taxon');
     initValuesetModal('located_in', 'location');
+    initValuesetModal('has_microenvironment', 'microenvironment');
     initValuesetModal('has_cell_type','celltype');
     initValuesetModal('has_hallmark', 'hallmark');
     initValuesetModal('has_inducer', 'inducer');
