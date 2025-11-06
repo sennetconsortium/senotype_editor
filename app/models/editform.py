@@ -162,9 +162,6 @@ class EditForm(Form):
     inducer = FieldList(StringField('Inducer'), min_entries=0)
     assay = FieldList(StringField('Assay'), min_entries=0)
 
-    # The FTU input will use a jstree control.
-    # ftu = SelectField('FTU path', choices=[])
-
     # Context assertions
     agevalue = StringField('Value', validators=[validate_age_range])
     agelowerbound = StringField('Lowerbound', validators=[validate_age_range])
@@ -196,7 +193,7 @@ class EditForm(Form):
 
     # Hidden field used to validate whether at least one FTU path was selected.
     # This field works with the update-button.js and the update route.
-    ftu_tree_json = HiddenField('FTU Tree JSON')
+    # ftu_tree_json = HiddenField('FTU Tree JSON')
 
     # Diagnosis
     diagnosis = FieldList(StringField('Diagnosis'), min_entries=0)

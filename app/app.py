@@ -7,7 +7,8 @@ import json
 
 from models.appconfig import AppConfig
 
-from models.ftutree import FTUTree
+# Future development
+# from models.ftutree import FTUTree
 
 # Register Blueprints
 from routes.globus_auth.globus_auth import login_blueprint
@@ -65,8 +66,9 @@ class SenotypeUI:
         # Set the session lifetime to 30 minutes (in seconds).
         self.app.config['PERMANENT_SESSION_LIFETIME'] = 300 * 60
 
+        # Future development:
         # Obtain the 2D FTU hierarchy for use in jstree objects.
-        self.app.allftutree = FTUTree().ftutree
+        # self.app.allftutree = FTUTree().ftutree
 
         # Custom 400 error handler.
         @self.app.errorhandler(400)

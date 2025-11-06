@@ -55,13 +55,14 @@ def edit():
     form_data = session.pop('form_data', None)
     form_errors = session.pop('form_errors', None)
 
+    # Future development
     # Current state of the FTU paths input.
-    ftu_tree_json = session.pop('ftu_tree_json', None)
-    if ftu_tree_json:
-        ftu_tree = json.loads(ftu_tree_json)
-    else:
-        ftu_tree = []
-    senlib.ftutree = ftu_tree
+    # ftu_tree_json = session.pop('ftu_tree_json', None)
+    # if ftu_tree_json:
+        # ftu_tree = json.loads(ftu_tree_json)
+    # else:
+        # ftu_tree = []
+    # senlib.ftutree = ftu_tree
 
     if form_data:
         # Populate the form with session data--i.e., the data for the submission that
@@ -123,11 +124,16 @@ def edit():
 
     # Pass to the edit form:
     # 1. the tree of senotype id information for the jstree control
+    # Future development -
     # 2. information for the complete 2D FTU jstree
     # 3. information for the senotype's FTU jstree
+    #return render_template('edit.html',
+                           #form=form,
+                           #response={'tree_data': senlib.senotypetree,
+                                     #'allftutree_data': current_app.allftutree,
+                                     #'ftu_tree_data': senlib.ftutree},
+                           #selected_node_id=selected_node_id)
     return render_template('edit.html',
                            form=form,
-                           response={'tree_data': senlib.senotypetree,
-                                     'allftutree_data': current_app.allftutree,
-                                     'ftu_tree_data': senlib.ftutree},
+                           response={'tree_data': senlib.senotypetree},
                            selected_node_id=selected_node_id)

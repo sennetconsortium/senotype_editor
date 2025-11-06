@@ -14,9 +14,10 @@ Functions in the class:
 
 """
 
-from flask import session, current_app, request
+from flask import session, current_app, request, abort
 from werkzeug.datastructures import MultiDict
 import requests
+from requests.exceptions import ConnectionError
 import logging
 import pandas as pd
 import json
@@ -801,7 +802,8 @@ class SenLib:
         form.marker.process([''])
         form.regmarker.process([''])
 
-        self.ftutree = []
+        # future development
+        # self.ftutree = []
 
         form.diagnosis.process([''])
 
@@ -964,17 +966,17 @@ class SenLib:
         else:
             form.regmarker.process(None, [''])
 
+        # Future development:
         # Build an FTU treeview JSON from the ftupath data.
-        self.ftutree = self.buildftutree(assertions=assertions)
+        # self.ftutree = self.buildftutree(assertions=assertions)
 
-        print('FETCHFROMDB')
         diagnosislist = self.getstoredsimpleassertiondata(assertions=assertions, predicate='has_diagnosis')
 
         if len(diagnosislist) > 0:
             form.diagnosis.process(form.diagnosis, [self.truncateddisplaytext(displayid=item['code'],
-                                                                            description=item['term'],
-                                                                            trunclength=20)
-                                                  for item in diagnosislist])
+                                                                              description=item['term'],
+                                                                              trunclength=20)
+                                                    for item in diagnosislist])
         else:
             form.diagnosis.process([''])
 
@@ -1516,7 +1518,8 @@ class SenLib:
 
         return assertions
 
-    def buildassertions(self, form_data: MultiDict, ftu_tree: dict) -> list:
+    # def buildassertions(self, form_data: MultiDict, ftu_tree: dict) -> list:
+    def buildassertions(self, form_data: MultiDict) -> list:
         """
         Builds the assertions object of a senotype submission JSON
         :param form_data: form data
@@ -1534,14 +1537,16 @@ class SenLib:
         if len(contextassertions) > 0:
             assertions = assertions + contextassertions
 
+        # Future development:
         # FTU assertions
-        ftuassertions = self.buildftuassertions(ftu_tree=ftu_tree)
-        if len(ftuassertions) > 0:
-            assertions = assertions + ftuassertions
+        # ftuassertions = self.buildftuassertions(ftu_tree=ftu_tree)
+        # if len(ftuassertions) > 0:
+            # assertions = assertions + ftuassertions
 
         return assertions
 
-    def buildsubmissionjson(self, form_data: MultiDict, senotypeid: str, predecessorid: str, ftu_tree: dict) -> dict:
+    # def buildsubmissionjson(self, form_data: MultiDict, senotypeid: str, predecessorid: str, ftu_tree: dict) -> dict:
+    def buildsubmissionjson(self, form_data: MultiDict, senotypeid: str, predecessorid: str) -> dict:
         """
         Builds a Senotype submission JSON from the POSTed request form data.
         :param form_data: form data
@@ -1578,7 +1583,8 @@ class SenLib:
                          }
 
         # assertions
-        listassertions = self.buildassertions(form_data=form_data, ftu_tree=ftu_tree)
+        # listassertions = self.buildassertions(form_data=form_data, ftu_tree=ftu_tree)
+        listassertions = self.buildassertions(form_data=form_data)
 
         dictsubmission = {"senotype": dictsenotype,
                           "submitter": dictsubmitter,
@@ -1587,7 +1593,8 @@ class SenLib:
 
         return dictsubmission
 
-    def writesubmission(self, form_data: MultiDict, ftu_tree: dict, new_version_id: str = ''):
+    # def writesubmission(self, form_data: MultiDict, ftu_tree: dict, new_version_id: str = ''):
+    def writesubmission(self, form_data: MultiDict, new_version_id: str = ''):
         """
         Writes a senotype submission to the senlib database.
         :param form_data: form data
@@ -1607,8 +1614,11 @@ class SenLib:
             predecessorid = form_data.get('senotypeid')
 
         # Build the submission JSON, with updates to provenance as necessary.
+        # self.submissionjson = self.buildsubmissionjson(form_data=form_data, senotypeid=senotypeid,
+                                                       #predecessorid=predecessorid, ftu_tree=ftu_tree)
+
         self.submissionjson = self.buildsubmissionjson(form_data=form_data, senotypeid=senotypeid,
-                                                       predecessorid=predecessorid, ftu_tree=ftu_tree)
+                                                       predecessorid=predecessorid)
 
         # If this is a new version of an existing senotype, remove the DOI associated
         # with the predecessor version from the new version's data.
@@ -1649,6 +1659,25 @@ class SenLib:
         form.submitterlast.data = session['username'].split(' ')[1]
         form.submitteremail.data = session['userid']
 
+    def getubkgstatus(self, cfg: AppConfig) -> str:
+
+        """
+        Check the status of the UBKG API.
+        :param cfg: config file.
+        """
+        api = RequestRetry()
+        statusurl = cfg.getfield('UBKG_BASE_URL')
+
+        try:
+            status = api.getresponse(url=statusurl)
+            if 'Hello!' in status:
+                return 'OK'
+            else:
+                return 'NOT OK'
+
+        except ConnectionError as e:
+            abort(500, description=f'Error connecting to the UBKG API: {e}')
+
     def __init__(self, cfg: AppConfig, userid: str):
 
         """
@@ -1684,15 +1713,9 @@ class SenLib:
         api = RequestRetry()
         urlheartbeat = 'https://api.datacite.org/heartbeat'
         self.datacitestatus = api.getresponse(url=urlheartbeat)
-        print(self.datacitestatus)
         logger.info(f'DataCite status = {self.datacitestatus}')
 
-        urlubkgstatus =cfg.getfield('UBKG_BASE_URL')
-        status = api.getresponse(url=urlubkgstatus)
-        if 'Hello!' in status:
-            self.ubkgstatus = 'OK'
-        else:
-            self.ubkgstatus = 'NOT OK'
+        self.ubkgstatus = self.getubkgstatus(cfg=cfg)
         logger.info(f'UBKG API status = {self.ubkgstatus}')
 
 
