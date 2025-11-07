@@ -864,6 +864,7 @@ class SenLib:
 
         # Microenvironment (multiple possible values)
         microenvironmentlist = self.getstoredsimpleassertiondata(assertions=assertions, predicate='has_microenvironment')
+        print('MICROENVIRONMENT', microenvironmentlist)
         if len(microenvironmentlist) > 0:
             form.microenvironment.process(form.microenvironment, [item['term'] for item in microenvironmentlist])
         else:
@@ -1605,6 +1606,7 @@ class SenLib:
                           "submitter": dictsubmitter,
                           "assertions": listassertions
                           }
+
 
         return dictsubmission
 
