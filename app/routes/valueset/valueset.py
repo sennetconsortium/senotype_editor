@@ -9,6 +9,12 @@ obtqined by the SenLib class and cached in the current app.
 from flask import Blueprint, jsonify, current_app, request
 import pandas as pd
 
+# Used to obtain the valueset for location, which is obtained from the hs-ontology-api
+# instead of the senlib database.
+
+from models.ontology_class import OntologyAPI
+
+
 valueset_blueprint = Blueprint('valueset', __name__, url_prefix='/valueset')
 
 
@@ -35,10 +41,20 @@ def valueset():
     # Get the assertion predicate.
     predicate = request.args.get('predicate')
 
-    # Convert to desired list of dicts
-    listret = [
-        {'id': row['valueset_code'], 'label': row['valueset_term']}
-        for _, row in getapp_assertionvalueset(predicate=predicate).iterrows()
-    ]
+    if predicate == 'located_in':
+        # Query the hs-ontology-api to get list of SenNet organs.
+        ontapi = OntologyAPI()
+        endpoint = f'organs?application_context=sennet'
+        response = ontapi.get_ontology_api_response(endpoint=endpoint, target='organs')
+        listret = [
+            {'id': resp.get('organ_uberon'), 'label': resp.get('term')}
+            for resp in response
+        ]
+    else:
+        # Convert the valueset dataframe to desired list of dicts
+        listret = [
+            {'id': row['valueset_code'], 'label': row['valueset_term']}
+            for _, row in getapp_assertionvalueset(predicate=predicate).iterrows()
+        ]
 
     return jsonify(listret)

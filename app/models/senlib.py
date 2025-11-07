@@ -621,7 +621,27 @@ class SenLib:
             url = f'{base_url}{code}/code'
             diagnoses = api.getresponse(url=url, format='json')
             # diagnoses returns a list of JSON objects
-            print(diagnoses)
+            if len(diagnoses) > 0:
+                term = diagnoses[0].get('term')
+                oret.append({"code": code, "term": term})
+        return oret
+
+    def getorganobjects(self, rawobjects: list) -> list:
+
+        """
+        Calls the UBKG API to obtain descriptions for organs.
+        :param: rawobjects - a list of organ objects
+        """
+        api = RequestRetry()
+        cfg = AppConfig()
+        logger.info('Getting organ (location) information from ontology API')
+        base_url = f"{request.host_url.rstrip('/')}/organs?application_context=sennet"
+        organs = api.getresponse(url=url, format='json')
+
+        oret = []
+        for o in rawobjects:
+            code = o.get('code')
+            for
             if len(diagnoses) > 0:
                 term = diagnoses[0].get('term')
                 oret.append({"code": code, "term": term})
@@ -864,7 +884,6 @@ class SenLib:
 
         # Microenvironment (multiple possible values)
         microenvironmentlist = self.getstoredsimpleassertiondata(assertions=assertions, predicate='has_microenvironment')
-        print('MICROENVIRONMENT', microenvironmentlist)
         if len(microenvironmentlist) > 0:
             form.microenvironment.process(form.microenvironment, [item['term'] for item in microenvironmentlist])
         else:
