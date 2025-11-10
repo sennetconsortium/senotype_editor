@@ -31,7 +31,7 @@ The **Senotype Editor** application allows users to manage senotype definitions 
 Because the majority of the data in a senotype definition is categorical, most of the work of defining a senotype will
 involve the selection of values from lists.
 
-{_screen capture of Edit page_}
+![img_22.png](img_22.png)
 
 With the Senotype Editor, users can:
 1. **review** a senotype definition
@@ -45,7 +45,7 @@ The Senotype Editor offers two types of tools:
 1. a tool to navigate the Senotype library of _senotype submissions_. 
 2. tools to maintain senotype submissions
 
-{_annotated screen capture: Editor page, pointing out Navigator and Definition sections_}
+![img_23.png](img_23.png)
 
 #### Senotype Library Navigator
 The **Senotype Library Navigator** represents the Senotype library with an expandable tree view.
@@ -127,7 +127,7 @@ Clicking the ![img_9.png](img_9.png) button will launch a search window.
 
 The search window will search DataCite for a DOI with ID that matches the value that the user enters in the **Enter query...** 
 input. Because all senotype DOIs will have the same DataCite provider (e.g, 10.6586), the search window only needs 
-the unique portion of the DOI. 
+the unique portion of the DOI, which usually corresponds to the SenNet ID of the dataset. 
 
 For example, if the DOI's full URL is https://doi.org/10.60586/snt259.dzbl.489, only snt259.dzbl.489 is required as a search term.
 
@@ -158,15 +158,14 @@ _human_ and _mouse_.
 
 Valueset-based assertions include:
 
-| assertion            | vocabulary |
-|----------------------|------------|
-| taxon                | NCBI       |
-| location             | UBERON     |
-| cell type            | CL         |
-| hallmark             | SENOTYPE   |
-| molecular microenvironment | SENOTYPE   |
-| inducer              | SENOTYPE   |
-| assay                | OBI        |
+| assertion        | vocabulary |
+|------------------|------------|
+| taxon            | NCBI       |
+| cell type        | CL         |
+| hallmark         | SENOTYPE   |
+| microenvironment | SENOTYPE   |
+| inducer          | SENOTYPE   |
+| assay            | OBI        |
 
 
 Because there can be multiple assertions of the same type, the inputs for valueset-based assertions are 
@@ -185,31 +184,50 @@ Context assertions allow the user to define ranges and units for an assertion.
 ![img_16.png](img_16.png). For example, the **age** assertion can be bounded to apply only to the range of 18 to 89 years.
 
 ## External assertions
-The **citation**, **origin**, and **dataset** assertions are also encoded; however, the codes are not stored in valuesets, but 
-are maintained in external sources. 
+The following types of assertions are also encoded; however, the codes 
+are not stored in valuesets, but are obtained via external sources. 
 
-![img_17.png](img_17.png)
 
-The Senotype Editor queries APIs to 
+| assertion | vocabulary |
+|----------|------------|
+| citation | PubMed     |
+| origin   | RRID       |
+| dataset  | SenNet ID  |
+| location | UBERON     |
+| diagnosis | DOID       |
+
+
+The Senotype Editor queries external APIs to 
 obtain information on:
 - citation
 - origin
 - dataset
+- diagnosis
+- location
 
 The external assertion input functions similarly to the DOI:
 - The ![img_9.png](img_9.png) button opens a search window.
 - The ![img_13.png](img_13.png) button removes an element from the assertion list.
 - The ![img_12.png](img_12.png) button links to the corresponding detail page for the assertion. For example, in the **citation** list, the link button opens the PubMed page for the citation.
 
-The search window for an external assertion finds matches in the external site for IDs:
+The search window for an external assertion finds matches in an external site.
 
-| assertion | source             | type of ID |
-|-----------|--------------------|------------|
-| citation  | PubMed             | PMID       |
-| origin    | SciCrunch Resolver | RRID       |
-| dataset   | SenNet Data Portal | SenNet ID  |
 
-The   ![img_12.png](img_12.png)   button in an external search window links to the corresponding external site to facilitate finding an appropriate identifier.
+
+| assertion | source             | search term            |
+|-----------|--------------------|------------------------|
+| citation  | PubMed             | PMID                   |
+| origin    | SciCrunch Resolver | RRID                   |
+| dataset   | SenNet Data Portal | SenNet ID              |
+| location  | SenNet Data Portal | organ name             |
+| diagnosis | UBKG               | diagnosis term or DOID |
+
+
+
+The   ![img_12.png](img_12.png)   button in an external search window links to the corresponding external site 
+to facilitate finding an appropriate identifier. 
+
+The Senotype Editor is not integrated with external sites--it only links out to them.
 
 ## Marker assertions
 
@@ -284,9 +302,9 @@ When the user clicks the Update/Create button at the bottom of the Definition se
 
 If the data is invalid or incomplete, the Editor:
 * displays an error message in red at the top of the Editor page
-* displays an error message next to the field with an issue
+* displays an error message in red next to the field with an issue
 
-{screen capture: validation error}
+![img_24.png](img_24.png)
 
 The Editor verifies that:
 1. All required fields have at least one value.

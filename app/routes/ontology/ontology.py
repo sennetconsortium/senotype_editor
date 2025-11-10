@@ -32,12 +32,14 @@ def ontology_celltypes_proxy(subpath):
 @ontology_blueprint.route('/diagnoses/<subpath>')
 def ontology_diagnoses_proxy_generic(subpath):
 
+    # Try to find a diagnosis by searching on term. If no results,
+    # Try to find a diagnosis by searching on code.
+
     diag = ontology_diagnoses_proxy_term(subpath)
 
     if not diag:
         diag = ontology_diagnoses_proxy_code(subpath)
 
-    print('diag', diag)
     return diag
 
 

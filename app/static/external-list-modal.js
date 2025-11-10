@@ -165,8 +165,7 @@ function createExternalConfig(trunclength = 40) {
             displayText: info => {
                 const desc = info.description || '';
                 if (desc.length > trunclength - 3) {
-                return `${info.id} (${desc})`;
-                    return `${info.id} (${desc.slice(0, trunclength - 3)}...)`;
+                    return `${desc.slice(0, trunclength - 3)}...`;
                 }
                 return `${desc}`;
             }

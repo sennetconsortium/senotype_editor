@@ -1014,7 +1014,7 @@ class SenLib:
         if len(diagnosislist) > 0:
             form.diagnosis.process(form.diagnosis, [self.truncateddisplaytext(displayid=item['code'],
                                                                               description=item['term'],
-                                                                              trunclength=20)
+                                                                              trunclength=50)
                                                     for item in diagnosislist])
         else:
             form.diagnosis.process([''])
