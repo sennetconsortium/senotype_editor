@@ -12,3 +12,6 @@ GLOBUS_SENNET_SECRET='x'
 
 # API base URLs
 UUID_BASE_URL='https://uuid-api.dev.sennetconsortium.org/uuid'
+#UUID_BASE_URL='https://uuid-api.sennetconsortium.org/uuid'
+UBKG_BASE_URL='http://127.0.0.1:5002'
+#UBKG_BASE_URL='https://ontology.api.hubmapconsortium.org'
