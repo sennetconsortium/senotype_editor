@@ -29,6 +29,18 @@ def ontology_celltypes_proxy(subpath):
     return ontapi.get_ontology_api_response(endpoint=endpoint, target='celltypes')
 
 
+@ontology_blueprint.route('/diagnoses/<subpath>')
+def ontology_diagnoses_proxy_generic(subpath):
+
+    diag = ontology_diagnoses_proxy_term(subpath)
+
+    if not diag:
+        diag = ontology_diagnoses_proxy_code(subpath)
+
+    print('diag', diag)
+    return diag
+
+
 @ontology_blueprint.route('/diagnoses/<subpath>/term')
 def ontology_diagnoses_proxy_term(subpath):
 
@@ -59,13 +71,16 @@ def ontology_diagnoses_proxy_code(subpath):
     # Returns information on a diagnosis based on a code.
 
     endpoint = f'codes/{subpath}/terms'
-    response = ontapi.get_ontology_api_response(endpoint=endpoint, target='diagnoses')
-
+    resp = ontapi.get_ontology_api_response(endpoint=endpoint, target='diagnoses')
     doi_response = []
-    terms = response.get('terms')
-    for t in terms:
-        if t.get('term_type') == 'PT':
-            doi_response.append({'code': subpath, 'term': t.get('term')})
+    try:
+        terms = resp.get('terms')
+        for t in terms:
+            if t.get('term_type') == 'PT':
+                doi_response.append({'code': subpath, 'term': t.get('term')})
+    except AttributeError:
+        # AttributeError occurs in response to a 404 from get_ontology_api_response.
+        pass
 
     return doi_response
 

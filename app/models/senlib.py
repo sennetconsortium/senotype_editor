@@ -332,10 +332,10 @@ class SenLib:
             doi = doi_url.split('https://doi.org/')[1]
             url = f'https://api.datacite.org/dois/{doi}'
 
+            print(url)
             logger.info(f'Getting DataCite information for {doi}')
 
             response = api.getresponse(url=url, format='json')
-            response = None
             if response is None:
                 urlheartbeat = 'https://api.datacite.org/heartbeat'
                 responseheartbeat = api.getresponse(url=urlheartbeat)
@@ -1091,7 +1091,7 @@ class SenLib:
                     "code": item,
                     "term": (
                         "" if assertion in ['has_citation', 'has_origin', 'has_dataset', 'has_cell_type',
-                                            'has_diagnosis']
+                                            'has_diagnosis','located_in']
                         else valueset[valueset['valueset_code'] == item]['valueset_term'].iloc[0]
                     )
                 }
