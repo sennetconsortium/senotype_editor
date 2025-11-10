@@ -1,6 +1,6 @@
 /*
 Features to support addition and removal of external assertions (dataset, citation, origin) for Senotype submission.
-DRY version: parameterized for type ('dataset', 'citation', 'origin').
+DRY version: parameterized for type ('dataset', 'citation', 'origin', etc.).
 
 Usage:
 - HTML list should have id: `${type}-list`
@@ -9,6 +9,18 @@ Usage:
 - Modal element should have id: `${type}SearchModal`
 - FieldList pattern: `${type}-<index>`
 */
+
+// Reindex hidden input fields in a list after addition or removal.
+// This ensures the name attributes stay sequential and WTForms (etc) process them correctly.
+function reindexExternalInputs(type) {
+    const ul = document.getElementById(`${type}-list`);
+    if (!ul) return;
+    const inputs = ul.querySelectorAll('input[type="hidden"]');
+    inputs.forEach((input, idx) => {
+        input.name = `${type}-${idx}`;
+    });
+}
+
 
 /*
 EXTERNAL_CONFIG
@@ -46,6 +58,7 @@ function createExternalConfig(trunclength = 40) {
                 return [{
                     id: sennetid,
                     uuid,
+
                     description
                 }];
             },
@@ -191,6 +204,38 @@ function createExternalConfig(trunclength = 40) {
                 }
                 return `${info.id} (${desc})`;
             }
+        },
+        location: {
+            // Corresponds to the response from the ontology API.
+            apiSearch: query =>
+                `/ontology/organs/${encodeURIComponent(query)}/term`,
+            parseApiResult: data => {
+                // Response will be a list of JSON objects.
+                console.log(data);
+                if (Array.isArray(data)) {
+                    return data.map(item => ({
+                        id: item.code || '',
+                        description: item.term || '',
+                    }));
+                } else if (data && data.code) {
+                    return [{
+                        id: data.code,
+                        description: data.term
+                    }];
+                }
+                return [];
+            },
+            link: info => ({
+                href: `http://purl.obolibrary.org/obo/${encodeURIComponent(info.id.replace(/^CL:/, 'CL_'))}`,
+                title: 'View organs'
+            }),
+            displayText: info => {
+                const desc = info.description || '';
+                if (desc.length > trunclength - 3) {
+                    return `${desc.slice(0, trunclength - 3)}...`;
+                }
+                return `${desc}`;
+            }
         }
     };
 }
@@ -203,6 +248,7 @@ const EXTERNAL_CONFIG = createExternalConfig(trunclength);
 
 function removeExternal(type, btn) {
     btn.parentNode.remove();
+    reindexExternalInputs(type);
 }
 
 function addExternal(type, info) {
@@ -271,6 +317,8 @@ function addExternal(type, info) {
     li.appendChild(btn);
 
     ul.appendChild(li);
+
+    reindexExternalInputs(type);
 
     // Global function in input-changes.js
     handleInputChange();
@@ -341,5 +389,5 @@ function setupExternalModalSearch(type) {
 
 // --- Initialize all external modals ---
 document.addEventListener('DOMContentLoaded', function () {
-    ['dataset', 'citation', 'origin','celltype','diagnosis'].forEach(setupExternalModalSearch);
+    ['dataset', 'citation', 'origin','celltype','diagnosis','location'].forEach(setupExternalModalSearch);
 });

@@ -37,10 +37,17 @@ Arguments:
                 {% if show_code %}
                     {% set display_value = full_value %}
                 {% else %}
-                    {% set display_value = full_value.split('(')[1][0:-1] if '(' in full_value else full_value %}
+                    {% set display_value = (
+                        full_value[full_value.find('(')+1:full_value.rfind(')')]
+                        if '(' in full_value and ')' in full_value else full_value
+                    ) %}
                 {% endif %}
                 {% set hidden_value = (full_value or '').split(' ')[0] %}
-
+                <script>
+                    // Output the value to the JavaScript console
+                    console.log("hidden_value:", {{ hidden_value|tojson }});
+                    console.log("full_value:", {{ full_value|tojson }});
+                </script>
                 <li class="list-group-item d-flex justify-content-between align-items-center w-100">
                     <!-- Hidden input used to store value for post -->
                     <input name="{{ field.name }}" type="hidden" value="{{ hidden_value }}">
@@ -66,6 +73,10 @@ Arguments:
                     {% if field_name == "diagnosis" %}
                         <!-- Placeholder for the diagnosis link button, id is unique per hidden_value -->
                         <span class="diagnosis-link-placeholder ms-2" id="diagnosis-link-{{ hidden_value | e }}"></span>
+                    {% endif %}
+                    {% if field_name == "location" %}
+                        <!-- Placeholder for the diagnosis link button, id is unique per hidden_value -->
+                        <span class="location-link-placeholder ms-2" id="location-link-{{ hidden_value | e }}"></span>
                     {% endif %}
                     <!-- Button to remove this value from the list -->
                     <button type="button" class="btn btn-sm btn-danger ms-2" style="width: 2.5em;" onclick="removeValue(this)"> - </button>

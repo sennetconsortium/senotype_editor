@@ -384,6 +384,8 @@ class SenLib:
                     objects = self.getmarkerobjects(rawobjects)
                 elif pred == 'has_cell_type':
                     objects = self.getcelltypeobjects(rawobjects)
+                elif pred == 'located_in':
+                    objects = self.getlocationobjects(rawobjects)
                 elif pred == 'has_diagnosis':
                     objects = self.getdiagnosisobjects(rawobjects)
                 else:
@@ -407,15 +409,20 @@ class SenLib:
             code = o.get('code')
             pmid = code.split(':')[1]
             url = f'{base_url}{pmid}'
+            print(url)
             citation = api.getresponse(url=url, format='json')
             result = citation.get('result')
+            print(result)
             title = ''
             if result is None:
-                entry = result.get(pmid)
-                if entry is not None:
-                    title = entry.get('title', '')
-            else:
                 title = "unknown"
+            else:
+                entry = result.get(pmid)
+                if entry is None:
+                    title = "unknown"
+                else:
+                    title = entry.get('title', '')
+
             oret.append({"code": code, "term": title})
 
         return oret
@@ -504,9 +511,9 @@ class SenLib:
             origin = api.getresponse(url=url, format='json')
             hits = origin.get('hits')
             if hits is None:
-                description = hits.get('hits')[0].get('_source').get('item').get('description', '')
+                description = "unknown"
             else:
-                description = 'unknown'
+                description = hits.get('hits')[0].get('_source').get('item').get('description', '')
             oret.append({"code": code, "term": description})
 
         return oret
@@ -626,7 +633,7 @@ class SenLib:
                 oret.append({"code": code, "term": term})
         return oret
 
-    def getorganobjects(self, rawobjects: list) -> list:
+    def getlocationobjects(self, rawobjects: list) -> list:
 
         """
         Calls the UBKG API to obtain descriptions for organs.
@@ -634,17 +641,20 @@ class SenLib:
         """
         api = RequestRetry()
         cfg = AppConfig()
-        logger.info('Getting organ (location) information from ontology API')
-        base_url = f"{request.host_url.rstrip('/')}/organs?application_context=sennet"
-        organs = api.getresponse(url=url, format='json')
+        base_url = f"{request.host_url.rstrip('/')}/ontology/organs"
+
+        logger.info('Getting organ information from ontology API')
 
         oret = []
         for o in rawobjects:
             code = o.get('code')
-            for
-            if len(diagnoses) > 0:
-                term = diagnoses[0].get('term')
+            url = f'{base_url}/{code}/code'
+            organs = api.getresponse(url=url, format='json')
+            # diagnoses returns a list of JSON objects
+            if len(organs) > 0:
+                term = organs[0].get('term')
                 oret.append({"code": code, "term": term})
+
         return oret
 
     def getassertionobjects(self, pred: str, rawobjects: list) -> list:
@@ -842,7 +852,6 @@ class SenLib:
 
         # Get senotype data
         dictsenlib = self.getsenotypejson(id=senotypeid)
-
         senotype = dictsenlib.get('senotype')
         form.senotypename.data = senotype.get('name', '')
         form.senotypedescription.data = senotype.get('definition', '')
@@ -858,52 +867,57 @@ class SenLib:
         # Assertions other than markers
         assertions = dictsenlib.get('assertions')
 
-        # Taxon (multiple possible values)
+        # Taxon (valueset; multiple possible values)
         taxonlist = self.getstoredsimpleassertiondata(assertions=assertions, predicate='in_taxon')
         if len(taxonlist) > 0:
             form.taxon.process(form.taxon, [item['term'] for item in taxonlist])
         else:
             form.taxon.process([''])
 
-        # Locations (multiple possible values)
+        # Locations (external; multiple possible values)
         locationlist = self.getstoredsimpleassertiondata(assertions=assertions, predicate='located_in')
+        print('fetchfromdb:locationlist',locationlist)
         if len(locationlist) > 0:
-            form.location.process(form.location, [item['term'] for item in locationlist])
+            form.location.process(form.location, [self.truncateddisplaytext(displayid=item['code'],
+                                                                            description=item['term'],
+                                                                            trunclength=50)
+                                                  for item in locationlist])
+
         else:
             form.location.process([''])
 
-        # Cell type (multiple values)
+        # Cell type (external; multiple values)
         celltypelist = self.getstoredsimpleassertiondata(assertions=assertions, predicate='has_cell_type')
         if len(celltypelist) > 0:
             form.celltype.process(form.celltype, [self.truncateddisplaytext(displayid=item['code'],
-                                                                        description=item['term'],
-                                                                        trunclength=100)
-                                              for item in celltypelist])
+                                                                            description=item['term'],
+                                                                            trunclength=100)
+                                                  for item in celltypelist])
         else:
             form.celltype.process([''])
 
-        # Microenvironment (multiple possible values)
+        # Microenvironment (valueset; multiple possible values)
         microenvironmentlist = self.getstoredsimpleassertiondata(assertions=assertions, predicate='has_microenvironment')
         if len(microenvironmentlist) > 0:
             form.microenvironment.process(form.microenvironment, [item['term'] for item in microenvironmentlist])
         else:
             form.microenvironment.process([''])
 
-        # Hallmark (multiple possible values)
+        # Hallmark (valueset; multiple possible values)
         hallmarklist = self.getstoredsimpleassertiondata(assertions=assertions, predicate='has_hallmark')
         if len(hallmarklist) > 0:
             form.hallmark.process(form.hallmark, [item['term'] for item in hallmarklist])
         else:
             form.hallmark.process([''])
 
-        # Inducer (multiple possible values)
+        # Inducer (valueset; multiple possible values)
         inducerlist = self.getstoredsimpleassertiondata(assertions=assertions, predicate='has_inducer')
         if len(inducerlist) > 0:
             form.inducer.process(form.inducer, [item['term'] for item in inducerlist])
         else:
             form.inducer.process([''])
 
-        # Assay (multiple possible values)
+        # Assay (valueset; multiple possible values)
         assaylist = self.getstoredsimpleassertiondata(assertions=assertions, predicate='has_assay')
         if len(assaylist) > 0:
             form.assay.process(form.assay, [item['term'] for item in assaylist])
@@ -930,11 +944,11 @@ class SenLib:
         # sex
         sexlist = self.getstoredsimpleassertiondata(assertions=assertions, predicate='has_sex')
         if len(sexlist) > 0:
-            form.sex.process(form.assay, [item['term'] for item in sexlist])
+            form.sex.process(form.sex, [item['term'] for item in sexlist])
         else:
             form.sex.process([''])
 
-        # Citation (multiple possible values)
+        # Citation (external; multiple possible values)
         citationlist = self.getstoredsimpleassertiondata(assertions=assertions, predicate='has_citation')
         if len(citationlist) > 0:
             form.citation.process(form.citation, [self.truncateddisplaytext(displayid=item['code'],
@@ -954,7 +968,7 @@ class SenLib:
         else:
             form.origin.process([''])
 
-        # Dataset (multiple possible values)
+        # Dataset (external; multiple possible values)
         datasetlist = self.getstoredsimpleassertiondata(assertions=assertions, predicate='has_dataset')
         if len(datasetlist) > 0:
             form.dataset.process(form.dataset, [self.truncateddisplaytext(displayid=item['code'],
@@ -964,7 +978,7 @@ class SenLib:
         else:
             form.dataset.process([''])
 
-        # Specified Markers (multiple possible values)
+        # Specified Markers (external; multiple possible values)
         markerlist = self.getstoredsimpleassertiondata(assertions=assertions,
                                                        predicate='has_characterizing_marker_set')
         if len(markerlist) > 0:
@@ -975,7 +989,7 @@ class SenLib:
         else:
             form.marker.process([''])
 
-        # Regulating Markers (multiple possible values).
+        # Regulating Markers (external; multiple possible values).
         # The format of the process call is different because the regmarker
         # control is a FieldList(FormField) instead of just a Fieldlist.
         regmarkerlist = self.getregmarkerobjects(assertions=assertions)
@@ -998,6 +1012,7 @@ class SenLib:
         # Build an FTU treeview JSON from the ftupath data.
         # self.ftutree = self.buildftutree(assertions=assertions)
 
+        # Diagnosis (external; multiple values)
         diagnosislist = self.getstoredsimpleassertiondata(assertions=assertions, predicate='has_diagnosis')
 
         if len(diagnosislist) > 0:
@@ -1095,6 +1110,8 @@ class SenLib:
                 objects = self.getdatasetobjects(rawobjects)
             elif assertion == 'has_cell_type':
                 objects = self.getcelltypeobjects(rawobjects)
+            elif assertion == 'located_in':
+                objects = self.getlocationobjects(rawobjects)
             elif assertion == 'has_diagnosis':
                 objects = self.getdiagnosisobjects(rawobjects)
             else:
@@ -1170,6 +1187,7 @@ class SenLib:
 
         # Location
         locationlist = self.build_session_list(form_data=form_data, field_name='location')
+        print('getsessiondata:locationlist', locationlist)
         if len(locationlist) > 0:
             form.location.process(None, [f"{item['code']} ({item['term']})" for item in locationlist])
         else:
@@ -1334,6 +1352,8 @@ class SenLib:
         # 3. Associate the object list with the assertion information in an assertion object.
         # 4. Build a list of assertion objects.
 
+        print('buildsimpleassertions')
+        print('form_data',form_data)
         assertions = []
         for key in form_data:
             objects = []
@@ -1345,7 +1365,6 @@ class SenLib:
 
             predicate_iri = self.get_iri(predicate_term=predicate_term)
             source = self.get_field_metadata(field_name=key, field_property='object_source')
-
             if isinstance(form_data.get(key), list):
                 field_values = form_data.get(key)
             else:

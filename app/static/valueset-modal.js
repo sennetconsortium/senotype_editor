@@ -10,7 +10,7 @@ the user selects a value in a list, the script adds a corresponding list element
 document.addEventListener('DOMContentLoaded', function() {
     // Build the content of the modal sections associated with valueset-based assertions.
     initValuesetModal('in_taxon', 'taxon');
-    initValuesetModal('located_in', 'location');
+    //initValuesetModal('located_in', 'location');
     initValuesetModal('has_microenvironment', 'microenvironment');
     initValuesetModal('has_cell_type','celltype');
     initValuesetModal('has_hallmark', 'hallmark');
@@ -57,6 +57,7 @@ function addValuesetToList(fieldname, valuesetId, valuesetLabel) {
     input.type = 'hidden';
     input.className = 'form-control w-100';// d-none';
     input.value = valuesetId;
+    console.log(input.value);
     li.appendChild(input);
     // Show label in list.
     var span = document.createElement('span');

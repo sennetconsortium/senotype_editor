@@ -53,6 +53,7 @@ def ontology_diagnoses_proxy_term(subpath):
                         doi_response.append({'code': code, 'term': t.get('term')})
     return doi_response
 
+
 @ontology_blueprint.route('/diagnoses/<subpath>/code')
 def ontology_diagnoses_proxy_code(subpath):
     # Returns information on a diagnosis based on a code.
@@ -68,3 +69,32 @@ def ontology_diagnoses_proxy_code(subpath):
 
     return doi_response
 
+
+@ontology_blueprint.route('/organs/<subpath>/term')
+def ontology_organs_proxy_term(subpath):
+    # Returns information on a SenNet organ based on a search term.
+
+    endpoint = f'organs?application_context=sennet'
+
+    organs = ontapi.get_ontology_api_response(endpoint=endpoint, target='organs')
+    organ_response = []
+    for organ in organs:
+        if subpath.lower() in organ.get('term').lower():
+            organ_response.append({'code': organ.get('organ_uberon'),'term': organ.get('term')})
+
+    return organ_response
+
+
+@ontology_blueprint.route('/organs/<subpath>/code')
+def ontology_organs_proxy_code(subpath):
+    # Returns information on a SenNet organ based on a code.
+
+    endpoint = f'organs?application_context=sennet'
+
+    organs = ontapi.get_ontology_api_response(endpoint=endpoint, target='organs')
+    organ_response = []
+    for organ in organs:
+        if subpath == organ.get('organ_uberon'):
+            organ_response.append({'code': organ.get('organ_uberon'),'term': organ.get('term')})
+
+    return organ_response
