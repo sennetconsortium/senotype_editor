@@ -43,11 +43,6 @@ Arguments:
                     ) %}
                 {% endif %}
                 {% set hidden_value = (full_value or '').split(' ')[0] %}
-                <script>
-                    // Output the value to the JavaScript console
-                    console.log("hidden_value:", {{ hidden_value|tojson }});
-                    console.log("full_value:", {{ full_value|tojson }});
-                </script>
                 <li class="list-group-item d-flex justify-content-between align-items-center w-100">
                     <!-- Hidden input used to store value for post -->
                     <input name="{{ field.name }}" type="hidden" value="{{ hidden_value }}">
@@ -75,7 +70,7 @@ Arguments:
                         <span class="diagnosis-link-placeholder ms-2" id="diagnosis-link-{{ hidden_value | e }}"></span>
                     {% endif %}
                     {% if field_name == "location" %}
-                        <!-- Placeholder for the diagnosis link button, id is unique per hidden_value -->
+                        <!-- Placeholder for the organ link button, id is unique per hidden_value -->
                         <span class="location-link-placeholder ms-2" id="location-link-{{ hidden_value | e }}"></span>
                     {% endif %}
                     <!-- Button to remove this value from the list -->
@@ -158,6 +153,18 @@ Arguments:
                     '.diagnosis-link-placeholder',
                     parse_code=false,
                     replace_colon_with_underscore=true
+                );
+            });
+        </script>
+    {% elif field_name == "location" %}
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                addLinkButtons(
+                    '/organs/',
+                    '#location-list input[type="hidden"]',
+                    'View location (organ) details',
+                    '.location-link-placeholder',
+                    parse_code=false
                 );
             });
         </script>

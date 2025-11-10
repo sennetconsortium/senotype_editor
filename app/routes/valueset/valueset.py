@@ -21,7 +21,6 @@ valueset_blueprint = Blueprint('valueset', __name__, url_prefix='/valueset')
 def getapp_assertionvalueset(predicate: str) -> pd.DataFrame:
     """
     Obtain the valueset associated with an assertion predicate.
-    :param dfvaluesets: valueset dataframe
     :param predicate: assertion predicate. Can be either an IRI or a term.
     """
 

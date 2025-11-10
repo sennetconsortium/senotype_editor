@@ -2,7 +2,6 @@
 Form used to create and update Senotype JSONs.
 """
 
-
 from wtforms import (Form, SelectField, validators, ValidationError,
                      TextAreaField, FieldList, StringField, FormField, HiddenField)
 from wtforms.validators import Email
@@ -50,6 +49,8 @@ def validate_age_range(form, field):
     2. The age value is less than the upperbound.
 
     Assumes that the validateage validator is called prior.
+
+    Both the form and field parameters are required by WTForms.
 
     """
 
@@ -151,7 +152,8 @@ class EditForm(Form):
     # Submitter
     submitterfirst = StringField('First', validators=[validators.InputRequired()])
     submitterlast = StringField('Last', validators=[validators.InputRequired()])
-    submitteremail = StringField('email', validators=[validators.InputRequired(), Email(message='Invalid email address.')])
+    submitteremail = StringField('email', validators=[validators.InputRequired(),
+                                                      Email(message='Invalid email address.')])
 
     # Simple assertions.
     # These lists require custom validators because they will be updated via Javascript.

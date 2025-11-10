@@ -22,7 +22,7 @@ logging.basicConfig(format='[%(asctime)s] %(levelname)s in %(module)s: %(message
 logger = logging.getLogger(__name__)
 
 
-class SenLibMySql():
+class SenLibMySql:
 
     def _fetch(self, query: str) -> List[Tuple[Any, ...]]:
         """

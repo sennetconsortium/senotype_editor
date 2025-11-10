@@ -9,7 +9,6 @@ from models.appconfig import AppConfig
 class OntologyAPI:
 
     def __init__(self):
-        api = RequestRetry()
         cfg = AppConfig()
         self.urlbase = f"{cfg.getfield(key='UBKG_BASE_URL')}"
 

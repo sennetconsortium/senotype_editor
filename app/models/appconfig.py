@@ -7,7 +7,6 @@ app.cfg files for Flask apps differ from the config files formatted for use by t
 This class looks for a file named "app.cfg" in the instance directory.
 
 """
-import os
 from configparser import ConfigParser
 from flask import abort
 from pathlib import Path
@@ -45,7 +44,7 @@ class AppConfig:
         self.path = '/usr/src/app'
         self.file = self.path + '/app.cfg'
         try:
-            stream = open(self.file,'r')
+            stream = open(self.file, 'r')
         except FileNotFoundError as e:
             home = str(Path('~').expanduser())
             self.path = home + '/senotype-editor'
@@ -71,7 +70,7 @@ class AppConfig:
             logger.error(e, exc_info=True)
             msg = f'Missing configuration file {self.file}.'
             print(msg)
-            abort(400,msg)
+            abort(400, msg)
 
     def getfieldlist(self, prefix: str) -> list:
         """

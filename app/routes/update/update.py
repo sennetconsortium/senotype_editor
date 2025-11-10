@@ -1,11 +1,11 @@
 """
 Updates the Senotype repository by writing/overwriting a submission JSON file.
 """
+
 from flask import Blueprint, request, render_template, flash, redirect, session, url_for, current_app
 
 from werkzeug.datastructures import MultiDict
 
-import json
 
 # Helper classes
 from models.appconfig import AppConfig

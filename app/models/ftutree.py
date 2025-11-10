@@ -4,7 +4,6 @@ Class that builds the data structure to support a jstree based on the
 2D FTU CSV.
 """
 import requests
-import logging
 import pandas as pd
 from io import StringIO
 

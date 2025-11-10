@@ -20,7 +20,6 @@ import requests
 from requests.exceptions import ConnectionError
 import logging
 import pandas as pd
-import json
 
 
 # Application configuration object
@@ -409,10 +408,8 @@ class SenLib:
             code = o.get('code')
             pmid = code.split(':')[1]
             url = f'{base_url}{pmid}'
-            print(url)
             citation = api.getresponse(url=url, format='json')
             result = citation.get('result')
-            print(result)
             title = ''
             if result is None:
                 title = "unknown"
@@ -680,7 +677,7 @@ class SenLib:
             )
         return listret
 
-    def _getnodetext(self, val:str) ->str:
+    def _getnodetext(self, val: str) -> str:
 
         """
         Obtains the term for a senotype ftu jstree node from the allftu jstree.
@@ -743,7 +740,7 @@ class SenLib:
                     ftu_val = object.get('ftu')
                     if ftu_val != '':
                         ftu_val = ftu_val.replace(':', '_')
-                    ftu_part_val = object.get('ftu_part','')
+                    ftu_part_val = object.get('ftu_part', '')
                     if ftu_part_val != '':
                         ftu_part_val = ftu_part_val.replace(':', '_')
 
@@ -876,7 +873,6 @@ class SenLib:
 
         # Locations (external; multiple possible values)
         locationlist = self.getstoredsimpleassertiondata(assertions=assertions, predicate='located_in')
-        print('fetchfromdb:locationlist',locationlist)
         if len(locationlist) > 0:
             form.location.process(form.location, [self.truncateddisplaytext(displayid=item['code'],
                                                                             description=item['term'],
@@ -1094,7 +1090,8 @@ class SenLib:
                 {
                     "code": item,
                     "term": (
-                        "" if assertion in ['has_citation', 'has_origin', 'has_dataset','has_cell_type','has_diagnosis']
+                        "" if assertion in ['has_citation', 'has_origin', 'has_dataset', 'has_cell_type',
+                                            'has_diagnosis']
                         else valueset[valueset['valueset_code'] == item]['valueset_term'].iloc[0]
                     )
                 }
@@ -1187,7 +1184,6 @@ class SenLib:
 
         # Location
         locationlist = self.build_session_list(form_data=form_data, field_name='location')
-        print('getsessiondata:locationlist', locationlist)
         if len(locationlist) > 0:
             form.location.process(None, [f"{item['code']} ({item['term']})" for item in locationlist])
         else:
@@ -1292,9 +1288,9 @@ class SenLib:
 
         if len(diagnosislist) > 0:
             form.diagnosis.process(None, [self.truncateddisplaytext(displayid=item['code'],
-                                                                   description=item['term'],
-                                                                   trunclength=20)
-                                         for item in diagnosislist])
+                                                                    description=item['term'],
+                                                                    trunclength=20)
+                                          for item in diagnosislist])
         else:
             form.diagnosis.process(None, [''])
 
@@ -1352,8 +1348,6 @@ class SenLib:
         # 3. Associate the object list with the assertion information in an assertion object.
         # 4. Build a list of assertion objects.
 
-        print('buildsimpleassertions')
-        print('form_data',form_data)
         assertions = []
         for key in form_data:
             objects = []
@@ -1400,7 +1394,6 @@ class SenLib:
         :param form_data: form data
         """
 
-        assertions = []
         # Get the context fields from context_assertion_code.
         # For each field,
         # - get
@@ -1508,7 +1501,7 @@ class SenLib:
 
         return assertions
 
-    def buildftuassertions(self, ftu_tree:dict) -> list:
+    def buildftuassertions(self, ftu_tree: dict) -> list:
         """
         Build a set of assertions between the senotype and Functional Tissue Unit
         paths.
@@ -1533,8 +1526,6 @@ class SenLib:
         } for a FTU part
 
         """
-
-        assertions = []
 
         # Denormalize the tree node data at the level of ftu_part.
         ftu_paths = []
@@ -1645,7 +1636,6 @@ class SenLib:
                           "assertions": listassertions
                           }
 
-
         return dictsubmission
 
     # def writesubmission(self, form_data: MultiDict, ftu_tree: dict, new_version_id: str = ''):
@@ -1670,7 +1660,7 @@ class SenLib:
 
         # Build the submission JSON, with updates to provenance as necessary.
         # self.submissionjson = self.buildsubmissionjson(form_data=form_data, senotypeid=senotypeid,
-                                                       #predecessorid=predecessorid, ftu_tree=ftu_tree)
+                                                       # predecessorid=predecessorid, ftu_tree=ftu_tree)
 
         self.submissionjson = self.buildsubmissionjson(form_data=form_data, senotypeid=senotypeid,
                                                        predecessorid=predecessorid)
@@ -1772,10 +1762,3 @@ class SenLib:
 
         self.ubkgstatus = self.getubkgstatus(cfg=cfg)
         logger.info(f'UBKG API status = {self.ubkgstatus}')
-
-
-
-
-
-
-

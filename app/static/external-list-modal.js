@@ -1,5 +1,5 @@
 /*
-Features to support addition and removal of external assertions (dataset, citation, origin) for Senotype submission.
+Features to support addition and removal of external assertions (dataset, citation, origin, etc.) for Senotype submission.
 DRY version: parameterized for type ('dataset', 'citation', 'origin', etc.).
 
 Usage:
@@ -226,8 +226,9 @@ function createExternalConfig(trunclength = 40) {
                 return [];
             },
             link: info => ({
-                href: `http://purl.obolibrary.org/obo/${encodeURIComponent(info.id.replace(/^CL:/, 'CL_'))}`,
-                title: 'View organs'
+                // Go directly to the organ's detail page in the Data Portal.
+                href: `/organs/${encodeURIComponent(info.id)}`,
+                title: 'View organ details'
             }),
             displayText: info => {
                 const desc = info.description || '';

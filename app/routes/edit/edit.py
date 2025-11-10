@@ -4,8 +4,8 @@ Edit route:
 2. Initiates a new Senotype, which will be written to the database via the Update route.
 
 """
-from flask import Blueprint, request, render_template, session, make_response, abort, current_app
-import json
+from flask import Blueprint, request, render_template, session, current_app
+
 
 # The EditForm WTForm
 from models.editform import EditForm
@@ -127,7 +127,7 @@ def edit():
     # Future development -
     # 2. information for the complete 2D FTU jstree
     # 3. information for the senotype's FTU jstree
-    #return render_template('edit.html',
+    # return render_template('edit.html',
                            #form=form,
                            #response={'tree_data': senlib.senotypetree,
                                      #'allftutree_data': current_app.allftutree,
