@@ -2,6 +2,9 @@ FROM sennet/api-base-image:1.4.0
 
 LABEL description="Senotype Editor"
 
+ARG HOST_GID
+ARG HOST_UID
+
 # Set up environment variables for Python
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
@@ -22,6 +25,10 @@ RUN apt-get update -y && \
 RUN pip install --upgrade pip setuptools wheel && \
     pip install --no-cache-dir -r requirements.txt && \
     rm requirements.txt
+
+# Modify the UID and GID of codcc to match the host
+RUN groupmod --gid $HOST_GID codcc && \
+    usermod --uid $HOST_UID codcc
 
 RUN chown -R codcc:codcc /usr/src/app
 
