@@ -1,0 +1,12 @@
+# Ignore all Python bytecode caches
+**/__pycache__/
+__pycache__/
+
+# Ignore compiled python files
+**/*.pyc
+*.pyc
+**/*.pyo
+*.pyo
+
+# Ignore config files
+/app/instance/

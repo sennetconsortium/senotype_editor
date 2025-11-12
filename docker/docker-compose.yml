@@ -1,12 +1,24 @@
-name: senotype_editor
+name: senotype-editor
 
 services:
-  senotype_editor:
+  senotype-editor:
+    hostname: senotype-editor
+    container_name: senotype-editor
     build:
-      context: ../app
-      dockerfile: ../docker/Dockerfile
-    image: senotype_editor:local
+      context: ..
+      dockerfile: ./docker/Dockerfile
+    init: true
+    restart: always
+    platform: linux/amd64
+    image: sennet/senotype-editor:${SENOTYPE_EDITOR_VERSION:?err}
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "http://localhost:5010"]
+      interval: 1m30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
     ports:
-      - "5000:5000"
+      - "5010:5010"
     volumes:
-      - ~/senotype-editor/app.cfg:/usr/src/app/app.cfg  # Mount local app.cfg into usr/src/app/app.cfg inside the container
+      - ../app/instance/app.cfg:/usr/src/app/app.cfg
+      - ../log:/usr/src/app/log
