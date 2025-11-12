@@ -30,7 +30,8 @@ RUN pip install --upgrade pip setuptools wheel && \
 RUN groupmod --gid $HOST_GID codcc && \
     usermod --uid $HOST_UID codcc
 
-RUN chown -R codcc:codcc /usr/src/app
+RUN mkdir -p /usr/src/app/log && \
+    chown -R codcc:codcc /usr/src/app
 
 USER codcc
 
