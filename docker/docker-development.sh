@@ -72,7 +72,7 @@ else
     elif [ "$1" = "config" ]; then
         docker-compose -f docker-compose.yml -p senotype-editor config
     elif [ "$1" = "build" ]; then
-        docker-compose -f docker-compose.yml -p senotype-editor build
+        docker-compose -f docker-compose.yml -p senotype-editor build --no-cache
     elif [ "$1" = "start" ]; then
         docker-compose -f docker-compose.yml -p senotype-editor up -d
     elif [ "$1" = "stop" ]; then
