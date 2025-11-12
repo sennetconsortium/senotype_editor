@@ -11,6 +11,7 @@ from models.appconfig import AppConfig
 # from models.ftutree import FTUTree
 
 # Register Blueprints
+from routes.health.health import health_blueprint
 from routes.globus_auth.globus_auth import login_blueprint
 from routes.globus_index.globus import globus_blueprint
 from routes.edit.edit import edit_blueprint
@@ -51,6 +52,7 @@ class SenotypeUI:
         logger.info(f"package_base_dir: {package_base_dir}")
 
         # Register route Blueprints.
+        self.app.register_blueprint(health_blueprint)
         self.app.register_blueprint(login_blueprint)
         self.app.register_blueprint(globus_blueprint)
         self.app.register_blueprint(edit_blueprint)

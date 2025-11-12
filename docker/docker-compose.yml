@@ -15,7 +15,7 @@ services:
     platform: linux/amd64
     image: sennet/senotype-editor:${SENOTYPE_EDITOR_VERSION:?err}
     healthcheck:
-      test: ["CMD", "curl", "--fail", "http://localhost:5010"]
+      test: ["CMD", "curl", "--fail", "http://localhost:5010/health" ]
       interval: 1m30s
       timeout: 10s
       retries: 3
