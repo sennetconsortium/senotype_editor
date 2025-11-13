@@ -7,6 +7,7 @@ SENOTYPE_DB_HOST='host'
 # Flask secret key
 KEY='x'
 # Globus keys
+GLOBUS_URL='https://senlib.dev.sennetconsortium.org/login'
 GLOBUS_SENNET_CLIENT='x'
 GLOBUS_SENNET_SECRET='x'
 
