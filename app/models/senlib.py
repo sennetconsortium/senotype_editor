@@ -399,7 +399,7 @@ class SenLib:
         :param: rawobjects - a list of PMID objects.
         """
         api = RequestRetry()
-        base_url = 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&retmode=json&id='
+        base_url = self.cfg.getfield(key='EUTILS_BASE_URL')
 
         logging.info('Getting citation data from NCBI EUtils')
 
