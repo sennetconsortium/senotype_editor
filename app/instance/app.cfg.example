@@ -24,6 +24,13 @@ DATASET_BASE_URL='https://data.sennetconsortium.org/dataset'
 
 # External base URLs
 # DataCite
-DATACITE_BASE_URL='https://api.datacite.org/dois/'
+DATACITE_API_BASE_URL='https://api.datacite.org/dois/'
+DATACITE_DOI_BASE_URL='https://doi.org/'
 DATACITE_HEARTBEAT_URL='https://api.datacite.org/heartbeat'
+# NCBI EUtils
+EUTILS_BASE_URL='https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&retmode=json&id='
+# SciCrunch Resolver
+SCICRUNCH_BASE_URL='https://scicrunch.org/resolver/'
+# PURL
+IRI_BASE_URL='http://purl.obolibrary.org/obo/'
 

@@ -330,7 +330,7 @@ class SenLib:
             return ''
         else:
             doi = doi_url.split('https://doi.org/')[1]
-            url_base = self.cfg.getfield(key='DATACITE_BASE_URL')
+            url_base = self.cfg.getfield(key='DATACITE_API_BASE_URL')
             url = f'{url_base}{doi}'
 
             logger.info(f'Getting DataCite information for {doi}')
@@ -496,7 +496,7 @@ class SenLib:
         :param: rawobjects - the list of RRID objects.
         """
         api = RequestRetry()
-        base_url = 'https://scicrunch.org/resolver/'
+        base_url = self.cfg.getfield(key='SCICRUNCH_BASE_URL')
 
         logger.info('Getting origin information from SciCrunch Resolver')
 
@@ -531,7 +531,8 @@ class SenLib:
         for o in rawobjects:
             code = o.get('code')
             snid = code
-            url = f'{self.entity_url}{snid}'
+            base_url = self.cfg.getfield(key='ENTITY_BASE_URL')
+            url = f'{base_url}{snid}'
             dataset = api.getresponse(url=url, format='json', headers=headers)
             title = dataset.get('title', '')
             oret.append({"code": code, "term": title})
@@ -727,7 +728,7 @@ class SenLib:
         2D FTU CSV.
         """
 
-        iribase = 'http://purl.obolibrary.org/obo/'
+        iribase = self.cfg.getfield(key='IRI_BASE_URL')
         organs = {}
         for assertion in assertions:
             predicate = assertion.get('predicate').get('term')
@@ -1607,7 +1608,8 @@ class SenLib:
         doi = form_data.get('doi', None)
         if doi is not None:
             doiid = doi.split(' (')[0]
-            doiurl = f'https://doi.org/{doiid}'
+            base_url = self.cfg.getfield(key='DATACITE_DOI_BASE_URL')
+            doiurl = f'{base_url}{doiid}'
         else:
             doiurl = None
 
@@ -1732,8 +1734,6 @@ class SenLib:
         """
 
         self.cfg = cfg
-        # Base URL for calls to entity-api
-        self.entity_url = self.cfg.getfield(key='ENTITY_BASE_URL')
 
         # Connect to the senlib database.
         self.database = SenLibMySql(cfg=self.cfg)
@@ -1758,7 +1758,8 @@ class SenLib:
         self.submissionjson = {}
 
         api = RequestRetry()
-        urlheartbeat = 'https://api.datacite.org/heartbeat'
+
+        urlheartbeat = self.cfg.getfield('DATACITE_HEARTBEAT_URL')
         self.datacitestatus = api.getresponse(url=urlheartbeat)
         logger.info(f'DataCite status = {self.datacitestatus}')
 
