@@ -73,7 +73,7 @@ def login():
     client = load_app_client(consortium)
 
     # The Globus Auth session will redirect to this route.
-    redirect_uri = f'http://localhost:5000/login'
+    redirect_uri = 'https://senlib.dev.sennetconsortium.org/login'
     client.oauth2_start_flow(redirect_uri, refresh_tokens=True)
 
     # If there's no "code" argument in the request object, then this is the first execution of the route.
