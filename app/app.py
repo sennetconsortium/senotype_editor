@@ -11,6 +11,7 @@ from models.appconfig import AppConfig
 # from models.ftutree import FTUTree
 
 # Register Blueprints
+from routes.health.health import health_blueprint
 from routes.globus_auth.globus_auth import login_blueprint
 from routes.globus_index.globus import globus_blueprint
 from routes.edit.edit import edit_blueprint
@@ -19,6 +20,7 @@ from routes.ontology.ontology import ontology_blueprint
 from routes.update.update import update_blueprint
 from routes.dataset.dataset import dataset_blueprint
 from routes.organ.organ import organ_blueprint
+from routes.citation.citation import citation_blueprint
 
 
 def to_pretty_json(value):
@@ -51,6 +53,7 @@ class SenotypeUI:
         logger.info(f"package_base_dir: {package_base_dir}")
 
         # Register route Blueprints.
+        self.app.register_blueprint(health_blueprint)
         self.app.register_blueprint(login_blueprint)
         self.app.register_blueprint(globus_blueprint)
         self.app.register_blueprint(edit_blueprint)
@@ -59,6 +62,7 @@ class SenotypeUI:
         self.app.register_blueprint(update_blueprint)
         self.app.register_blueprint(dataset_blueprint)
         self.app.register_blueprint(organ_blueprint)
+        self.app.register_blueprint(citation_blueprint)
 
         # Register the custom JSON pretty print filter.
         self.app.jinja_env.filters['tojson_pretty'] = to_pretty_json

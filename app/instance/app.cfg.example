@@ -7,11 +7,31 @@ SENOTYPE_DB_HOST='host'
 # Flask secret key
 KEY='x'
 # Globus keys
+GLOBUS_URL='https://senlib.dev.sennetconsortium.org/login'
 GLOBUS_SENNET_CLIENT='x'
 GLOBUS_SENNET_SECRET='x'
 
-# API base URLs
+# Sennet base URLs
+# uuid-api
 UUID_BASE_URL='https://uuid-api.dev.sennetconsortium.org/uuid'
-#UUID_BASE_URL='https://uuid-api.sennetconsortium.org/uuid'
-UBKG_BASE_URL='http://127.0.0.1:5002'
-#UBKG_BASE_URL='https://ontology.api.hubmapconsortium.org'
+# entity-api
+ENTITY_BASE_URL='https://entity.api.sennetconsortium.org/entities/'
+# ubkg-api
+UBKG_BASE_URL='https://ontology.api.hubmapconsortium.org'
+# Data Portal Organs page
+ORGANS_BASE_URL='https://data.sennetconsortium.org/organs/'
+# Data Portal dataset
+DATASET_BASE_URL='https://data.sennetconsortium.org/dataset'
+
+# External base URLs
+# DataCite
+DATACITE_API_BASE_URL='https://api.datacite.org/dois/'
+DATACITE_DOI_BASE_URL='https://doi.org/'
+DATACITE_HEARTBEAT_URL='https://api.datacite.org/heartbeat'
+# NCBI EUtils
+EUTILS_BASE_URL='https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&retmode=json&id='
+# SciCrunch Resolver
+SCICRUNCH_BASE_URL='https://scicrunch.org/resolver/'
+# PURL
+IRI_BASE_URL='http://purl.obolibrary.org/obo/'
+

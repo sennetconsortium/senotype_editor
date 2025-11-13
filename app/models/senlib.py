@@ -330,14 +330,14 @@ class SenLib:
             return ''
         else:
             doi = doi_url.split('https://doi.org/')[1]
-            url = f'https://api.datacite.org/dois/{doi}'
+            url_base = self.cfg.getfield(key='DATACITE_API_BASE_URL')
+            url = f'{url_base}{doi}'
 
-            print(url)
             logger.info(f'Getting DataCite information for {doi}')
 
             response = api.getresponse(url=url, format='json')
             if response is None:
-                urlheartbeat = 'https://api.datacite.org/heartbeat'
+                urlheartbeat = self.cfg.getfield(key='DATACITE_HEARTBEAT_URL')
                 responseheartbeat = api.getresponse(url=urlheartbeat)
                 if responseheartbeat == 'OK':
                     title = 'unknown title'
@@ -399,7 +399,7 @@ class SenLib:
         :param: rawobjects - a list of PMID objects.
         """
         api = RequestRetry()
-        base_url = 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&retmode=json&id='
+        base_url = self.cfg.getfield(key='EUTILS_BASE_URL')
 
         logging.info('Getting citation data from NCBI EUtils')
 
@@ -407,7 +407,7 @@ class SenLib:
         for o in rawobjects:
             code = o.get('code')
             pmid = code.split(':')[1]
-            url = f'{base_url}{pmid}'
+            url = f'{base_url}&id={pmid}'
             citation = api.getresponse(url=url, format='json')
             result = citation.get('result')
             title = ''
@@ -496,7 +496,7 @@ class SenLib:
         :param: rawobjects - the list of RRID objects.
         """
         api = RequestRetry()
-        base_url = 'https://scicrunch.org/resolver/'
+        base_url = self.cfg.getfield(key='SCICRUNCH_BASE_URL')
 
         logger.info('Getting origin information from SciCrunch Resolver')
 
@@ -522,7 +522,6 @@ class SenLib:
         :param: rawobjects - a list of SenNet dataset objects.
         """
         api = RequestRetry()
-        base_url = 'https://entity.api.sennetconsortium.org/entities/'
         token = session['groups_token']
         headers = {"Authorization": f'Bearer {token}'}
 
@@ -532,6 +531,7 @@ class SenLib:
         for o in rawobjects:
             code = o.get('code')
             snid = code
+            base_url = self.cfg.getfield(key='ENTITY_BASE_URL')
             url = f'{base_url}{snid}'
             dataset = api.getresponse(url=url, format='json', headers=headers)
             title = dataset.get('title', '')
@@ -728,7 +728,7 @@ class SenLib:
         2D FTU CSV.
         """
 
-        iribase = 'http://purl.obolibrary.org/obo/'
+        iribase = self.cfg.getfield(key='IRI_BASE_URL')
         organs = {}
         for assertion in assertions:
             predicate = assertion.get('predicate').get('term')
@@ -1608,7 +1608,8 @@ class SenLib:
         doi = form_data.get('doi', None)
         if doi is not None:
             doiid = doi.split(' (')[0]
-            doiurl = f'https://doi.org/{doiid}'
+            base_url = self.cfg.getfield(key='DATACITE_DOI_BASE_URL')
+            doiurl = f'{base_url}{doiid}'
         else:
             doiurl = None
 
@@ -1704,14 +1705,13 @@ class SenLib:
         form.submitterlast.data = session['username'].split(' ')[1]
         form.submitteremail.data = session['userid']
 
-    def getubkgstatus(self, cfg: AppConfig) -> str:
+    def getubkgstatus(self) -> str:
 
         """
         Check the status of the UBKG API.
-        :param cfg: config file.
         """
         api = RequestRetry()
-        statusurl = cfg.getfield('UBKG_BASE_URL')
+        statusurl = self.cfg.getfield('UBKG_BASE_URL')
 
         try:
             status = api.getresponse(url=statusurl)
@@ -1733,8 +1733,10 @@ class SenLib:
 
         """
 
+        self.cfg = cfg
+
         # Connect to the senlib database.
-        self.database = SenLibMySql(cfg)
+        self.database = SenLibMySql(cfg=self.cfg)
 
         # Senotype Editor assertion valuesets
         self.assertionvaluesets = self.database.assertionvaluesets
@@ -1756,7 +1758,8 @@ class SenLib:
         self.submissionjson = {}
 
         api = RequestRetry()
-        urlheartbeat = 'https://api.datacite.org/heartbeat'
+
+        urlheartbeat = self.cfg.getfield('DATACITE_HEARTBEAT_URL')
         self.datacitestatus = api.getresponse(url=urlheartbeat)
         logger.info(f'DataCite status = {self.datacitestatus}')
 
