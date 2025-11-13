@@ -522,7 +522,6 @@ class SenLib:
         :param: rawobjects - a list of SenNet dataset objects.
         """
         api = RequestRetry()
-        base_url = 'https://entity.api.sennetconsortium.org/entities/'
         token = session['groups_token']
         headers = {"Authorization": f'Bearer {token}'}
 
@@ -532,7 +531,7 @@ class SenLib:
         for o in rawobjects:
             code = o.get('code')
             snid = code
-            url = f'{base_url}{snid}'
+            url = f'{self.entity_url}{snid}'
             dataset = api.getresponse(url=url, format='json', headers=headers)
             title = dataset.get('title', '')
             oret.append({"code": code, "term": title})
@@ -1704,14 +1703,13 @@ class SenLib:
         form.submitterlast.data = session['username'].split(' ')[1]
         form.submitteremail.data = session['userid']
 
-    def getubkgstatus(self, cfg: AppConfig) -> str:
+    def getubkgstatus(self) -> str:
 
         """
         Check the status of the UBKG API.
-        :param cfg: config file.
         """
         api = RequestRetry()
-        statusurl = cfg.getfield('UBKG_BASE_URL')
+        statusurl = self.cfg.getfield('UBKG_BASE_URL')
 
         try:
             status = api.getresponse(url=statusurl)
@@ -1733,8 +1731,12 @@ class SenLib:
 
         """
 
+        self.cfg = cfg
+        # Base URL for calls to entity-api
+        self.entity_url = self.cfg.getfield(key='ENTITY_BASE_URL')
+
         # Connect to the senlib database.
-        self.database = SenLibMySql(cfg)
+        self.database = SenLibMySql(cfg=self.cfg)
 
         # Senotype Editor assertion valuesets
         self.assertionvaluesets = self.database.assertionvaluesets
