@@ -63,9 +63,8 @@ function createExternalConfig(trunclength = 40) {
                 }];
             },
             link: info => ({
-                // Because this is in the existing Globus auth session,
-                // go directly to the dataset's detail page in the Data Portal.
-                href: `https://data.sennetconsortium.org/dataset?uuid=${encodeURIComponent(info.uuid)}`,
+                // Go directly to the dataset's detail page in the Data Portal.
+                href: `//portal/${encodeURIComponent(info.uuid)}`,
                 title: 'View dataset details'
             }),
             displayText: info => {
@@ -84,12 +83,16 @@ function createExternalConfig(trunclength = 40) {
             // 2. Use eSummary to obtain the title of the publication, if it exists.
             // Specify JSON response format.
             apiSearch: query =>
-                `https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&retmode=json&term=${encodeURIComponent(query)}`,
+                //`https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&retmode=json&term=${encodeURIComponent(query)}`,
+                `/citation/search/term/${encodeURIComponent(query)}`,
+
             parseApiResult: async (data) => {
+                console.log(data);
                 const pmids = data.esearchresult?.idlist || [];
                 if (pmids.length === 0) return [];
                 const summaryRes = await fetch(
-                    `https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&retmode=json&id=${pmids.join(',')}`
+                   // `https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&retmode=json&id=${pmids.join(',')}`
+                   `/citation/search/id/${pmids.join(',')}`
                 );
                 const summaryData = await summaryRes.json();
                 // Eutils has array-based responses.

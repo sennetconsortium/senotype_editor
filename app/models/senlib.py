@@ -407,7 +407,7 @@ class SenLib:
         for o in rawobjects:
             code = o.get('code')
             pmid = code.split(':')[1]
-            url = f'{base_url}{pmid}'
+            url = f'{base_url}&id={pmid}'
             citation = api.getresponse(url=url, format='json')
             result = citation.get('result')
             title = ''

@@ -20,6 +20,7 @@ from routes.ontology.ontology import ontology_blueprint
 from routes.update.update import update_blueprint
 from routes.dataset.dataset import dataset_blueprint
 from routes.organ.organ import organ_blueprint
+from routes.citation.citation import citation_blueprint
 
 
 def to_pretty_json(value):
@@ -61,6 +62,7 @@ class SenotypeUI:
         self.app.register_blueprint(update_blueprint)
         self.app.register_blueprint(dataset_blueprint)
         self.app.register_blueprint(organ_blueprint)
+        self.app.register_blueprint(citation_blueprint)
 
         # Register the custom JSON pretty print filter.
         self.app.jinja_env.filters['tojson_pretty'] = to_pretty_json
