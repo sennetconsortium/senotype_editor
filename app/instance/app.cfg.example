@@ -10,8 +10,11 @@ KEY='x'
 GLOBUS_SENNET_CLIENT='x'
 GLOBUS_SENNET_SECRET='x'
 
-# API base URLs
+# Sennet base URLs
+# uuid-api
 UUID_BASE_URL='https://uuid-api.dev.sennetconsortium.org/uuid'
-#UUID_BASE_URL='https://uuid-api.sennetconsortium.org/uuid'
-UBKG_BASE_URL='http://127.0.0.1:5002'
-#UBKG_BASE_URL='https://ontology.api.hubmapconsortium.org'
+# ubkg-api
+UBKG_BASE_URL='https://ontology.api.hubmapconsortium.org'
+# Data Portal Organs page
+ORGANS_BASE_URL='https://data.sennetconsortium.org/organs/'
+
