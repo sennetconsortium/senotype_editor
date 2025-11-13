@@ -13,8 +13,13 @@ GLOBUS_SENNET_SECRET='x'
 # Sennet base URLs
 # uuid-api
 UUID_BASE_URL='https://uuid-api.dev.sennetconsortium.org/uuid'
+# entity-api
+ENTITY_BASE_URL='https://entity.api.sennetconsortium.org/entities/'
 # ubkg-api
 UBKG_BASE_URL='https://ontology.api.hubmapconsortium.org'
 # Data Portal Organs page
 ORGANS_BASE_URL='https://data.sennetconsortium.org/organs/'
+# Data Portal dataset
+DATASET_BASE_URL='https://data.sennetconsortium.org/dataset'
+
 

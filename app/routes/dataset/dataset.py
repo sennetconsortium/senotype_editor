@@ -5,6 +5,7 @@ and pass a request body that includes the Globus authentication token.
 """
 from flask import redirect, session, Blueprint
 import requests
+from models.appconfig import AppConfig
 
 dataset_blueprint = Blueprint('dataset', __name__, url_prefix='/dataset')
 
@@ -18,8 +19,10 @@ def get_dataset_api(entity_id):
     token = session["groups_token"]
     headers = {"Authorization": f"Bearer {token}"}
 
-    # Get the uuid for this SenNet ID
-    url_entity = f"https://entity.api.sennetconsortium.org/entities/{entity_id}"
+    # Get the uuid for this SenNet ID.
+    cfg = AppConfig()
+    base_url = cfg.getfield(key='ENTITY_BASE_URL')
+    url_entity = f"{base_url}{entity_id}"
     resp = requests.get(url=url_entity, headers=headers)
     if not resp.ok:
         # Optionally handle error (e.g. flash message, abort, etc.)
@@ -44,5 +47,7 @@ def get_dataset_portal(entity_id):
         return "UUID not found", 404
 
     # Redirect the browser to the Data Portal dataset page
-    url_portal = f"https://data.sennetconsortium.org/dataset?uuid={uuid}"
+    cfg = AppConfig()
+    base_url = cfg.getfield(key='DATASET_BASE_URL')
+    url_portal = f"{base_url}?uuid={uuid}"
     return redirect(url_portal)
