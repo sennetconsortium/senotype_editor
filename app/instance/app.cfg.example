@@ -22,4 +22,8 @@ ORGANS_BASE_URL='https://data.sennetconsortium.org/organs/'
 # Data Portal dataset
 DATASET_BASE_URL='https://data.sennetconsortium.org/dataset'
 
+# External base URLs
+# DataCite
+DATACITE_BASE_URL='https://api.datacite.org/dois/'
+DATACITE_HEARTBEAT_URL='https://api.datacite.org/heartbeat'
 

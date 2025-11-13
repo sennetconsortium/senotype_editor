@@ -330,14 +330,14 @@ class SenLib:
             return ''
         else:
             doi = doi_url.split('https://doi.org/')[1]
-            url = f'https://api.datacite.org/dois/{doi}'
+            url_base = self.cfg.getfield(key='DATACITE_BASE_URL')
+            url = f'{url_base}{doi}'
 
-            print(url)
             logger.info(f'Getting DataCite information for {doi}')
 
             response = api.getresponse(url=url, format='json')
             if response is None:
-                urlheartbeat = 'https://api.datacite.org/heartbeat'
+                urlheartbeat = self.cfg.getfield(key='DATACITE_HEARTBEAT_URL')
                 responseheartbeat = api.getresponse(url=urlheartbeat)
                 if responseheartbeat == 'OK':
                     title = 'unknown title'

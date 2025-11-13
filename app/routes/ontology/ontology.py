@@ -8,6 +8,7 @@ from models.ontology_class import OntologyAPI
 ontology_blueprint = Blueprint('ontology', __name__, url_prefix='/ontology')
 ontapi = OntologyAPI()
 
+
 @ontology_blueprint.route('/genes/<subpath>')
 def ontology_genes_proxy(subpath):
 
