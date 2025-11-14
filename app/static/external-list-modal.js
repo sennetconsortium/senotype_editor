@@ -79,19 +79,16 @@ function createExternalConfig(trunclength = 40) {
         citation: {
             // Corresponds to a PubMed citation.
             // Synchronous, two-step workflow with EUtils:
-            // 1. Use eSearch to find the publication in the NCBI data.
-            // 2. Use eSummary to obtain the title of the publication, if it exists.
+            // 1. Use eSearch (via the citation/search/term route) to find the publication in the NCBI data.
+            // 2. Use eSummary (via the citation/search/id route) to obtain the title of the publication, if it exists.
             // Specify JSON response format.
             apiSearch: query =>
-                //`https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&retmode=json&term=${encodeURIComponent(query)}`,
                 `/citation/search/term/${encodeURIComponent(query)}`,
 
             parseApiResult: async (data) => {
-                console.log(data);
                 const pmids = data.esearchresult?.idlist || [];
                 if (pmids.length === 0) return [];
                 const summaryRes = await fetch(
-                   // `https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&retmode=json&id=${pmids.join(',')}`
                    `/citation/search/id/${pmids.join(',')}`
                 );
                 const summaryData = await summaryRes.json();
@@ -102,7 +99,8 @@ function createExternalConfig(trunclength = 40) {
                 }));
             },
             link: info => ({
-                href: `https://pubmed.ncbi.nlm.nih.gov/${encodeURIComponent(info.id.split(':')[1])}`,
+                //href: `https://pubmed.ncbi.nlm.nih.gov/${encodeURIComponent(info.id.split(':')[1])}`,
+                href: `/citation/detail/${encodeURIComponent(info.id.split(':')[1])}`,
                 title: 'View citation details'
             }),
             displayText: info => {
@@ -117,7 +115,8 @@ function createExternalConfig(trunclength = 40) {
             // Corresponds to an origin from SciCrunch Resolver, in JSON format.
             // ElasticSearch query.
             apiSearch: query =>
-                `https://scicrunch.org/resolver/${encodeURIComponent(query)}.json`,
+                //`https://scicrunch.org/resolver/${encodeURIComponent(query)}.json`,
+                `/origin/search/${encodeURIComponent(query)}`,
             parseApiResult: data => {
                 let items = [];
                 if (data.hits && Array.isArray(data.hits.hits)) {
@@ -131,7 +130,8 @@ function createExternalConfig(trunclength = 40) {
                 }));
             },
             link: info => ({
-                href: `https://scicrunch.org/resolver/${encodeURIComponent(info.id.replace(/^RRID:/, ''))}`,
+                //href: `https://scicrunch.org/resolver/${encodeURIComponent(info.id.replace(/^RRID:/, ''))}`,
+                href: `/origin/detail/${encodeURIComponent(info.id.replace(/^RRID:/, ''))}`,
                 title: 'View origin details'
             }),
             displayText: info => {
@@ -344,6 +344,7 @@ function setupExternalModalSearch(type) {
             resultsDiv.innerHTML = `<div class="text-muted">Searching ...</div>`;
             try {
                 const apiUrl = config.apiSearch(query);
+                console.log(apiUrl);
                 const response = await fetch(apiUrl);
                 if (!response.ok) throw new Error("API error");
                 const data = await response.json();

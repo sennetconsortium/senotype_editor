@@ -395,11 +395,11 @@ class SenLib:
     def getcitationobjects(self, rawobjects: list) -> list:
 
         """
-        Calls the NCBI EUtils API to obtain the title for the PMID.
+        Calls the NCBI EUtils API (via the citation/search route) to obtain the title for the PMID.
         :param: rawobjects - a list of PMID objects.
         """
         api = RequestRetry()
-        base_url = self.cfg.getfield(key='EUTILS_BASE_URL')
+        base_url = f"{request.host_url.rstrip('/')}/citation/search/id/"
 
         logging.info('Getting citation data from NCBI EUtils')
 
@@ -407,7 +407,8 @@ class SenLib:
         for o in rawobjects:
             code = o.get('code')
             pmid = code.split(':')[1]
-            url = f'{base_url}&id={pmid}'
+            url = f'{base_url}{pmid}'
+
             citation = api.getresponse(url=url, format='json')
             result = citation.get('result')
             title = ''
@@ -542,7 +543,7 @@ class SenLib:
     def getmarkerobjects(self, rawobjects: list) -> list:
 
         """
-            Calls the entity API to obtain the description for specified markers.
+            Calls the UBKG API to obtain the description for specified markers.
             :param: rawobjects - a list of specified marker objects.
         """
 
@@ -1763,5 +1764,5 @@ class SenLib:
         self.datacitestatus = api.getresponse(url=urlheartbeat)
         logger.info(f'DataCite status = {self.datacitestatus}')
 
-        self.ubkgstatus = self.getubkgstatus(cfg=cfg)
+        self.ubkgstatus = self.getubkgstatus()
         logger.info(f'UBKG API status = {self.ubkgstatus}')
