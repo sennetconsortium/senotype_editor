@@ -115,7 +115,6 @@ function createExternalConfig(trunclength = 40) {
             // Corresponds to an origin from SciCrunch Resolver, in JSON format.
             // ElasticSearch query.
             apiSearch: query =>
-                //`https://scicrunch.org/resolver/${encodeURIComponent(query)}.json`,
                 `/origin/search/${encodeURIComponent(query)}`,
             parseApiResult: data => {
                 let items = [];
@@ -130,7 +129,6 @@ function createExternalConfig(trunclength = 40) {
                 }));
             },
             link: info => ({
-                //href: `https://scicrunch.org/resolver/${encodeURIComponent(info.id.replace(/^RRID:/, ''))}`,
                 href: `/origin/detail/${encodeURIComponent(info.id.replace(/^RRID:/, ''))}`,
                 title: 'View origin details'
             }),

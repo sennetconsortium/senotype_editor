@@ -1,5 +1,5 @@
 """
-Wraps calls to the SciCrunch Resolver API SciCruch detail pages to obtain
+Wraps calls to the SciCrunch Resolver API and SciCruch detail pages to obtain
 information on origins.
 """
 
