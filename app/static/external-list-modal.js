@@ -64,7 +64,7 @@ function createExternalConfig(trunclength = 40) {
             },
             link: info => ({
                 // Go directly to the dataset's detail page in the Data Portal.
-                href: `//portal/${encodeURIComponent(info.uuid)}`,
+                href: `/dataset/portal/${encodeURIComponent(info.uuid)}`,
                 title: 'View dataset details'
             }),
             displayText: info => {
@@ -84,7 +84,6 @@ function createExternalConfig(trunclength = 40) {
             // Specify JSON response format.
             apiSearch: query =>
                 `/citation/search/term/${encodeURIComponent(query)}`,
-
             parseApiResult: async (data) => {
                 const pmids = data.esearchresult?.idlist || [];
                 if (pmids.length === 0) return [];
@@ -112,8 +111,7 @@ function createExternalConfig(trunclength = 40) {
             }
         },
         origin: {
-            // Corresponds to an origin from SciCrunch Resolver, in JSON format.
-            // ElasticSearch query.
+            // Corresponds to a search of SciCrunch Resolver.
             apiSearch: query =>
                 `/origin/search/${encodeURIComponent(query)}`,
             parseApiResult: data => {
@@ -160,7 +158,8 @@ function createExternalConfig(trunclength = 40) {
                 return [];
             },
             link: info => ({
-                href: `http://purl.obolibrary.org/obo/${encodeURIComponent(info.id.replace(/^DOID:/, 'DOID_'))}`,
+                //href: `http://purl.obolibrary.org/obo/${encodeURIComponent(info.id.replace(/^DOID:/, 'DOID_'))}`,
+                href: `/bio/obo/detail/${encodeURIComponent(info.id.replace(/^DOID:/, 'DOID_'))}`,
                 title: 'View diagnoses'
             }),
             displayText: info => {
@@ -193,7 +192,8 @@ function createExternalConfig(trunclength = 40) {
                 }));
             },
             link: info => ({
-                href: `http://purl.obolibrary.org/obo/${encodeURIComponent(info.id.replace(/^CL:/, 'CL_'))}`,
+                //href: `http://purl.obolibrary.org/obo/${encodeURIComponent(info.id.replace(/^CL:/, 'CL_'))}`,
+                href: `/bio/obo/detail/${encodeURIComponent(info.id.replace(/^CL:/, 'CL_'))}`,
                 title: 'View celltype details'
             }),
             displayText: info => {

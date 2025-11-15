@@ -58,11 +58,11 @@ def getcitationdetailroute():
 
 # Return the PubMed detail page for a publication.
 @citation_blueprint.route('/detail/<id>', methods=['GET'])
-def getcitationdetailidroute(id: str = ''):
+def getcitationdetailidroute(id):
     return getcitationdetail(id)
 
 
-def getcitationdetail(id):
+def getcitationdetail(id: str = ''):
 
     """
     Redirects to the PubMed detail page for the specified PMID.
@@ -71,4 +71,5 @@ def getcitationdetail(id):
     cfg = AppConfig()
     base_url = cfg.getfield(key='PUBMED_BASE_URL')
     url = f"{base_url}{id}"
+    print(url)
     return redirect(url)
