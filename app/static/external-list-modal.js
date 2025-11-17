@@ -98,7 +98,6 @@ function createExternalConfig(trunclength = 40) {
                 }));
             },
             link: info => ({
-                //href: `https://pubmed.ncbi.nlm.nih.gov/${encodeURIComponent(info.id.split(':')[1])}`,
                 href: `/citation/detail/${encodeURIComponent(info.id.split(':')[1])}`,
                 title: 'View citation details'
             }),
@@ -158,7 +157,6 @@ function createExternalConfig(trunclength = 40) {
                 return [];
             },
             link: info => ({
-                //href: `http://purl.obolibrary.org/obo/${encodeURIComponent(info.id.replace(/^DOID:/, 'DOID_'))}`,
                 href: `/bio/obo/detail/${encodeURIComponent(info.id.replace(/^DOID:/, 'DOID_'))}`,
                 title: 'View diagnoses'
             }),
@@ -192,7 +190,6 @@ function createExternalConfig(trunclength = 40) {
                 }));
             },
             link: info => ({
-                //href: `http://purl.obolibrary.org/obo/${encodeURIComponent(info.id.replace(/^CL:/, 'CL_'))}`,
                 href: `/bio/obo/detail/${encodeURIComponent(info.id.replace(/^CL:/, 'CL_'))}`,
                 title: 'View celltype details'
             }),
