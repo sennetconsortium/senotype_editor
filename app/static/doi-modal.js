@@ -1,6 +1,6 @@
 /*
 Features to support management of DataCite DOIs for Senotype submission.
-The DOI requires an external search, but the input is a textarea instead of a link.
+The DOI requires an external search, but the input is a textarea instead of a list element..
 */
 
 // Remove DOI from textarea and hidden input
@@ -17,13 +17,13 @@ function clearAllDoiReferences() {
 }
 
 // Add DOI from DataCite API result
-function addDoiReference(doiid, title) {
+function addDoiReference(prefix, doiid, title) {
     // Add to textarea (append, newline-separated)
     var textarea = document.getElementById('doi');
     if (textarea.value && !textarea.value.endsWith('\n')) {
         textarea.value += '\n';
     }
-    textarea.value += doiid + ' (' + (title ? (title.length > 70 ? title.slice(0, 70) + '...' : title) : '') + ')';
+    textarea.value += prefix + doiid + ' (' + (title ? (title.length > 54 ? title.slice(0, 51) + '...' : title) : '') + ')';
 
     // Because the DOI input is disabled for direct entry (via typing inside the textarea
     // itself, change events are not triggered. Trigger the change event manually via
@@ -51,8 +51,7 @@ function addDoiReference(doiid, title) {
     var link = document.createElement('a');
     link.className = 'btn btn-sm btn-outline-primary ms-2';
     link.style.width = '2.5em';
-    // For now, the DataCite Commons URI will include the generic SenNet provider ID.
-    link.href = 'https://commons.datacite.org/doi.org/' + encodeURIComponent(doiid);
+    link.href = '/doi/detail/' + encodeURIComponent(doiid);
     link.target = '_blank';
     link.title = 'View DOI details';
     link.setAttribute('aria-label', 'View DOI details');
@@ -69,13 +68,12 @@ document.getElementById('doi-search-input').addEventListener('input', function (
     var query = this.value.trim();
     var resultsDiv = document.getElementById('doi-search-results');
     resultsDiv.innerHTML = '';
-    if (query.length > 2 && query !== lastDoiSearch) {
+    //if (query.length > 2 && query !== lastDoiSearch) {
+    if (query !== lastDoiSearch) {
         lastDoiSearch = query;
         resultsDiv.innerHTML = '<div class="text-muted">Searching DataCite...</div>';
-        // Initially, search for DOIs associated with the Senotype client id.
-        // Once we have minted DOIs for Senotypes, we can filter for Senotype DOIs using
-        // DataCite's /dois?query= endpoint.
-        fetch('https://api.datacite.org/dois/10.60586/' + encodeURIComponent(query))
+        console.log(query);
+        fetch('/doi/search/' + encodeURIComponent(query))
             .then(response => {
                 if (!response.ok) throw new Error('Not found');
                 return response.json();
@@ -83,8 +81,10 @@ document.getElementById('doi-search-input').addEventListener('input', function (
             .then(data => {
                 resultsDiv.innerHTML = '';
                 if (data.data && data.data.id) {
-                    // DataCite response: data.id is the DOI, data.attributes.title is the title (may be array).
-                    var doiid = data.data.id;
+                    // DataCite response: data.id is the DOI, including the provider number, data.attributes.title is the title (may be array).
+                    // parse the ID to remove the provider ID, which will be set in the route.
+                    var doiid = data.data.id.split("/")[1];
+                    var prefix = data.data.prefix;
                     var title = '';
                     if (data.data.attributes && Array.isArray(data.data.attributes.titles) && data.data.attributes.titles.length > 0) {
                         title = data.data.attributes.titles[0].title;
@@ -96,7 +96,7 @@ document.getElementById('doi-search-input').addEventListener('input', function (
                     btn.className = 'btn btn-link text-start w-100 mb-1';
                     btn.textContent = title ? title : doiid;
                     btn.onclick = function () {
-                        addDoiReference(doiid, title);
+                        addDoiReference(prefix, doiid, title);
 
                         // Show disclaimer when a DOI is added
                         var disclaimerId = 'doi-association-disclaimer';

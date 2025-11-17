@@ -329,7 +329,9 @@ class SenLib:
         if doi_url is None:
             return ''
         else:
-            doi = doi_url.split('https://doi.org/')[1]
+            datacite_base = self.cfg.getfield(key='DATACITE_DOI_BASE_URL')
+            doi = doi_url.split(datacite_base)[1]
+            print('doi=', doi)
             url_base = self.cfg.getfield(key='DATACITE_API_BASE_URL')
             url = f'{url_base}{doi}'
 
@@ -1609,8 +1611,7 @@ class SenLib:
         doi = form_data.get('doi', None)
         if doi is not None:
             doiid = doi.split(' (')[0]
-            base_url = self.cfg.getfield(key='DATACITE_DOI_BASE_URL')
-            doiurl = f'{base_url}{doiid}'
+            doiurl = doiid
         else:
             doiurl = None
 
