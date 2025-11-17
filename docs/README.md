@@ -125,7 +125,7 @@ Clicking the ![img_9.png](img_9.png) button will launch a search window.
 
 ![img_11.png](img_11.png)
 
-The search window will search DataCite for a DOI with ID that matches the value that the user enters in the **Enter query...** 
+The search window will search DataCite for a DOI with ID that _exactly_ matches the value that the user enters in the **Enter query...** 
 input. Because all senotype DOIs will have the same DataCite provider (e.g, 10.6586), the search window only needs 
 the unique portion of the DOI, which usually corresponds to the SenNet ID of the dataset. 
 
