@@ -11,17 +11,15 @@ GLOBUS_URL='https://senlib.dev.sennetconsortium.org/login'
 GLOBUS_SENNET_CLIENT='x'
 GLOBUS_SENNET_SECRET='x'
 
-# Sennet base URLs
+# Sennet base URLs (datasets)
 # uuid-api
 UUID_BASE_URL='https://uuid-api.dev.sennetconsortium.org/uuid'
+# UBKG
+UBKG_BASE_URL='https://ontology.api.hubmapconsortium.org'
 # entity-api
 ENTITY_BASE_URL='https://entity.api.sennetconsortium.org/entities/'
-# ubkg-api
-UBKG_BASE_URL='https://ontology.api.hubmapconsortium.org'
-# Data Portal Organs page
-ORGANS_BASE_URL='https://data.sennetconsortium.org/organs/'
-# Data Portal dataset
-DATASET_BASE_URL='https://data.sennetconsortium.org/dataset'
+# Data Portal
+DATA_PORTAL_BASE_URL='https://data.sennetconsortium.org'
 
 # External base URLs
 
@@ -36,7 +34,7 @@ DATACITE_HOME_URL='https://commons.datacite.org/'
 EUTILS_SEARCH_BASE_URL='https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&retmode=json'
 EUTILS_SUMMARY_BASE_URL='https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&retmode=json'
 # API Key to increase number of allowed requests per second to avoid 429 errors from EUtils
-EUTILS_API_KEY='74cae0505adb73ea87a5daa71ed26bd18709'
+EUTILS_API_KEY='x'
 
 # PubMed detail page (citations)
 PUBMED_BASE_URL='https://pubmed.ncbi.nlm.nih.gov/'
