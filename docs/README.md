@@ -151,8 +151,8 @@ For example, the **Taxon** input corresponds to the senotype definition's  _in_t
 There are four types of assertions. Each type has its own tool for selection.
 
 ## Valueset-based assertions
-The majority of a senotype definition's assertions will be categorical--i.e., the possible values for 
-the code of the object of the assertion will be in a _valueset_. For example, the categories for a 
+The majority of a senotype definition's assertions will be categorical, in which the possible values for 
+the code of the object of the assertion will be in a limited _valueset_. For example, the categories for a 
 senotype definition's **taxon** might be the valueset {NCBI:9606, NCBI:10088}, corresponding to the codes for 
 _human_ and _mouse_.
 
@@ -161,11 +161,11 @@ Valueset-based assertions include:
 | assertion        | vocabulary |
 |------------------|------------|
 | taxon            | NCBI       |
-| cell type        | CL         |
 | hallmark         | SENOTYPE   |
 | microenvironment | SENOTYPE   |
 | inducer          | SENOTYPE   |
 | assay            | OBI        |
+| sex              | SNOMED_CT  |
 
 
 Because there can be multiple assertions of the same type, the inputs for valueset-based assertions are 
@@ -181,53 +181,82 @@ the list for the assertion. The ![img_13.png](img_13.png) button removes an elem
 ## Context assertions
 
 Context assertions allow the user to define ranges and units for an assertion.
-![img_16.png](img_16.png). For example, the **age** assertion can be bounded to apply only to the range of 18 to 89 years.
+![img_16.png](img_16.png) 
+For example, the **age** assertion can be bounded to apply only to the range of 18 to 89 years.
 
 ## External assertions
-The following types of assertions are also encoded; however, the codes 
-are not stored in valuesets, but are obtained via external sources. 
 
+A number of the objects of assertions are encoded with codes from large vocabularies or ontologies, such as Cell Ontology. 
+Instead of using internal valuesets for these inputs, the Senotype Editor obtains codes by searching external sources.
 
-| assertion | vocabulary |
-|----------|------------|
-| citation | PubMed     |
-| origin   | RRID       |
-| dataset  | SenNet ID  |
-| location | UBERON     |
-| diagnosis | DOID       |
+| assertion type   | source             | vocabulary              |
+|------------------|:-------------------|-------------------------|
+| location (organ) | UBKG               | Uberon                  |
+| cell type        | UBKG               | Cell Ontology (CL)      |
+| diagnosis        | UBKG               | Disease Ontology (DOID) |
+| citation         | NCBI PubMed        | PMID                    |
+| origin           | SciCrunch          | RRID                    |
+| dataset          | SenNet Data Portal | SenNet ID               |
+| gene marker      | UBKG               | HGNC                    |
+| protein marker   | UBKG               | UniProtKB               |
 
+### Edit page
 
-The Senotype Editor queries external APIs to 
-obtain information on:
-- citation
-- origin
-- dataset
-- diagnosis
-- location
+#### Decoration
+When the Edit page loads information for an existing senotype, 
+it "decorates" the stored codes with terms from external sources.
+If there is a problem with an external source (e.g., an API timeout), the editor
+will use "(unknown)" for the decoration. This is only for purposes of display in the Edit window; the codes are not changed.
 
-The external assertion input functions similarly to the DOI:
+The external assertion lists function similarly to the DOI:
 - The ![img_9.png](img_9.png) button opens a search window.
 - The ![img_13.png](img_13.png) button removes an element from the assertion list.
-- The ![img_12.png](img_12.png) button links to the corresponding detail page for the assertion. For example, in the **citation** list, the link button opens the PubMed page for the citation.
 
-The search window for an external assertion finds matches in an external site.
-
-
-
-| assertion | source             | search term            |
-|-----------|--------------------|------------------------|
-| citation  | PubMed             | PMID                   |
-| origin    | SciCrunch Resolver | RRID                   |
-| dataset   | SenNet Data Portal | SenNet ID              |
-| location  | SenNet Data Portal | organ name             |
-| diagnosis | UBKG               | diagnosis term or DOID |
+#### Search button
+The ![img_12.png](img_12.png) button next to an assertion object links to a 
+detail page in the source that corresponds to the object.
 
 
+| assertion object type | reference page                         |
+|-----------------------|----------------------------------------|
+| location              | SenNet organs detail                   |
+| cell type             | EMBL-EBI Ontology Lookup Service (OLS) |
+| diagnosis             | Disease Ontology                       |
+| citation              | PubMed                                 |
+| origin                | SciCrunch                              |
+| dataset               | SenNet Data Portal                     |
+| gene marker           | HGNC                                   |
+| protein marker        | UniprotKB                              |
 
-The   ![img_12.png](img_12.png)   button in an external search window links to the corresponding external site 
+### Search window
+#### Search box
+In the Search window for an external assertion object, entering
+input into the search box triggers a search against an external source. 
+The results of a search appear below the search box as a list of links. 
+Selecting a link from the result list will add the result to the corresponding
+object list in the Edit page.
+
+![img_25.png](img_25.png)
+
+The forms of search terms depend on the external source.
+
+| input type | search source                         | forms of search term                                                          | example                                                |
+|------------|---------------------------------------|-------------------------------------------------------------------------------|:-------------------------------------------------------|
+| citation   | NCBI EUtils API                       | exact PMID; portion of publication title                                      | 41247924; predictors                                   |
+| origin     | SciCrunch Resolver API                | exact RRID                                                                    | 4850064                                                |
+| dataset    | SenNet entity-api; SenNet Data Portal | exact SenNet ID                                                               | SNT699.FVQD.882                                        |
+| location   | hs-ontology API (UBKG API)            | portion of SenNet organ name                                                  | lung                                                   |
+| diagnosis  | hs-ontology API (UBKG API)            | exact DOID; exact match for a preferred term or synonym                       | DOID:3083; chronic obstructive pulmonary disease; copd |
+| celltype   | hs-ontology API (UBKG API)            | exact CLID; portion of a preferred term                                       | 4006000; fibroblast                                    |
+| gene       | hs-ontology API (UBKG API)            | exact: HGNC ID; approved symbol; alias; prior approved symbol; or prior alias | 1100; BRCA1; BRCC1                                     |
+| protein    | hs-ontology API (UBKG API)            | exact: UniProtKB ID; UniProtKB entry name                                     | Q13201;MMRN1_HUMAN                                     |
+
+
+#### Search button 
+In an external search window, the ![img_12.png](img_12.png)   button opens the corresponding external site 
 to facilitate finding an appropriate identifier. 
 
-The Senotype Editor is not integrated with external sites--it only links out to them.
+The Senotype Editor is not integrated with these external sites.
 
 ## Marker assertions
 
@@ -265,6 +294,10 @@ The Search window for regulating markers includes a field for type of regulating
 
 ### Bulk Addition windows
 Bulk addition windows allow the user to load a large number of markers from a local CSV file that the user specifies.
+
+The bulk addition windows will only add information from a CSV if:
+* the CSV has the expected format
+* all markers in the CSV can be found in an external source
 
 #### Specified markers
 The CSV used for bulk upload of specified markers must have the following structure:
