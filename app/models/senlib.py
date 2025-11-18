@@ -483,12 +483,15 @@ class SenLib:
             predicate_term = predicate.get('term')
 
             if predicate_term in ['up_regulates', 'down_regulates', 'inconclusively_regulates']:
+                # Regulating marker.
                 rawobjects = assertion.get('objects')
-                logger.info('Getting information on regulating markers from ontology API')
-                listret = self.getmarkerobjects(rawobjects=rawobjects)
-
-                for o in listret:
+                logger.info(f'Getting information from ontology API on markers with {predicate_term} assertions')
+                listassertion = self.getmarkerobjects(rawobjects=rawobjects)
+                # Denormalize by adding the type to the marker object.
+                for o in listassertion:
                     o['type'] = predicate_term
+
+                listret = listret + listassertion
 
         return listret
 
@@ -1484,23 +1487,23 @@ class SenLib:
                 else:
                     inc_objects.append(obj)
 
-                if len(up_objects) > 0:
-                    predicate = {"term": 'up_regulates'}
-                    assertion = {"predicate": predicate,
-                                 "objects": up_objects}
-                    assertions.append(assertion)
+            if len(up_objects) > 0:
+                predicate = {"term": 'up_regulates'}
+                assertion = {"predicate": predicate,
+                             "objects": up_objects}
+                assertions.append(assertion)
 
-                if len(down_objects) > 0:
-                    predicate = {"term": 'down_regulates'}
-                    assertion = {"predicate": predicate,
-                                 "objects": down_objects}
-                    assertions.append(assertion)
+            if len(down_objects) > 0:
+                predicate = {"term": 'down_regulates'}
+                assertion = {"predicate": predicate,
+                             "objects": down_objects}
+                assertions.append(assertion)
 
-                if len(inc_objects) > 0:
-                    predicate = {"term": 'inconclusively_regulates'}
-                    assertion = {"predicate": predicate,
-                                 "objects": inc_objects}
-                    assertions.append(assertion)
+            if len(inc_objects) > 0:
+                predicate = {"term": 'inconclusively_regulates'}
+                assertion = {"predicate": predicate,
+                             "objects": inc_objects}
+                assertions.append(assertion)
 
         return assertions
 

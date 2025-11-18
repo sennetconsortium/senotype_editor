@@ -40,11 +40,7 @@ function addLinkButtons(url_base, hidden_input_selector, link_title, target_sele
         // Special case for markers.
         // A marker can be either a gene or a protein.
         var url = url_base + encodeURIComponent(code);
-        if (hiddenValue.includes('HGNC')) {
-            url = '/bio/hgnc/detail/' + encodeURIComponent(code);
-         } else if (hiddenValue.includes('UNIPROTKB')) {
-            url='/bio/uniprotkb/detail/' + encodeURIComponent(code.split(":")[1]);
-         }
+        url = '/bio/marker/detail/' + encodeURIComponent(code);
 
         var placeholder = parent.querySelector(target_selector);
         if (placeholder) {

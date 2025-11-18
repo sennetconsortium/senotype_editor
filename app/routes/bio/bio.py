@@ -23,6 +23,14 @@ def getobodetailidroute(id):
     return getbiodetail(sab='OBO', id=id)
 
 
+@bio_blueprint.route('/marker/detail/<id>', methods=['GET'])
+def getmarkerdetailidroute(id):
+    if 'HGNC' in id.upper():
+        return gethgncdetailidroute(id)
+    else:
+        return getuniprotkbdetailidroute(id)
+
+
 @bio_blueprint.route('/hgnc/detail', methods=['GET'])
 def gethgncdetailroute():
     return getbiodetail(sab='HGNC')
@@ -54,19 +62,25 @@ def getbiodetail(sab: str, id: str = ''):
     :param id: id
     """
     cfg = AppConfig()
+    idsubmit = id
+
     if sab.upper() == 'OBO':
         base_url = cfg.getfield(key='OBO_BASE_URL')
     elif sab.upper() == 'HGNC':
         if id == '':
+            # Home page
             base_url = cfg.getfield(key='HGNC_HOME_URL')
         else:
+            # Detail page
             base_url = cfg.getfield(key='HGNC_BASE_URL')
     elif sab.upper() == 'UNIPROTKB':
+        # Strip the SAB from the code.
         base_url = cfg.getfield(key='UNIPROTKB_BASE_URL')
+        idsubmit = id.split(':')[1]
     else:
         abort(404, f"unknown sab {sab}")
 
-    url = f"{base_url}{id}"
+    url = f"{base_url}{idsubmit}"
     return redirect(url)
 
 
