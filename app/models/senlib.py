@@ -505,17 +505,28 @@ class SenLib:
 
         logger.info('Getting origin information from SciCrunch Resolver')
 
+        # The SciCrunch Resolver API can return unexpected responses. As the
+        # Resolver is only used to decorate the code with a term, use "unknown"
+        # defensively.
+
+        # It may be necessary to tune by storing the origin description at the time
+        # of writing instead of fetching it on every read.
+
         oret = []
         for o in rawobjects:
             code = o.get('code')
             rrid = code.split(':')[1]
             url = f'{base_url}{rrid}.json'
             origin = api.getresponse(url=url, format='json')
-            hits = origin.get('hits')
-            if hits is None:
+            if origin is None:
                 description = "unknown"
             else:
-                description = hits.get('hits')[0].get('_source').get('item').get('description', '')
+                hits = origin.get('hits')
+                if hits is None:
+                    description = "unknown"
+                else:
+                    description = hits.get('hits')[0].get('_source').get('item').get('description', '')
+
             oret.append({"code": code, "term": description})
 
         return oret
@@ -550,6 +561,8 @@ class SenLib:
             Calls the UBKG API to obtain the description for specified markers.
             :param: rawobjects - a list of specified marker objects.
         """
+
+        logger.info('Getting marker information from the ontology API')
 
         api = RequestRetry()
         cfg = AppConfig()
@@ -598,7 +611,7 @@ class SenLib:
         api = RequestRetry()
         base_url = f"{request.host_url.rstrip('/')}/ontology/celltypes/"
 
-        logger.info('Getting celltype information from ontology API')
+        logger.info('Getting celltype information from the ontology API')
 
         oret = []
         for o in rawobjects:
@@ -622,7 +635,7 @@ class SenLib:
         cfg = AppConfig()
         base_url = f"{request.host_url.rstrip('/')}/ontology/diagnoses/"
 
-        logger.info('Getting diagnosis information from ontology API')
+        logger.info('Getting diagnosis information from the ontology API')
 
         oret = []
         for o in rawobjects:
@@ -645,7 +658,7 @@ class SenLib:
         cfg = AppConfig()
         base_url = f"{request.host_url.rstrip('/')}/ontology/organs"
 
-        logger.info('Getting organ information from ontology API')
+        logger.info('Getting organ information from the ontology API')
 
         oret = []
         for o in rawobjects:
@@ -1238,7 +1251,7 @@ class SenLib:
         if len(citationlist) > 0:
             form.citation.process(None, [self.truncateddisplaytext(displayid=item['code'],
                                                                    description=item['term'],
-                                                                   trunclength=40)
+                                                                   trunclength=20)
                                          for item in citationlist])
         else:
             form.citation.process(None, [''])
@@ -1248,7 +1261,7 @@ class SenLib:
         if len(originlist) > 0:
             form.origin.process(None, [self.truncateddisplaytext(displayid=item['code'],
                                                                  description=item['term'],
-                                                                 trunclength=50)
+                                                                 trunclength=20)
                                        for item in originlist])
         else:
             form.origin.process(None, [''])
@@ -1258,7 +1271,7 @@ class SenLib:
         if len(datasetlist) > 0:
             form.dataset.process(None, [self.truncateddisplaytext(displayid=item['code'],
                                                                   description=item['term'],
-                                                                  trunclength=50)
+                                                                  trunclength=20)
                                         for item in datasetlist])
         else:
             form.dataset.process(None, [''])

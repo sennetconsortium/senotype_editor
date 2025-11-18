@@ -37,10 +37,7 @@ function addLinkButtons(url_base, hidden_input_selector, link_title, target_sele
         var parent = hiddenInput.closest('.d-flex') || hiddenInput.parentElement;
         if (!parent) return;
 
-        // Special case for markers.
-        // A marker can be either a gene or a protein.
         var url = url_base + encodeURIComponent(code);
-        url = '/bio/marker/detail/' + encodeURIComponent(code);
 
         var placeholder = parent.querySelector(target_selector);
         if (placeholder) {
