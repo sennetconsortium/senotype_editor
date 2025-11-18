@@ -519,9 +519,7 @@ class SenLib:
             code = o.get('code')
             rrid = code.split(':')[1]
             url = f'{base_url}{rrid}.json'
-            #origin = api.getresponse(url=url, format='json')
-            # Debug
-            origin = None
+            origin = api.getresponse(url=url, format='json')
             if origin is None:
                 description = "unknown"
             else:
