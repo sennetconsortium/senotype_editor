@@ -180,14 +180,15 @@
         <!-- INDUCER section -->
         {{ render_fieldlist_section(form, "inducer", "inducerModal",  col_class="col-md-2 input-cellBox") }}
         <!-- HALLMARK section -->
-        {{ render_fieldlist_section(form, "hallmark", "hallmarkModal",  col_class="col-md-3 input-cellBox input-cellBox--HM") }}
+        {{ render_fieldlist_section(form, "hallmark", "hallmarkModal",  col_class="col-md-3 input-cellBox input-cellBox") }}
         <!-- ASSAY section -->
         {{ render_fieldlist_section(form, "assay", "assayModal",  col_class="col-md-3 input-cellBox") }}
         <!-- SEX assertion section -->
-        {{ render_fieldlist_section(form, "sex", "sexModal", col_class="col-md-2 input-cellBox") }}
+        {{ render_fieldlist_section(form, "sex", "sexModal", col_class="col-md-3 input-cellBox") }}
+    </div>
+    <div class="row mt-3">
         <!-- DIAGNOSIS assertion section -->
-        {{ render_fieldlist_section(form, "diagnosis", "diagnosisSearchModal", col_class="col-md-5 input-cellBox") }}
-
+        {{ render_fieldlist_section(form, "diagnosis", "diagnosisSearchModal", col_class="col-md-6 input-cellBox") }}
      </div>
     <div class="row mt-3">
         <!-- CONTEXT - age assertion section -->

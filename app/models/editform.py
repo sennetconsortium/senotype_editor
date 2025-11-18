@@ -167,14 +167,14 @@ class EditForm(Form):
 
     # Context assertions
     agevalue = StringField('Value', validators=[validate_age_range])
-    agelowerbound = StringField('Lowerbound', validators=[validate_age_range])
-    ageupperbound = StringField('Upperbound', validators=[validate_age_range])
+    agelowerbound = StringField('Lower', validators=[validate_age_range])
+    ageupperbound = StringField('Upper', validators=[validate_age_range])
     ageunit = StringField('Unit')
     ageunit.data = 'year'
 
     bmivalue = StringField('Value')
-    bmilowerbound = StringField('Lowerbound')
-    bmiupperbound = StringField('Upperbound')
+    bmilowerbound = StringField('Lower')
+    bmiupperbound = StringField('Upper')
     bmiunit = StringField('Unit')
     bmiunit.data = 'kg/m2'
 
