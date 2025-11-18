@@ -331,7 +331,6 @@ class SenLib:
         else:
             datacite_base = self.cfg.getfield(key='DATACITE_DOI_BASE_URL')
             doi = doi_url.split(datacite_base)[1]
-            print('doi=', doi)
             url_base = self.cfg.getfield(key='DATACITE_API_BASE_URL')
             url = f'{url_base}{doi}'
 
