@@ -71,5 +71,4 @@ def getcitationdetail(id: str = ''):
     cfg = AppConfig()
     base_url = cfg.getfield(key='PUBMED_BASE_URL')
     url = f"{base_url}{id}"
-    print(url)
     return redirect(url)

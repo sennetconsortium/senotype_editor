@@ -68,7 +68,6 @@ document.getElementById('doi-search-input').addEventListener('input', function (
     var query = this.value.trim();
     var resultsDiv = document.getElementById('doi-search-results');
     resultsDiv.innerHTML = '';
-    //if (query.length > 2 && query !== lastDoiSearch) {
     if (query !== lastDoiSearch) {
         lastDoiSearch = query;
         resultsDiv.innerHTML = '<div class="text-muted">Searching DataCite...</div>';

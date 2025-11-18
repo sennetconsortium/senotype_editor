@@ -575,12 +575,8 @@ class SenLib:
                 oret.append({"code": code, "term": None})
                 continue
             markerid = code.split(':')[1]
-            if 'HGNC' in code:
-                endpoint = 'genes'
-            else:
-                endpoint = 'proteins'
 
-            url = f'{base_url}/{endpoint}/{markerid}'
+            url = f'{base_url}/marker/{markerid}'
 
             resp = api.getresponse(url=url, format='json')
             # Defensive: check if resp is a list and not empty
