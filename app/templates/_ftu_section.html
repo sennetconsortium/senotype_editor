@@ -1,0 +1,180 @@
+<!--
+Renders a field in a jstree control.
+-->
+{% macro render_jstree_section(form, field_name, modal_id, label_bg="#FEF2F2", col_class="col-md-6 card") %}
+<div class="{{ col_class }}">
+    <strong style="margin-left: 12px;">Functional Tissue Unit (FTU) path</strong>
+    <div class="d-flex align-items-start">
+        <div id="{{ field_name }}-tree"
+             style="min-height:50px; max-height:300px; overflow:auto; border:1px solid #ccc; background:#fff; flex: 1 1 auto; margin-left: 12px;">
+            {# Main jsTree will be initialized by JS #}
+        </div>
+        <!-- Button to clear the jsTree content -->
+        <button type="button"
+                title="Clear {{ field_name }} tree"
+                aria-label="Clear {{ field_name }} tree"
+                class="btn btn-sm ms-2"
+                id="clear-{{ field_name }}-tree-btn"
+                style="background-color: #dc3545; color: #fff; margin-top:8px; width:2.5em;">
+            <span aria-hidden="true">&times;</span>
+        </button>
+        <!-- Add button that triggers the jsTree modal that will allow addition of new nodes to the jstree-->
+        <button type="button"
+                title="Add {{ field_name }}"
+                aria-label="Add {{ field_name }}"
+                class="btn btn-sm ms-2"
+                style="background-color: #0d6efd; color: #fff; margin-top:8px; width:2.5em; margin-right:12px;"
+                data-bs-toggle="modal"
+                data-bs-target="#{{ modal_id }}">
+            +
+        </button>
+        <!-- Validation errors -->
+        {% if form.ftu_tree_json.errors %}
+            {% for error in form.ftu_tree_json.errors %}
+                <div class="text-danger">{{ error }}</div>
+            {% endfor %}
+        {% endif %}
+    </div>
+</div>
+<!-- Modal for search for adding FTU -->
+<div class="modal fade" id="{{ modal_id }}" tabindex="-1" aria-labelledby="{{ modal_id }}Label" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="{{ modal_id }}Label">
+                    Select Functional Tissue Unit (FTU) Path
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <!-- jsTree container; ID must match what your script expects -->
+                <div id="modal-{{ field_name }}-tree"
+                     style="min-height:300px; max-height:500px; overflow:auto; border:1px solid #ccc; background:#fff;">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // MAIN FTU TREE SETUP
+    // This is the treeview for the FTU input in the main edit.html.
+    // The treeview content comes from the request of the edit route.
+    var mainTreeData = window["{{ field_name }}_tree_data"];
+
+    // Set default in case of no data for tree.
+    if (!mainTreeData) mainTreeData = [];
+    if (!$.jstree.reference('#{{ field_name }}-tree')) {
+        $('#{{ field_name }}-tree').jstree({
+            'core': {
+                'data': mainTreeData,
+                'check_callback': true // Enables dynamic create_node
+            }
+        });
+    }
+
+    // CLEAR TREE BUTTON
+    document.getElementById('clear-{{ field_name }}-tree-btn').addEventListener('click', function() {
+        var mainTree = $.jstree.reference('#{{ field_name }}-tree');
+        if (mainTree) {
+            // Remove all nodes
+            var allNodes = mainTree.get_json('#', {flat:true});
+            allNodes.forEach(function(node) {
+                if (mainTree.get_node(node.id)) {
+                    mainTree.delete_node(node.id);
+                }
+            });
+            // Trigger input change handling after clearing tree
+            handleInputChange();
+        }
+    });
+
+    // MODAL TREE SETUP
+    // This is for the jstree in the modal form.
+    // The jstree is populated by the allftutree_data variable in the response
+    // from the edit route, which corresponds to the entire 2D FTU hierarchy.
+    var modal = document.getElementById('{{ modal_id }}');
+    if (modal) {
+        modal.addEventListener('show.bs.modal', function () {
+            // Destroy/recreate modal tree for fresh state
+            if ($.jstree.reference('#modal-{{ field_name }}-tree')) {
+                $('#modal-{{ field_name }}-tree').jstree('destroy');
+            }
+            $('#modal-{{ field_name }}-tree').jstree({
+                'core': {
+                    'data': window.allftutree_data
+                }
+            });
+
+            // CHANGE EVENT HANDLER
+            // If the user selects a node in the modal ftu jstree,
+            // 1. Obtain the full node path, including parents.
+            // 2. Add the full node path to the main ftu jstree.
+
+            $('#modal-{{ field_name }}-tree').off("changed.jstree").on("changed.jstree", function (e, data) {
+                if (data.selected.length) {
+                    var modalTree = $('#modal-{{ field_name }}-tree').jstree(true);
+                    var mainTree = $.jstree.reference('#{{ field_name }}-tree');
+                    if (!mainTree) {
+                        // Defensive: initialize
+                        $('#{{ field_name }}-tree').jstree({
+                            'core': {
+                                'data': [],
+                                'check_callback': true
+                            }
+                        });
+                        mainTree = $.jstree.reference('#{{ field_name }}-tree');
+                    }
+
+                    var selectedNode = modalTree.get_node(data.selected[0]);
+
+                    // Get full path of node ids from root to selected node
+                    var pathIds = modalTree.get_path(selectedNode, false, true); // separator=false returns array of ids
+                    // get_path gives an array of ids (if separator omitted and true passed)
+
+                    // Or, if get_path is not available, build manually:
+                    // var pathIds = [];
+                    // var currNode = selectedNode;
+                    // while(currNode && currNode.id) {
+                    //     pathIds.unshift(currNode.id);
+                    //     currNode = modalTree.get_node(currNode.parent);
+                    //     if(!currNode || currNode.id === '#') break;
+                    // }
+
+                    // Now, iterate through pathIds, and add any missing nodes to mainTree
+                    var parentId = '#';
+                    pathIds.forEach(function(nodeId) {
+                        if (!mainTree.get_node(nodeId)) {
+                            // Get node info from modal tree
+                            var node = modalTree.get_node(nodeId);
+                            mainTree.create_node(parentId, {
+                                id: node.id,
+                                text: node.text,
+                                data: node.data || {}
+                            });
+                        }
+                        parentId = nodeId;
+                    });
+
+                    // Select the leaf node
+                    mainTree.deselect_all();
+                    mainTree.select_node(selectedNode.id);
+
+                    // Hide modal
+                    document.activeElement.blur();
+                    var bsModal = bootstrap.Modal.getInstance(modal);
+                    if (bsModal) bsModal.hide();
+                }
+            });
+        });
+    }
+});
+// Clicking a node loads the IRI
+$('#ftu-tree').on('activate_node.jstree', function (e, data) {
+    // Check that data.node and data.node.data.iri exist
+    if (data.node && data.node.data && data.node.data.iri) {
+        window.open(data.node.data.iri, '_blank');
+    }
+});
+</script>
+{% endmacro %}

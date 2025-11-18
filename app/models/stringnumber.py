@@ -1,4 +1,4 @@
-def stringisnumber(s:str) -> bool:
+def stringisnumber(s: str) -> bool:
     """
     Checks whether a string represents a number.
     :param s: the string to check
@@ -10,7 +10,8 @@ def stringisnumber(s:str) -> bool:
     except ValueError:
         return False
 
-def stringisintegerorfloat(s:str) ->str:
+
+def stringisintegerorfloat(s: str) -> str:
     """
     Returns whether a string is an integer or float.
     :param: str: number to check
@@ -24,4 +25,3 @@ def stringisintegerorfloat(s:str) ->str:
             return "float"
 
     return "not a number"
-

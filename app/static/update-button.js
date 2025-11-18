@@ -21,8 +21,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // List of list element IDs to track for changes (these are in edit_form, not modals)
     const listIds = [
-        "taxon-list", "location-list", "celltype-list", "hallmark-list", "observable-list", "inducer-list",
-        "assay-list", "citation-list", "origin-list", "dataset-list", "marker-list", "regmarker-list"
+        "taxon-list", "location-list", "celltype-list", "hallmark-list", "microenvironment-list", "inducer-list",
+        "assay-list", "citation-list", "origin-list", "dataset-list", "marker-list", "regmarker-list", "diagnosis-list"
     ];
 
     // Helper to get current form state (including hidden).
@@ -108,6 +108,24 @@ document.addEventListener("DOMContentLoaded", function () {
             hidden.className = "cloned-edit-input";
             updateForm.appendChild(hidden);
         });
+
+        // --- JSTREE SERIALIZATION: FTU TREE ---
+        // Assumes your main FTU tree has id="ftu-tree"
+        var ftuTreeRef = $.jstree.reference('#ftu-tree');
+        if (ftuTreeRef) {
+            var ftuTreeData = ftuTreeRef.get_json('#', {flat: false});
+            // Remove previous if present
+            let prevInput = updateForm.querySelector("input[name='ftu_tree_json']");
+            if (prevInput) prevInput.remove();
+            // Add new hidden input
+            let input = document.createElement("input");
+            input.type = "hidden";
+            input.name = "ftu_tree_json";
+            input.id = "ftu_tree_json";
+            input.value = JSON.stringify(ftuTreeData);
+            input.className = "cloned-edit-input";
+            updateForm.appendChild(input);
+        }
 
         // Add an action field to identify the button that triggered the update.
         // Remove any previous action input

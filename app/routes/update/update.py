@@ -1,7 +1,8 @@
 """
 Updates the Senotype repository by writing/overwriting a submission JSON file.
 """
-from flask import Blueprint, request, render_template, flash, redirect, session, url_for
+
+from flask import Blueprint, request, render_template, flash, redirect, session, url_for, current_app
 
 from werkzeug.datastructures import MultiDict
 
@@ -10,6 +11,14 @@ from werkzeug.datastructures import MultiDict
 from models.appconfig import AppConfig
 from models.senlib import SenLib
 from models.editform import EditForm
+
+import logging
+
+# Configure consistent logging. This is done at the beginning of each module instead of with a superclass of
+# logger to avoid the need to overload function calls to logger.
+logging.basicConfig(format='[%(asctime)s] %(levelname)s in %(module)s: %(message)s',
+                    level=logging.INFO, datefmt='%Y-%m-%d %H:%M:%S')
+logger = logging.getLogger(__name__)
 
 update_blueprint = Blueprint('update', __name__, url_prefix='/update')
 
@@ -49,14 +58,14 @@ def validate_form(form):
         'location-',
         'celltype-',
         'hallmark-',
-        'observable-',
         'inducer-',
         'assay-',
         'citation-',
         'origin-',
         'dataset-',
         'marker-',
-        'regmarker-'
+        'regmarker-',
+        'microenvironment-'
     ]
     errors = {}
 
@@ -90,6 +99,13 @@ def validate_form(form):
             else:
                 errname = base_name
             errors[base_name] = [f'At least one {errname} required.']
+
+    # Future development:
+    # Verify that at least one FTU path was selected in the jstree.
+    # ftu_tree_json = form.ftu_tree_json.data
+    # if ftu_tree_json == '[]':
+        # errors['ftu_tree_json'] = ['At least one ftu path must be selected.']
+
     return errors
 
 
@@ -167,7 +183,6 @@ def update():
         session['flashes'].clear()
 
     # VALIDATE INPUTS AND SUBMIT.
-
     # Apply custom validator of form data.
     custom_errors = validate_form(form=form)
 
@@ -180,8 +195,17 @@ def update():
         if action == 'new_version':
             new_version_id = update_id
 
+        # Future development:
+        # Obtain information on the selected FTU path.
+        # ftu_tree_json = request.form.get('ftu_tree_json')
+        # if ftu_tree_json:
+            # ftu_tree = json.loads(ftu_tree_json)
+        # else:
+            # ftu_tree = []
+
         # Write to the database. If new_version_id has a value, then the writesubmission
         # script will also update the provenance of the penultimate version.
+        # senlib.writesubmission(form_data=form.data, new_version_id=new_version_id, ftu_tree=ftu_tree)
         senlib.writesubmission(form_data=form.data, new_version_id=new_version_id)
 
         flash(f'Successfully {result_action_root}ed senotype with ID {update_id}.')
@@ -190,6 +214,18 @@ def update():
         form = EditForm(request.form)
         senlib = SenLib(cfg=cfg, userid=session['userid'])
         senlib.fetchfromdb(senotypeid=update_id, form=form)
+
+        # Pass to the edit form:
+        # 1. the tree of senotype id information for the jstree control
+        # Future development:
+        # 2. information for the complete 2D FTU jstree
+        # 3. information for the senotype's FTU jstree
+        #return render_template('edit.html',
+                               #form=form,
+                               #response={'tree_data': senlib.senotypetree,
+                                         #'allftutree_data': current_app.allftutree,
+                                         #'ftu_tree_data': senlib.ftutree},
+                               #selected_node_id=update_id)
         return render_template('edit.html',
                                form=form,
                                response={'tree_data': senlib.senotypetree},
@@ -213,7 +249,16 @@ def update():
         session['form_errors'] = form.errors
         session['form_data'] = form.data
 
+        # Future development:
+        # Get the state of the FTU path selection.
+        # session['ftu_tree_json'] = request.form.get('ftu_tree_json')
+
         # Redirect to the edit form, which will set the focus of the treeview back
         # to the original node.
         selected_node_id = request.form.get('selected_node_id') or request.args.get('selected_node_id')
+
+        # Future development:
+        # Save FTU tree JSON to session for reload
+        # session['ftu_tree_json'] = request.form.get('ftu_tree_json')
+
         return redirect(url_for('edit.edit', selected_node_id=selected_node_id))

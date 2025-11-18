@@ -2,9 +2,8 @@
 Form used to create and update Senotype JSONs.
 """
 
-
 from wtforms import (Form, SelectField, validators, ValidationError,
-                     TextAreaField, FieldList, StringField, FormField, RadioField)
+                     TextAreaField, FieldList, StringField, FormField, HiddenField)
 from wtforms.validators import Email
 
 # Helper classes
@@ -50,6 +49,8 @@ def validate_age_range(form, field):
     2. The age value is less than the upperbound.
 
     Assumes that the validateage validator is called prior.
+
+    Both the form and field parameters are required by WTForms.
 
     """
 
@@ -151,15 +152,16 @@ class EditForm(Form):
     # Submitter
     submitterfirst = StringField('First', validators=[validators.InputRequired()])
     submitterlast = StringField('Last', validators=[validators.InputRequired()])
-    submitteremail = StringField('email', validators=[validators.InputRequired(), Email(message='Invalid email address.')])
+    submitteremail = StringField('email', validators=[validators.InputRequired(),
+                                                      Email(message='Invalid email address.')])
 
     # Simple assertions.
     # These lists require custom validators because they will be updated via Javascript.
     taxon = FieldList(StringField('Taxon'), min_entries=0, label='Taxon')
     location = FieldList(StringField('Location'), min_entries=0)
     celltype = FieldList(StringField('Cell type'), min_entries=0)
+    microenvironment = FieldList(StringField('Microenvironment'), min_entries=0)
     hallmark = FieldList(StringField('Hallmark'), min_entries=0)
-    observable = FieldList(StringField('Molecular Observable'), min_entries=0)
     inducer = FieldList(StringField('Inducer'), min_entries=0)
     assay = FieldList(StringField('Assay'), min_entries=0)
 
@@ -168,6 +170,15 @@ class EditForm(Form):
     agelowerbound = StringField('Lowerbound', validators=[validate_age_range])
     ageupperbound = StringField('Upperbound', validators=[validate_age_range])
     ageunit = StringField('Unit')
+    ageunit.data = 'year'
+
+    bmivalue = StringField('Value')
+    bmilowerbound = StringField('Lowerbound')
+    bmiupperbound = StringField('Upperbound')
+    bmiunit = StringField('Unit')
+    bmiunit.data = 'kg/m2'
+
+    sex = FieldList(StringField('Sex'), min_entries=0, label='Sex')
 
     # External assertions
     # Citations
@@ -182,3 +193,10 @@ class EditForm(Form):
 
     # Regulating markers
     regmarker = FieldList(FormField(RegMarkerEntryForm), min_entries=0, label='Regulating Marker')
+
+    # Hidden field used to validate whether at least one FTU path was selected.
+    # This field works with the update-button.js and the update route.
+    # ftu_tree_json = HiddenField('FTU Tree JSON')
+
+    # Diagnosis
+    diagnosis = FieldList(StringField('Diagnosis'), min_entries=0)

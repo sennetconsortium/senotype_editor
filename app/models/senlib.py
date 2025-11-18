@@ -14,11 +14,13 @@ Functions in the class:
 
 """
 
-from flask import session, current_app
+from flask import session, current_app, request, abort
 from werkzeug.datastructures import MultiDict
 import requests
+from requests.exceptions import ConnectionError
 import logging
 import pandas as pd
+
 
 # Application configuration object
 from models.appconfig import AppConfig
@@ -97,6 +99,8 @@ class SenLib:
            edit a senotype. Authorization is based on the user's Globus userid.
 
         """
+
+        logging.info('Building senotype tree')
 
         # Node icons
         icon_locked = '🔒'
@@ -325,10 +329,22 @@ class SenLib:
         if doi_url is None:
             return ''
         else:
-            doi = doi_url.split('https://doi.org/')[1]
-            url = f'https://api.datacite.org/dois/{doi}'
+            datacite_base = self.cfg.getfield(key='DATACITE_DOI_BASE_URL')
+            doi = doi_url.split(datacite_base)[1]
+            url_base = self.cfg.getfield(key='DATACITE_API_BASE_URL')
+            url = f'{url_base}{doi}'
+
+            logger.info(f'Getting DataCite information for {doi}')
+
             response = api.getresponse(url=url, format='json')
-            if response is not None:
+            if response is None:
+                urlheartbeat = self.cfg.getfield(key='DATACITE_HEARTBEAT_URL')
+                responseheartbeat = api.getresponse(url=urlheartbeat)
+                if responseheartbeat == 'OK':
+                    title = 'unknown title'
+                else:
+                    title = 'invalid response from DataCite API'
+            else:
                 title = response.get('data').get('attributes').get('titles')[0].get('title', '')
 
             return f'{doi_url} ({title})'
@@ -364,7 +380,14 @@ class SenLib:
                 elif pred == 'has_dataset':
                     objects = self.getdatasetobjects(rawobjects)
                 elif pred == 'has_characterizing_marker_set':
+                    logger.info('Getting information on specified markers from ontology API')
                     objects = self.getmarkerobjects(rawobjects)
+                elif pred == 'has_cell_type':
+                    objects = self.getcelltypeobjects(rawobjects)
+                elif pred == 'located_in':
+                    objects = self.getlocationobjects(rawobjects)
+                elif pred == 'has_diagnosis':
+                    objects = self.getdiagnosisobjects(rawobjects)
                 else:
                     objects = self.getassertionobjects(pred=pred, rawobjects=rawobjects)
                 return objects
@@ -373,24 +396,32 @@ class SenLib:
     def getcitationobjects(self, rawobjects: list) -> list:
 
         """
-        Calls the NCBI EUtils API to obtain the title for the PMID.
+        Calls the NCBI EUtils API (via the citation/search route) to obtain the title for the PMID.
         :param: rawobjects - a list of PMID objects.
         """
         api = RequestRetry()
-        base_url = 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&retmode=json&id='
+        base_url = f"{request.host_url.rstrip('/')}/citation/search/id/"
+
+        logging.info('Getting citation data from NCBI EUtils')
 
         oret = []
         for o in rawobjects:
             code = o.get('code')
             pmid = code.split(':')[1]
             url = f'{base_url}{pmid}'
+
             citation = api.getresponse(url=url, format='json')
             result = citation.get('result')
             title = ''
-            if result is not None:
+            if result is None:
+                title = "unknown"
+            else:
                 entry = result.get(pmid)
-                if entry is not None:
+                if entry is None:
+                    title = "unknown"
+                else:
                     title = entry.get('title', '')
+
             oret.append({"code": code, "term": title})
 
         return oret
@@ -430,13 +461,15 @@ class SenLib:
         Builds a truncated display string.
         """
         if trunclength < 0:
-            trunclength = len(description)
-        if trunclength < len(description):
+            displaylength = len(description)
+        if (trunclength-3) <= len(description):
+            displaylength = trunclength - 3
             ell = '...'
         else:
+            displaylength = trunclength
             ell = ''
 
-        return f'{displayid} ({description[0:trunclength]}{ell})'
+        return f'{displayid} ({description[0:displaylength]}{ell})'
 
     def getregmarkerobjects(self, assertions: list) -> list:
 
@@ -451,11 +484,15 @@ class SenLib:
             predicate_term = predicate.get('term')
 
             if predicate_term in ['up_regulates', 'down_regulates', 'inconclusively_regulates']:
+                # Regulating marker.
                 rawobjects = assertion.get('objects')
-                listret = self.getmarkerobjects(rawobjects=rawobjects)
-
-                for o in listret:
+                logger.info(f'Getting information from ontology API on markers with {predicate_term} assertions')
+                listassertion = self.getmarkerobjects(rawobjects=rawobjects)
+                # Denormalize by adding the type to the marker object.
+                for o in listassertion:
                     o['type'] = predicate_term
+
+                listret = listret + listassertion
 
         return listret
 
@@ -466,17 +503,34 @@ class SenLib:
         :param: rawobjects - the list of RRID objects.
         """
         api = RequestRetry()
-        base_url = 'https://scicrunch.org/resolver/'
+        base_url = self.cfg.getfield(key='SCICRUNCH_BASE_URL')
+
+        logger.info('Getting origin information from SciCrunch Resolver')
+
+        # The SciCrunch Resolver API can return unexpected responses. As the
+        # Resolver is only used to decorate the code with a term, use "unknown"
+        # defensively.
+
+        # It may be necessary to tune by storing the origin description at the time
+        # of writing instead of fetching it on every read.
 
         oret = []
         for o in rawobjects:
             code = o.get('code')
             rrid = code.split(':')[1]
             url = f'{base_url}{rrid}.json'
-            origin = api.getresponse(url=url, format='json')
-            hits = origin.get('hits')
-            if hits is not None:
-                description = hits.get('hits')[0].get('_source').get('item').get('description', '')
+            #origin = api.getresponse(url=url, format='json')
+            # Debug
+            origin = None
+            if origin is None:
+                description = "unknown"
+            else:
+                hits = origin.get('hits')
+                if hits is None:
+                    description = "unknown"
+                else:
+                    description = hits.get('hits')[0].get('_source').get('item').get('description', '')
+
             oret.append({"code": code, "term": description})
 
         return oret
@@ -488,14 +542,16 @@ class SenLib:
         :param: rawobjects - a list of SenNet dataset objects.
         """
         api = RequestRetry()
-        base_url = 'https://entity.api.sennetconsortium.org/entities/'
         token = session['groups_token']
         headers = {"Authorization": f'Bearer {token}'}
+
+        logger.info('Getting dataset information from SenNet entity-api')
 
         oret = []
         for o in rawobjects:
             code = o.get('code')
             snid = code
+            base_url = self.cfg.getfield(key='ENTITY_BASE_URL')
             url = f'{base_url}{snid}'
             dataset = api.getresponse(url=url, format='json', headers=headers)
             title = dataset.get('title', '')
@@ -506,12 +562,15 @@ class SenLib:
     def getmarkerobjects(self, rawobjects: list) -> list:
 
         """
-            Calls the entity API to obtain the description for specified markers.
+            Calls the UBKG API to obtain the description for specified markers.
             :param: rawobjects - a list of specified marker objects.
         """
 
+        logger.info('Getting marker information from the ontology API')
+
         api = RequestRetry()
-        base_url = 'https://ontology.api.hubmapconsortium.org/'
+        cfg = AppConfig()
+        base_url = cfg.getfield('UBKG_BASE_URL')
 
         oret = []
         for o in rawobjects:
@@ -520,12 +579,8 @@ class SenLib:
                 oret.append({"code": code, "term": None})
                 continue
             markerid = code.split(':')[1]
-            if 'HGNC' in code:
-                endpoint = 'genes'
-            else:
-                endpoint = 'proteins'
 
-            url = f'{base_url}{endpoint}/{markerid}'
+            url = f'{base_url}/marker/{markerid}'
 
             resp = api.getresponse(url=url, format='json')
             # Defensive: check if resp is a list and not empty
@@ -544,6 +599,76 @@ class SenLib:
                     else:
                         term = code
             oret.append({"code": code, "term": term})
+
+        return oret
+
+    def getcelltypeobjects(self, rawobjects: list) -> list:
+
+        """
+        Calls the UBKG API to obtain descriptions for cell types.
+        :param: rawobjects - a list of cell type objects
+        """
+        api = RequestRetry()
+        base_url = f"{request.host_url.rstrip('/')}/ontology/celltypes/"
+
+        logger.info('Getting celltype information from the ontology API')
+
+        oret = []
+        for o in rawobjects:
+            code = o.get('code').split(':')[1]
+            url = f'{base_url}{code}'
+            celltype = api.getresponse(url=url, format='json')
+
+            # celltypes returns a list of JSON objects
+            if len(celltype) > 0:
+                name = celltype[0].get('cell_type').get('name', '')
+                oret.append({"code": f'CL:{code}', "term": name})
+        return oret
+
+    def getdiagnosisobjects(self, rawobjects: list) -> list:
+
+        """
+        Calls the UBKG API to obtain descriptions for diagnoses.
+        :param: rawobjects - a list of diagnosis objects
+        """
+        api = RequestRetry()
+        cfg = AppConfig()
+        base_url = f"{request.host_url.rstrip('/')}/ontology/diagnoses/"
+
+        logger.info('Getting diagnosis information from the ontology API')
+
+        oret = []
+        for o in rawobjects:
+            code = o.get('code')
+            url = f'{base_url}{code}/code'
+            diagnoses = api.getresponse(url=url, format='json')
+            # diagnoses returns a list of JSON objects
+            if len(diagnoses) > 0:
+                term = diagnoses[0].get('term')
+                oret.append({"code": code, "term": term})
+        return oret
+
+    def getlocationobjects(self, rawobjects: list) -> list:
+
+        """
+        Calls the UBKG API to obtain descriptions for organs.
+        :param: rawobjects - a list of organ objects
+        """
+        api = RequestRetry()
+        cfg = AppConfig()
+        base_url = f"{request.host_url.rstrip('/')}/ontology/organs"
+
+        logger.info('Getting organ information from the ontology API')
+
+        oret = []
+        for o in rawobjects:
+            code = o.get('code')
+            url = f'{base_url}/{code}/code'
+            organs = api.getresponse(url=url, format='json')
+            # diagnoses returns a list of JSON objects
+            if len(organs) > 0:
+                term = organs[0].get('term')
+                oret.append({"code": code, "term": term})
 
         return oret
 
@@ -568,7 +693,113 @@ class SenLib:
                     'term': f'{code} ({term})'
                 }
             )
-            return listret
+        return listret
+
+    def _getnodetext(self, val: str) -> str:
+
+        """
+        Obtains the term for a senotype ftu jstree node from the allftu jstree.
+        """
+
+        allftutree = current_app.allftutree
+        for organ in allftutree:
+            organ_data = organ.get('data')
+            if val == organ_data.get('value'):
+                return organ.get('text')
+            else:
+                ftus = organ.get('children')
+                for ftu in ftus:
+                    ftu_data = ftu.get('data')
+                    if val == ftu_data.get('value'):
+                        return ftu.get('text')
+
+                    ftuparts = ftu.get('children')
+                    for ftupart in ftuparts:
+                        ftupart_data = ftupart.get('data')
+                        if val == ftupart_data.get('value'):
+                            return ftupart.get('text')
+
+    def buildftutree(self, assertions: list) -> list[dict]:
+        """
+        Builds an ftutree json from the 'has_ftu_path' assertions.
+        :param assertions: assertion list from senotype
+
+        FTU assertions are denormalized to the ftu part to allow for linking
+        to different levels of the FTU hierarchy--e.g.,
+
+        {"organ": "UBERON:XXXX",
+        "ftu": "",
+        "ftu_part": ""
+        } for an organ
+
+        {"organ": "UBERON:XXXX",
+        "ftu": "UBERON:YYYY",
+        "ftu_part": ""
+        } for a FTU
+
+        {"organ": "UBERON:XXXX",
+        "ftu": "UBERON:YYYY",
+        "ftu_part": "UBERON:ZZZZ" or "CL:AAAA"
+        } for a FTU part
+
+        The colon in codes is replaced with underscore to conform to IRIs in the
+        2D FTU CSV.
+        """
+
+        iribase = self.cfg.getfield(key='IRI_BASE_URL')
+        organs = {}
+        for assertion in assertions:
+            predicate = assertion.get('predicate').get('term')
+            if predicate == 'has_ftu_path':
+                objects = assertion.get('objects')
+
+                for object in objects:
+                    organ_val = object.get('organ').replace(':', '_')
+                    ftu_val = object.get('ftu')
+                    if ftu_val != '':
+                        ftu_val = ftu_val.replace(':', '_')
+                    ftu_part_val = object.get('ftu_part', '')
+                    if ftu_part_val != '':
+                        ftu_part_val = ftu_part_val.replace(':', '_')
+
+                    if organ_val not in organs:
+                        organs[organ_val] = {
+                            "id": f"organ_{organ_val}",
+                            "text": self._getnodetext(organ_val),
+                            "data": {"value": organ_val, "iri": f"{iribase}{organ_val}"},
+                            "children": {},
+                            "state": {"opened": True}
+                            }
+                    organ_node = organs[organ_val]
+
+                    # FTU node (under organ)
+                    if ftu_val != '':
+                        if ftu_val not in organ_node["children"]:
+                            organ_node["children"][ftu_val] = {
+                                "id": f"{organ_node['id']}_ftu_{ftu_val}",
+                                "text": self._getnodetext(ftu_val),
+                                "data": {"value": ftu_val, "iri": f"{iribase}{ftu_val}"},
+                                "children": [],
+                                "state": {"opened": True}
+                            }
+                        ftu_node = organ_node["children"][ftu_val]
+
+                    # FTU Part node (under FTU).
+                    if ftu_part_val != '':
+                        ftu_node["children"].append({
+                            "id": f"{ftu_node['id']}_part_{ftu_part_val}",
+                            "text": self._getnodetext(ftu_part_val),
+                            "data": {"value": ftu_part_val, "iri": f"{iribase}{ftu_part_val}"},
+                            "state": {"opened": True}
+                        })
+
+                # Convert children dicts to lists for jsTree
+                jstree = []
+                for organ in organs.values():
+                    organ['children'] = list(organ['children'].values())
+                    jstree.append(organ)
+
+                return jstree
 
     def setdefaults(self, form):
 
@@ -590,8 +821,8 @@ class SenLib:
         form.taxon.process([''])
         form.location.process([''])
         form.celltype.process([''])
+        form.microenvironment.process([''])
         form.hallmark.process([''])
-        form.observable.process([''])
         form.inducer.process([''])
         form.assay.process([''])
 
@@ -601,6 +832,13 @@ class SenLib:
         form.ageupperbound.data = ''
         form.ageunit.data = 'year'
 
+        form.bmivalue.data = ''
+        form.bmilowerbound.data = ''
+        form.bmiupperbound.data = ''
+        form.bmiunit.data = 'kg/m2'
+
+        form.sex.process([''])
+
         # External assertions
         form.citation.process([''])
         form.origin.process([''])
@@ -609,6 +847,11 @@ class SenLib:
         # Markers
         form.marker.process([''])
         form.regmarker.process([''])
+
+        # future development
+        # self.ftutree = []
+
+        form.diagnosis.process([''])
 
     def fetchfromdb(self, senotypeid: str, form):
 
@@ -624,7 +867,6 @@ class SenLib:
 
         # Get senotype data
         dictsenlib = self.getsenotypejson(id=senotypeid)
-
         senotype = dictsenlib.get('senotype')
         form.senotypename.data = senotype.get('name', '')
         form.senotypedescription.data = senotype.get('definition', '')
@@ -640,50 +882,56 @@ class SenLib:
         # Assertions other than markers
         assertions = dictsenlib.get('assertions')
 
-        # Taxon (multiple possible values)
+        # Taxon (valueset; multiple possible values)
         taxonlist = self.getstoredsimpleassertiondata(assertions=assertions, predicate='in_taxon')
         if len(taxonlist) > 0:
             form.taxon.process(form.taxon, [item['term'] for item in taxonlist])
         else:
             form.taxon.process([''])
 
-        # Locations (multiple possible values)
+        # Locations (external; multiple possible values)
         locationlist = self.getstoredsimpleassertiondata(assertions=assertions, predicate='located_in')
         if len(locationlist) > 0:
-            form.location.process(form.location, [item['term'] for item in locationlist])
+            form.location.process(form.location, [self.truncateddisplaytext(displayid=item['code'],
+                                                                            description=item['term'],
+                                                                            trunclength=50)
+                                                  for item in locationlist])
+
         else:
             form.location.process([''])
 
-        # Cell type (one possible value)
+        # Cell type (external; multiple values)
         celltypelist = self.getstoredsimpleassertiondata(assertions=assertions, predicate='has_cell_type')
         if len(celltypelist) > 0:
-            form.celltype.process(form.celltype, [item['term'] for item in celltypelist])
+            form.celltype.process(form.celltype, [self.truncateddisplaytext(displayid=item['code'],
+                                                                            description=item['term'],
+                                                                            trunclength=13)
+                                                  for item in celltypelist])
         else:
             form.celltype.process([''])
 
-        # Hallmark (multiple possible values)
+        # Microenvironment (valueset; multiple possible values)
+        microenvironmentlist = self.getstoredsimpleassertiondata(assertions=assertions, predicate='has_microenvironment')
+        if len(microenvironmentlist) > 0:
+            form.microenvironment.process(form.microenvironment, [item['term'] for item in microenvironmentlist])
+        else:
+            form.microenvironment.process([''])
+
+        # Hallmark (valueset; multiple possible values)
         hallmarklist = self.getstoredsimpleassertiondata(assertions=assertions, predicate='has_hallmark')
         if len(hallmarklist) > 0:
             form.hallmark.process(form.hallmark, [item['term'] for item in hallmarklist])
         else:
             form.hallmark.process([''])
 
-        # Molecular observable (multiple possible values)
-        observablelist = self.getstoredsimpleassertiondata(assertions=assertions,
-                                                           predicate='has_molecular_observable')
-        if len(observablelist) > 0:
-            form.observable.process(form.observable, [item['term'] for item in observablelist])
-        else:
-            form.observable.process([''])
-
-        # Inducer (multiple possible values)
+        # Inducer (valueset; multiple possible values)
         inducerlist = self.getstoredsimpleassertiondata(assertions=assertions, predicate='has_inducer')
         if len(inducerlist) > 0:
             form.inducer.process(form.inducer, [item['term'] for item in inducerlist])
         else:
             form.inducer.process([''])
 
-        # Assay (multiple possible values)
+        # Assay (valueset; multiple possible values)
         assaylist = self.getstoredsimpleassertiondata(assertions=assertions, predicate='has_assay')
         if len(assaylist) > 0:
             form.assay.process(form.assay, [item['term'] for item in assaylist])
@@ -697,14 +945,29 @@ class SenLib:
             form.agevalue.data = age.get('value', '')
             form.agelowerbound.data = age.get('lowerbound', '')
             form.ageupperbound.data = age.get('upperbound', '')
-            form.ageunit.data = age.get('unit', '')
+        form.ageunit.data = 'year'
 
-        # Citation (multiple possible values)
+        # BMI
+        bmi = self.getstoredcontextassertiondata(assertions=assertions, predicate='has_context', context='BMI')
+        if bmi != {}:
+            form.bmivalue.data = bmi.get('value', '')
+            form.bmilowerbound.data = bmi.get('lowerbound', '')
+            form.bmiupperbound.data = bmi.get('upperbound', '')
+        form.bmiunit.data = 'kg/m2'
+
+        # sex
+        sexlist = self.getstoredsimpleassertiondata(assertions=assertions, predicate='has_sex')
+        if len(sexlist) > 0:
+            form.sex.process(form.sex, [item['term'] for item in sexlist])
+        else:
+            form.sex.process([''])
+
+        # Citation (external; multiple possible values)
         citationlist = self.getstoredsimpleassertiondata(assertions=assertions, predicate='has_citation')
         if len(citationlist) > 0:
             form.citation.process(form.citation, [self.truncateddisplaytext(displayid=item['code'],
                                                                             description=item['term'],
-                                                                            trunclength=30)
+                                                                            trunclength=20)
                                                   for item in citationlist])
         else:
             form.citation.process([''])
@@ -714,22 +977,22 @@ class SenLib:
         if len(originlist) > 0:
             form.origin.process(form.origin, [self.truncateddisplaytext(displayid=item['code'],
                                                                         description=item['term'],
-                                                                        trunclength=30)
+                                                                        trunclength=25)
                                               for item in originlist])
         else:
             form.origin.process([''])
 
-        # Dataset (multiple possible values)
+        # Dataset (external; multiple possible values)
         datasetlist = self.getstoredsimpleassertiondata(assertions=assertions, predicate='has_dataset')
         if len(datasetlist) > 0:
             form.dataset.process(form.dataset, [self.truncateddisplaytext(displayid=item['code'],
                                                                           description=item['term'],
-                                                                          trunclength=30)
+                                                                          trunclength=15)
                                                 for item in datasetlist])
         else:
             form.dataset.process([''])
 
-        # Specified Markers (multiple possible values)
+        # Specified Markers (external; multiple possible values)
         markerlist = self.getstoredsimpleassertiondata(assertions=assertions,
                                                        predicate='has_characterizing_marker_set')
         if len(markerlist) > 0:
@@ -740,7 +1003,7 @@ class SenLib:
         else:
             form.marker.process([''])
 
-        # Regulating Markers (multiple possible values).
+        # Regulating Markers (external; multiple possible values).
         # The format of the process call is different because the regmarker
         # control is a FieldList(FormField) instead of just a Fieldlist.
         regmarkerlist = self.getregmarkerobjects(assertions=assertions)
@@ -758,6 +1021,21 @@ class SenLib:
             )
         else:
             form.regmarker.process(None, [''])
+
+        # Future development:
+        # Build an FTU treeview JSON from the ftupath data.
+        # self.ftutree = self.buildftutree(assertions=assertions)
+
+        # Diagnosis (external; multiple values)
+        diagnosislist = self.getstoredsimpleassertiondata(assertions=assertions, predicate='has_diagnosis')
+
+        if len(diagnosislist) > 0:
+            form.diagnosis.process(form.diagnosis, [self.truncateddisplaytext(displayid=item['code'],
+                                                                              description=item['term'],
+                                                                              trunclength=65)
+                                                    for item in diagnosislist])
+        else:
+            form.diagnosis.process([''])
 
     def getnewsenotypeid(self) -> str:
         """
@@ -830,7 +1108,8 @@ class SenLib:
                 {
                     "code": item,
                     "term": (
-                        "" if assertion in ['has_citation', 'has_origin', 'has_dataset']
+                        "" if assertion in ['has_citation', 'has_origin', 'has_dataset', 'has_cell_type',
+                                            'has_diagnosis','located_in']
                         else valueset[valueset['valueset_code'] == item]['valueset_term'].iloc[0]
                     )
                 }
@@ -844,6 +1123,12 @@ class SenLib:
                 objects = self.getoriginobjects(rawobjects)
             elif assertion == 'has_dataset':
                 objects = self.getdatasetobjects(rawobjects)
+            elif assertion == 'has_cell_type':
+                objects = self.getcelltypeobjects(rawobjects)
+            elif assertion == 'located_in':
+                objects = self.getlocationobjects(rawobjects)
+            elif assertion == 'has_diagnosis':
+                objects = self.getdiagnosisobjects(rawobjects)
             else:
                 objects = rawobjects
 
@@ -924,10 +1209,21 @@ class SenLib:
 
         # Cell type
         celltypelist = self.build_session_list(form_data=form_data, field_name='celltype')
+
         if len(celltypelist) > 0:
-            form.celltype.process(None, [f"{item['code']} ({item['term']})" for item in celltypelist])
+            form.celltype.process(None, [self.truncateddisplaytext(displayid=item['code'],
+                                                                   description=item['term'],
+                                                                   trunclength=13)
+                                         for item in celltypelist])
         else:
             form.celltype.process(None, [''])
+
+        # Microenvironment
+        microenvironmentlist = self.build_session_list(form_data=form_data, field_name='microenvironment')
+        if len(microenvironmentlist) > 0:
+            form.microenvironment.process(None, [f"{item['code']} ({item['term']})" for item in microenvironmentlist])
+        else:
+            form.microenvironment.process(None, [''])
 
         # Hallmark
         hallmarklist = self.build_session_list(form_data=form_data, field_name='hallmark')
@@ -935,13 +1231,6 @@ class SenLib:
             form.hallmark.process(None, [f"{item['code']} ({item['term']})" for item in hallmarklist])
         else:
             form.hallmark.process(None, [''])
-
-        # Molecular observable
-        observablelist = self.build_session_list(form_data=form_data, field_name='observable')
-        if len(observablelist) > 0:
-            form.observable.process(None, [f"{item['code']} ({item['term']})" for item in observablelist])
-        else:
-            form.observable.process(None, [''])
 
         # Inducer
         inducerlist = self.build_session_list(form_data=form_data, field_name='inducer')
@@ -962,7 +1251,7 @@ class SenLib:
         if len(citationlist) > 0:
             form.citation.process(None, [self.truncateddisplaytext(displayid=item['code'],
                                                                    description=item['term'],
-                                                                   trunclength=40)
+                                                                   trunclength=15)
                                          for item in citationlist])
         else:
             form.citation.process(None, [''])
@@ -972,7 +1261,7 @@ class SenLib:
         if len(originlist) > 0:
             form.origin.process(None, [self.truncateddisplaytext(displayid=item['code'],
                                                                  description=item['term'],
-                                                                 trunclength=50)
+                                                                 trunclength=20)
                                        for item in originlist])
         else:
             form.origin.process(None, [''])
@@ -982,7 +1271,7 @@ class SenLib:
         if len(datasetlist) > 0:
             form.dataset.process(None, [self.truncateddisplaytext(displayid=item['code'],
                                                                   description=item['term'],
-                                                                  trunclength=50)
+                                                                  trunclength=20)
                                         for item in datasetlist])
         else:
             form.dataset.process(None, [''])
@@ -1012,6 +1301,16 @@ class SenLib:
             )
         else:
             form.regmarker.process(None, [])
+
+        diagnosislist = self.build_session_list(form_data=form_data, field_name='diagnosis')
+
+        if len(diagnosislist) > 0:
+            form.diagnosis.process(None, [self.truncateddisplaytext(displayid=item['code'],
+                                                                    description=item['term'],
+                                                                    trunclength=65)
+                                          for item in diagnosislist])
+        else:
+            form.diagnosis.process(None, [''])
 
     def getprovenanceids(self, senotypeid: str, predecessorid: str) -> dict:
         """
@@ -1078,7 +1377,6 @@ class SenLib:
 
             predicate_iri = self.get_iri(predicate_term=predicate_term)
             source = self.get_field_metadata(field_name=key, field_property='object_source')
-
             if isinstance(form_data.get(key), list):
                 field_values = form_data.get(key)
             else:
@@ -1114,7 +1412,6 @@ class SenLib:
         :param form_data: form data
         """
 
-        assertions = []
         # Get the context fields from context_assertion_code.
         # For each field,
         # - get
@@ -1202,30 +1499,94 @@ class SenLib:
                 else:
                     inc_objects.append(obj)
 
-                if len(up_objects) > 0:
-                    predicate = {"term": 'up_regulates'}
-                    assertion = {"predicate": predicate,
-                                 "objects": up_objects}
-                    assertions.append(assertion)
+            if len(up_objects) > 0:
+                predicate = {"term": 'up_regulates'}
+                assertion = {"predicate": predicate,
+                             "objects": up_objects}
+                assertions.append(assertion)
 
-                if len(down_objects) > 0:
-                    predicate = {"term": 'down_regulates'}
-                    assertion = {"predicate": predicate,
-                                 "objects": down_objects}
-                    assertions.append(assertion)
+            if len(down_objects) > 0:
+                predicate = {"term": 'down_regulates'}
+                assertion = {"predicate": predicate,
+                             "objects": down_objects}
+                assertions.append(assertion)
 
-                if len(inc_objects) > 0:
-                    predicate = {"term": 'inconclusively_regulates'}
-                    assertion = {"predicate": predicate,
-                                 "objects": inc_objects}
-                    assertions.append(assertion)
+            if len(inc_objects) > 0:
+                predicate = {"term": 'inconclusively_regulates'}
+                assertion = {"predicate": predicate,
+                             "objects": inc_objects}
+                assertions.append(assertion)
 
         return assertions
 
+    def buildftuassertions(self, ftu_tree: dict) -> list:
+        """
+        Build a set of assertions between the senotype and Functional Tissue Unit
+        paths.
+        :param ftu_tree: dict of FTU jstree information
+
+        Assertion objects are denormalized to the level of ftu part to allow for selection
+        at different levels of the hierarchy--e.g.,
+
+        {"organ": "UBERON:XXXX",
+        "ftu": "",
+        "ftu_part": ""
+        } for an organ
+
+        {"organ": "UBERON:XXXX",
+        "ftu": "UBERON:YYYY",
+        "ftu_part": ""
+        } for a FTU
+
+        {"organ": "UBERON:XXXX",
+        "ftu": "UBERON:YYYY",
+        "ftu_part": "UBERON:ZZZZ" or "CL:AAAA"
+        } for a FTU part
+
+        """
+
+        # Denormalize the tree node data at the level of ftu_part.
+        ftu_paths = []
+        for organ_node in ftu_tree:
+            organ_code = organ_node['data']['value'].replace('_', ':')
+            ftu_nodes = organ_node.get('children', [])
+            if len(ftu_nodes) == 0:
+                ftu_paths.append({
+                    "organ": organ_code,
+                    "ftu": "",
+                    "ftu_part": ""
+                })
+            else:
+                for ftu_node in organ_node.get('children', []):
+                    ftu_code = ftu_node['data']['value'].replace('_', ':')
+                    ftu_part_nodes = ftu_node.get('children', [])
+                    if len(ftu_part_nodes) == 0:
+                        ftu_paths.append({
+                            "organ": organ_code,
+                            "ftu": ftu_code,
+                            "ftu_part": ""
+                        })
+                    else:
+                        for part_node in ftu_node.get('children', []):
+                            part_code = part_node['data']['value'].replace('_', ':')
+                            ftu_paths.append({
+                                "organ": organ_code,
+                                "ftu": ftu_code,
+                                "ftu_part": part_code
+                            })
+
+        predicate = {"term": "has_ftu_path"}
+        assertions = [{"predicate": predicate,
+                      "objects": ftu_paths}]
+
+        return assertions
+
+    # def buildassertions(self, form_data: MultiDict, ftu_tree: dict) -> list:
     def buildassertions(self, form_data: MultiDict) -> list:
         """
         Builds the assertions object of a senotype submission JSON
         :param form_data: form data
+        :param ftu_tree: dict of FTU information
         """
 
         # Simple assertions, including specific markers
@@ -1239,8 +1600,15 @@ class SenLib:
         if len(contextassertions) > 0:
             assertions = assertions + contextassertions
 
+        # Future development:
+        # FTU assertions
+        # ftuassertions = self.buildftuassertions(ftu_tree=ftu_tree)
+        # if len(ftuassertions) > 0:
+            # assertions = assertions + ftuassertions
+
         return assertions
 
+    # def buildsubmissionjson(self, form_data: MultiDict, senotypeid: str, predecessorid: str, ftu_tree: dict) -> dict:
     def buildsubmissionjson(self, form_data: MultiDict, senotypeid: str, predecessorid: str) -> dict:
         """
         Builds a Senotype submission JSON from the POSTed request form data.
@@ -1248,6 +1616,7 @@ class SenLib:
         :param senotypeid: id of the senotype to build
         :param predecessorid: id of the predecessor of the senotype, for the case of
                               a new version
+        :param ftu_tree: dict of FTU jstree information
         """
 
         # senotype
@@ -1257,7 +1626,7 @@ class SenLib:
         doi = form_data.get('doi', None)
         if doi is not None:
             doiid = doi.split(' (')[0]
-            doiurl = f'https://doi.org/{doiid}'
+            doiurl = doiid
         else:
             doiurl = None
 
@@ -1276,7 +1645,8 @@ class SenLib:
                          "email": form_data.get('submitteremail')
                          }
 
-        # simple assertions
+        # assertions
+        # listassertions = self.buildassertions(form_data=form_data, ftu_tree=ftu_tree)
         listassertions = self.buildassertions(form_data=form_data)
 
         dictsubmission = {"senotype": dictsenotype,
@@ -1286,10 +1656,12 @@ class SenLib:
 
         return dictsubmission
 
+    # def writesubmission(self, form_data: MultiDict, ftu_tree: dict, new_version_id: str = ''):
     def writesubmission(self, form_data: MultiDict, new_version_id: str = ''):
         """
         Writes a senotype submission to the senlib database.
         :param form_data: form data
+        :param ftu_tree: dict of FTU jstree information.
         :param new_version_id: ID of the new version of an existing senotype.
 
         If new_version_id has a value, then a new version was requested.
@@ -1305,6 +1677,9 @@ class SenLib:
             predecessorid = form_data.get('senotypeid')
 
         # Build the submission JSON, with updates to provenance as necessary.
+        # self.submissionjson = self.buildsubmissionjson(form_data=form_data, senotypeid=senotypeid,
+                                                       # predecessorid=predecessorid, ftu_tree=ftu_tree)
+
         self.submissionjson = self.buildsubmissionjson(form_data=form_data, senotypeid=senotypeid,
                                                        predecessorid=predecessorid)
 
@@ -1347,6 +1722,23 @@ class SenLib:
         form.submitterlast.data = session['username'].split(' ')[1]
         form.submitteremail.data = session['userid']
 
+    def getubkgstatus(self) -> str:
+
+        """
+        Check the status of the UBKG API.
+        """
+        api = RequestRetry()
+        statusurl = self.cfg.getfield('UBKG_BASE_URL')
+
+        try:
+            status = api.getresponse(url=statusurl)
+            if 'Hello!' in status:
+                return 'OK'
+            else:
+                return 'NOT OK'
+
+        except ConnectionError as e:
+            abort(500, description=f'Error connecting to the UBKG API: {e}')
 
     def __init__(self, cfg: AppConfig, userid: str):
 
@@ -1358,8 +1750,10 @@ class SenLib:
 
         """
 
+        self.cfg = cfg
+
         # Connect to the senlib database.
-        self.database = SenLibMySql(cfg)
+        self.database = SenLibMySql(cfg=self.cfg)
 
         # Senotype Editor assertion valuesets
         self.assertionvaluesets = self.database.assertionvaluesets
@@ -1379,3 +1773,12 @@ class SenLib:
         self.senotypetree = self._getsenotypejtree()
 
         self.submissionjson = {}
+
+        api = RequestRetry()
+
+        urlheartbeat = self.cfg.getfield('DATACITE_HEARTBEAT_URL')
+        self.datacitestatus = api.getresponse(url=urlheartbeat)
+        logger.info(f'DataCite status = {self.datacitestatus}')
+
+        self.ubkgstatus = self.getubkgstatus()
+        logger.info(f'UBKG API status = {self.ubkgstatus}')

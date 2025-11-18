@@ -43,7 +43,7 @@ function addMarker(id, description) {
     var input = document.createElement('input');
     input.type = 'hidden';
     input.name = 'marker-' + index; // WTForms FieldList expects this pattern
-     input.value = id;
+    input.value = id;
     input.className = 'form-control';// d-none'; // Hidden but submitted
     li.appendChild(input);
 
@@ -52,6 +52,23 @@ function addMarker(id, description) {
     span.className = 'list-field-display';
     span.textContent = description;
     li.appendChild(span);
+
+    // Entity detail link
+    // Placeholder span for link button
+    const placeholder = document.createElement('span');
+    placeholder.className = `$marker-link-placeholder ms-2`;
+    placeholder.id = `$marker-link-${id}`;
+    // Link button
+    const markerlink = document.createElement('a');
+    markerlink.className = 'btn btn-sm btn-outline-primary ms-2';
+    markerlink.style.width = '2.5em';
+    markerlink.href = `/bio/marker/detail/${encodeURIComponent(id)}`;
+    markerlink.target = '_blank';
+    markerlink.title = description;
+    markerlink.textContent = '🔗';
+    placeholder.appendChild(markerlink);
+
+    li.appendChild(placeholder);
 
     // Remove button
     var btn = document.createElement('button');
@@ -65,6 +82,8 @@ function addMarker(id, description) {
 
     ul.appendChild(li);
 
+    reindexMarkerInputs();
+
     // Global function in input-changes.js
     handleInputChange();
 }
@@ -72,6 +91,7 @@ function addMarker(id, description) {
 // Modal search logic (fetching marker IDs, then their descriptions)
 // Validates marker by calling /ontology/genes/{id} or /ontology/proteins/{id} before adding
 document.addEventListener('DOMContentLoaded', function () {
+    document.getElementById('marker-type-gene').checked = true;
     let lastMarkerSearch = '';
     var searchInput = document.getElementById('marker-search-input');
     if (!searchInput) {

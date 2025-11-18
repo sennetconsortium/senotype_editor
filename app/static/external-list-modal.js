@@ -1,6 +1,6 @@
 /*
-Features to support addition and removal of external assertions (dataset, citation, origin) for Senotype submission.
-DRY version: parameterized for type ('dataset', 'citation', 'origin').
+Features to support addition and removal of external assertions (dataset, citation, origin, etc.) for Senotype submission.
+DRY version: parameterized for type ('dataset', 'citation', 'origin', etc.).
 
 Usage:
 - HTML list should have id: `${type}-list`
@@ -9,6 +9,35 @@ Usage:
 - Modal element should have id: `${type}SearchModal`
 - FieldList pattern: `${type}-<index>`
 */
+
+// Reindex hidden input fields in a list after addition or removal.
+// This ensures the name attributes stay sequential and WTForms (etc) process them correctly.
+function reindexExternalInputs(type) {
+    const ul = document.getElementById(`${type}-list`);
+    if (!ul) return;
+    const inputs = ul.querySelectorAll('input[type="hidden"]');
+    inputs.forEach((input, idx) => {
+        input.name = `${type}-${idx}`;
+    });
+}
+
+// Truncates display to a width specified by the configuration.
+// @ param withId: whether to include the code with the description.
+function displayWithTruncate(info, withId = true) {
+    const trunclength = info.trunclength;
+    const desc = info.description || '';
+    if (withId) {
+        if (desc.length > trunclength - 3) {
+            return `${info.id} (${desc.slice(0, trunclength - 3)}...)`;
+        }
+        return `${info.id} (${desc})`;
+    } else {
+        if (desc.length > trunclength - 3) {
+            return `${desc.slice(0, trunclength - 3)}...`;
+        }
+        return `${desc}`;
+    }
+}
 
 /*
 EXTERNAL_CONFIG
@@ -28,15 +57,18 @@ add modal:
          assertion object
 4. displayText: used in the display of the link button
 
+5. trunclength: length to which to truncate the display text
+
 */
 
-// Factory function to create EXTERNAL_CONFIG with a parameterized length for
-// truncating the display string.
-function createExternalConfig(trunclength = 40) {
+// Factory function to create EXTERNAL_CONFIG.
+function createExternalConfig() {
     return {
         dataset: {
+            // Corresponds to a SenNet dataset.
             apiSearch: query => `/dataset/${encodeURIComponent(query)}`,
             parseApiResult: (data, query) => {
+                // There will be, at most, one dataset.
                 const sennetid = data.sennetid || query;
                 const uuid = data.uuid || '';
                 const description = data.title || data.name || sennetid || '';
@@ -44,51 +76,56 @@ function createExternalConfig(trunclength = 40) {
                 return [{
                     id: sennetid,
                     uuid,
-                    description
+                    description,
+                    trunclength: 15
                 }];
             },
             link: info => ({
-                href: `https://data.sennetconsortium.org/dataset?uuid=${encodeURIComponent(info.uuid)}`,
+                // Go directly to the dataset's detail page in the Data Portal.
+                href: `/dataset/portal/${encodeURIComponent(info.uuid)}`,
                 title: 'View dataset details'
             }),
-            displayText: info => {
-                const desc = info.description || '';
-                if (desc.length > trunclength - 3) {
-                    return `${info.id} (${desc.slice(0, trunclength - 3)}...)`;
-                }
-                return `${info.id} (${desc})`;
+            //displayText: function(info) {
+                //return displayWithTruncate(info);
+            //}
+            displayText: function(info) {
+                return displayWithTruncate(info);
             }
         },
         citation: {
+            // Corresponds to a PubMed citation.
+            // Synchronous, two-step workflow with EUtils:
+            // 1. Use eSearch (via the citation/search/term route) to find the publication in the NCBI data.
+            // 2. Use eSummary (via the citation/search/id route) to obtain the title of the publication, if it exists.
+            // Specify JSON response format.
             apiSearch: query =>
-                `https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&retmode=json&term=${encodeURIComponent(query)}`,
+                `/citation/search/term/${encodeURIComponent(query)}`,
             parseApiResult: async (data) => {
                 const pmids = data.esearchresult?.idlist || [];
                 if (pmids.length === 0) return [];
                 const summaryRes = await fetch(
-                    `https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&retmode=json&id=${pmids.join(',')}`
+                   `/citation/search/id/${pmids.join(',')}`
                 );
                 const summaryData = await summaryRes.json();
+                // Eutils has array-based responses.
                 return pmids.map(pmid => ({
                     id: `PMID:${pmid}`,
-                    description: summaryData.result[pmid]?.title || pmid
+                    description: summaryData.result[pmid]?.title || pmid,
+                    trunclength: 20
                 }));
             },
             link: info => ({
-                href: `https://pubmed.ncbi.nlm.nih.gov/${encodeURIComponent(info.id.split(':')[1])}`,
+                href: `/citation/detail/${encodeURIComponent(info.id.split(':')[1])}`,
                 title: 'View citation details'
             }),
-            displayText: info => {
-                const desc = info.description || '';
-                if (desc.length > trunclength - 3) {
-                    return `${info.id} (${desc.slice(0, trunclength - 3)}...)`;
-                }
-                return `${info.id} (${desc})`;
+            displayText: function(info) {
+                return displayWithTruncate(info);
             }
         },
         origin: {
+            // Corresponds to a search of SciCrunch Resolver.
             apiSearch: query =>
-                `https://scicrunch.org/resolver/${encodeURIComponent(query)}.json`,
+                `/origin/search/${encodeURIComponent(query)}`,
             parseApiResult: data => {
                 let items = [];
                 if (data.hits && Array.isArray(data.hits.hits)) {
@@ -98,32 +135,119 @@ function createExternalConfig(trunclength = 40) {
                 }
                 return items.map(item => ({
                     id: `RRID:${item.identifier || data.identifier || ''}`.replace(/^RRID:RRID:/, 'RRID:'),
-                    description: item.description || item.name || item.identifier || data.identifier || ''
+                    description: item.description || item.name || item.identifier || data.identifier || '',
+                    trunclength: 25
                 }));
             },
             link: info => ({
-                href: `https://scicrunch.org/resolver/${encodeURIComponent(info.id.replace(/^RRID:/, ''))}`,
+                href: `/origin/detail/${encodeURIComponent(info.id.replace(/^RRID:/, ''))}`,
                 title: 'View origin details'
             }),
-            displayText: info => {
-                const desc = info.description || '';
-                if (desc.length > trunclength - 3) {
-                    return `${info.id} (${desc.slice(0, trunclength - 3)}...)`;
+            displayText: function(info) {
+                return displayWithTruncate(info);
+            }
+        },
+        diagnosis: {
+            // Corresponds to the response from the ontology API.
+            apiSearch: query =>
+                `/ontology/diagnoses/${encodeURIComponent(query)}`,
+            parseApiResult: data => {
+                // Response will be a list of JSON objects.
+                if (Array.isArray(data)) {
+                    return data.map(item => ({
+                        id: item.code || '',
+                        description: item.term || '',
+                        trunclength: 65
+                    }));
+                } else if (data && data.code) {
+                    return [{
+                        id: data.code,
+                        description: data.term,
+                        trunclength: 65
+                    }];
                 }
-                return `${info.id} (${desc})`;
+                return [];
+            },
+            link: info => ({
+                href: `/bio/obo/detail/${encodeURIComponent(info.id.replace(/^DOID:/, 'DOID_'))}`,
+                title: 'View diagnoses'
+            }),
+            displayText: function(info) {
+                return displayWithTruncate(info, false);
+            }
+        },
+        celltype: {
+            // Corresponds to the response from the ontology API.
+            apiSearch: query =>
+                `/ontology/celltypes/${encodeURIComponent(query)}`,
+            parseApiResult: data => {
+                // Response will be a list of JSON objects.
+                let items = [];
+                if (data && Array.isArray(data)) {
+                    // Map over array and extract cell_type objects.
+                    items = data
+                        .map(item => item.cell_type)
+                        .filter(Boolean); // remove undefined/null
+                } else if (data.cell_type) {
+                    // Single object
+                    items = [data.cell_type];
+                }
+                return items.map(item => ({
+                    id: item.id || item.identifier || '',
+                    description: item.name || item.identifier || '',
+                    trunclength: 13
+                }));
+            },
+            link: info => ({
+                href: `/bio/obo/detail/${encodeURIComponent(info.id.replace(/^CL:/, 'CL_'))}`,
+                title: 'View celltype details'
+            }),
+            displayText: function(info) {
+                return displayWithTruncate(info);
+            }
+        },
+        location: {
+            // Corresponds to the response from the ontology API.
+            apiSearch: query =>
+                `/ontology/organs/${encodeURIComponent(query)}/term`,
+            parseApiResult: data => {
+                // Response will be a list of JSON objects.
+                console.log(data);
+                if (Array.isArray(data)) {
+                    return data.map(item => ({
+                        id: item.code || '',
+                        description: item.term || '',
+                        trunclength: 40
+                    }));
+                } else if (data && data.code) {
+                    return [{
+                        id: data.code,
+                        description: data.term,
+                        trunclength: 40
+                    }];
+                }
+                return [];
+            },
+            link: info => ({
+                // Go directly to the organ's detail page in the Data Portal.
+                href: `/organs/${encodeURIComponent(info.id)}`,
+                title: 'View organ details'
+            }),
+            displayText: function(info) {
+                return displayWithTruncate(info, false);
             }
         }
     };
 }
 
 //Initialize the configuration.
-const trunclength = 30;
-const EXTERNAL_CONFIG = createExternalConfig(trunclength);
+const EXTERNAL_CONFIG = createExternalConfig();
 
 // --- Add, Remove, and EventListener Functions ---
 
 function removeExternal(type, btn) {
     btn.parentNode.remove();
+    reindexExternalInputs(type);
 }
 
 function addExternal(type, info) {
@@ -193,6 +317,8 @@ function addExternal(type, info) {
 
     ul.appendChild(li);
 
+    reindexExternalInputs(type);
+
     // Global function in input-changes.js
     handleInputChange();
 }
@@ -201,7 +327,6 @@ function setupExternalModalSearch(type) {
 
     // Obtain the configuration for the assertion type.
     const config = EXTERNAL_CONFIG[type];
-
     let lastSearch = '';
     const searchInput = document.getElementById(`${type}-search-input`);
     const resultsDiv = document.getElementById(`${type}-search-results`);
@@ -210,7 +335,7 @@ function setupExternalModalSearch(type) {
     searchInput.addEventListener('input', async function() {
         const query = this.value.trim();
         resultsDiv.innerHTML = '';
-        if (query.length > 2 && query !== lastSearch) {
+        if (query.length > 0 && query !== lastSearch) {
             lastSearch = query;
             resultsDiv.innerHTML = `<div class="text-muted">Searching ...</div>`;
             try {
@@ -263,5 +388,5 @@ function setupExternalModalSearch(type) {
 
 // --- Initialize all external modals ---
 document.addEventListener('DOMContentLoaded', function () {
-    ['dataset', 'citation', 'origin'].forEach(setupExternalModalSearch);
+    ['dataset', 'citation', 'origin','celltype','diagnosis','location'].forEach(setupExternalModalSearch);
 });

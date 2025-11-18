@@ -295,7 +295,7 @@ def setdefaults(form):
     form.location.process([''])
     form.celltype.process([''])
     form.hallmark.process([''])
-    form.observable.process([''])
+    form.microenvironment.process([''])
     form.inducer.process([''])
     form.assay.process([''])
 
@@ -369,12 +369,12 @@ def fetchfromdb(id: str, senlib: SenLib, form: EditForm):
     else:
         form.hallmark.process([''])
 
-    # Molecular observable (multiple possible values)
-    observablelist = getstoredsimpleassertiondata(senlib=senlib, assertions=assertions, predicate='has_molecular_observable')
-    if len(observablelist) > 0:
-        form.observable.process(form.observable, [item['term'] for item in observablelist])
+    # Molecular microenvironment (multiple possible values)
+    microenvironmentlist = getstoredsimpleassertiondata(senlib=senlib, assertions=assertions, predicate='has_molecular_microenvironment')
+    if len(microenvironmentlist) > 0:
+        form.microenvironment.process(form.microenvironment, [item['term'] for item in microenvironmentlist])
     else:
-        form.observable.process([''])
+        form.microenvironment.process([''])
 
     # Inducer (multiple possible values)
     inducerlist = getstoredsimpleassertiondata(senlib=senlib, assertions=assertions, predicate='has_inducer')

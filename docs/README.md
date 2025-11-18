@@ -31,7 +31,7 @@ The **Senotype Editor** application allows users to manage senotype definitions 
 Because the majority of the data in a senotype definition is categorical, most of the work of defining a senotype will
 involve the selection of values from lists.
 
-{_screen capture of Edit page_}
+![img_22.png](img_22.png)
 
 With the Senotype Editor, users can:
 1. **review** a senotype definition
@@ -45,7 +45,7 @@ The Senotype Editor offers two types of tools:
 1. a tool to navigate the Senotype library of _senotype submissions_. 
 2. tools to maintain senotype submissions
 
-{_annotated screen capture: Editor page, pointing out Navigator and Definition sections_}
+![img_23.png](img_23.png)
 
 #### Senotype Library Navigator
 The **Senotype Library Navigator** represents the Senotype library with an expandable tree view.
@@ -125,9 +125,9 @@ Clicking the ![img_9.png](img_9.png) button will launch a search window.
 
 ![img_11.png](img_11.png)
 
-The search window will search DataCite for a DOI with ID that matches the value that the user enters in the **Enter query...** 
+The search window will search DataCite for a DOI with ID that _exactly_ matches the value that the user enters in the **Enter query...** 
 input. Because all senotype DOIs will have the same DataCite provider (e.g, 10.6586), the search window only needs 
-the unique portion of the DOI. 
+the unique portion of the DOI, which usually corresponds to the SenNet ID of the dataset. 
 
 For example, if the DOI's full URL is https://doi.org/10.60586/snt259.dzbl.489, only snt259.dzbl.489 is required as a search term.
 
@@ -151,22 +151,21 @@ For example, the **Taxon** input corresponds to the senotype definition's  _in_t
 There are four types of assertions. Each type has its own tool for selection.
 
 ## Valueset-based assertions
-The majority of a senotype definition's assertions will be categorical--i.e., the possible values for 
-the code of the object of the assertion will be in a _valueset_. For example, the categories for a 
+The majority of a senotype definition's assertions will be categorical, in which the possible values for 
+the code of the object of the assertion will be in a limited _valueset_. For example, the categories for a 
 senotype definition's **taxon** might be the valueset {NCBI:9606, NCBI:10088}, corresponding to the codes for 
 _human_ and _mouse_.
 
 Valueset-based assertions include:
 
-| assertion            | vocabulary |
-|----------------------|------------|
-| taxon                | NCBI       |
-| location             | UBERON     |
-| cell type            | CL         |
-| hallmark             | SENOTYPE   |
-| molecular observable | SENOTYPE   |
-| inducer              | SENOTYPE   |
-| assay                | OBI        |
+| assertion        | vocabulary |
+|------------------|------------|
+| taxon            | NCBI       |
+| hallmark         | SENOTYPE   |
+| microenvironment | SENOTYPE   |
+| inducer          | SENOTYPE   |
+| assay            | OBI        |
+| sex              | SNOMED_CT  |
 
 
 Because there can be multiple assertions of the same type, the inputs for valueset-based assertions are 
@@ -182,34 +181,82 @@ the list for the assertion. The ![img_13.png](img_13.png) button removes an elem
 ## Context assertions
 
 Context assertions allow the user to define ranges and units for an assertion.
-![img_16.png](img_16.png). For example, the **age** assertion can be bounded to apply only to the range of 18 to 89 years.
+![img_16.png](img_16.png) 
+For example, the **age** assertion can be bounded to apply only to the range of 18 to 89 years.
 
 ## External assertions
-The **citation**, **origin**, and **dataset** assertions are also encoded; however, the codes are not stored in valuesets, but 
-are maintained in external sources. 
 
-![img_17.png](img_17.png)
+A number of the objects of assertions are encoded with codes from large vocabularies or ontologies, such as Cell Ontology. 
+Instead of using internal valuesets for these inputs, the Senotype Editor obtains codes by searching external sources.
 
-The Senotype Editor queries APIs to 
-obtain information on:
-- citation
-- origin
-- dataset
+| assertion type   | source             | vocabulary              |
+|------------------|:-------------------|-------------------------|
+| location (organ) | UBKG               | Uberon                  |
+| cell type        | UBKG               | Cell Ontology (CL)      |
+| diagnosis        | UBKG               | Disease Ontology (DOID) |
+| citation         | NCBI PubMed        | PMID                    |
+| origin           | SciCrunch          | RRID                    |
+| dataset          | SenNet Data Portal | SenNet ID               |
+| gene marker      | UBKG               | HGNC                    |
+| protein marker   | UBKG               | UniProtKB               |
 
-The external assertion input functions similarly to the DOI:
+### Edit page
+
+#### Decoration
+When the Edit page loads information for an existing senotype, 
+it "decorates" the stored codes with terms from external sources.
+If there is a problem with an external source (e.g., an API timeout), the editor
+will use "(unknown)" for the decoration. This is only for purposes of display in the Edit window; the codes are not changed.
+
+The external assertion lists function similarly to the DOI:
 - The ![img_9.png](img_9.png) button opens a search window.
 - The ![img_13.png](img_13.png) button removes an element from the assertion list.
-- The ![img_12.png](img_12.png) button links to the corresponding detail page for the assertion. For example, in the **citation** list, the link button opens the PubMed page for the citation.
 
-The search window for an external assertion finds matches in the external site for IDs:
+#### Search button
+The ![img_12.png](img_12.png) button next to an assertion object links to a 
+detail page in the source that corresponds to the object.
 
-| assertion | source             | type of ID |
-|-----------|--------------------|------------|
-| citation  | PubMed             | PMID       |
-| origin    | SciCrunch Resolver | RRID       |
-| dataset   | SenNet Data Portal | SenNet ID  |
 
-The   ![img_12.png](img_12.png)   button in an external search window links to the corresponding external site to facilitate finding an appropriate identifier.
+| assertion object type | reference page                         |
+|-----------------------|----------------------------------------|
+| location              | SenNet organs detail                   |
+| cell type             | EMBL-EBI Ontology Lookup Service (OLS) |
+| diagnosis             | Disease Ontology                       |
+| citation              | PubMed                                 |
+| origin                | SciCrunch                              |
+| dataset               | SenNet Data Portal                     |
+| gene marker           | HGNC                                   |
+| protein marker        | UniprotKB                              |
+
+### Search window
+#### Search box
+In the Search window for an external assertion object, entering
+input into the search box triggers a search against an external source. 
+The results of a search appear below the search box as a list of links. 
+Selecting a link from the result list will add the result to the corresponding
+object list in the Edit page.
+
+![img_25.png](img_25.png)
+
+The forms of search terms depend on the external source.
+
+| input type | search source                         | forms of search term                                                          | example                                                |
+|------------|---------------------------------------|-------------------------------------------------------------------------------|:-------------------------------------------------------|
+| citation   | NCBI EUtils API                       | exact PMID; portion of publication title                                      | 41247924; predictors                                   |
+| origin     | SciCrunch Resolver API                | exact RRID                                                                    | 4850064                                                |
+| dataset    | SenNet entity-api; SenNet Data Portal | exact SenNet ID                                                               | SNT699.FVQD.882                                        |
+| location   | hs-ontology API (UBKG API)            | portion of SenNet organ name                                                  | lung                                                   |
+| diagnosis  | hs-ontology API (UBKG API)            | exact DOID; exact match for a preferred term or synonym                       | DOID:3083; chronic obstructive pulmonary disease; copd |
+| celltype   | hs-ontology API (UBKG API)            | exact CLID; portion of a preferred term                                       | 4006000; fibroblast                                    |
+| gene       | hs-ontology API (UBKG API)            | exact: HGNC ID; approved symbol; alias; prior approved symbol; or prior alias | 1100; BRCA1; BRCC1                                     |
+| protein    | hs-ontology API (UBKG API)            | exact: UniProtKB ID; UniProtKB entry name                                     | Q13201;MMRN1_HUMAN                                     |
+
+
+#### Search button 
+In an external search window, the ![img_12.png](img_12.png)   button opens the corresponding external site 
+to facilitate finding an appropriate identifier. 
+
+The Senotype Editor is not integrated with these external sites.
 
 ## Marker assertions
 
@@ -248,6 +295,10 @@ The Search window for regulating markers includes a field for type of regulating
 ### Bulk Addition windows
 Bulk addition windows allow the user to load a large number of markers from a local CSV file that the user specifies.
 
+The bulk addition windows will only add information from a CSV if:
+* the CSV has the expected format
+* all markers in the CSV can be found in an external source
+
 #### Specified markers
 The CSV used for bulk upload of specified markers must have the following structure:
 
@@ -284,9 +335,9 @@ When the user clicks the Update/Create button at the bottom of the Definition se
 
 If the data is invalid or incomplete, the Editor:
 * displays an error message in red at the top of the Editor page
-* displays an error message next to the field with an issue
+* displays an error message in red next to the field with an issue
 
-{screen capture: validation error}
+![img_24.png](img_24.png)
 
 The Editor verifies that:
 1. All required fields have at least one value.

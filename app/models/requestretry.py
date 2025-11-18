@@ -6,6 +6,7 @@ Class for generic API GET requests that uses an exponential retry loop.
 from requests.adapters import HTTPAdapter
 from urllib3.util import Retry
 import requests
+from flask import abort
 
 
 class RequestRetry:
@@ -15,7 +16,7 @@ class RequestRetry:
         self.url = ''
         self.error = None
 
-    def getresponse(self, url: str, format: str, headers: dict = None) -> dict:
+    def getresponse(self, url: str, format: str = None, headers: dict = None) -> dict:
         """
         Obtains a response from a REST API.
         Employs a retry loop in case of timeout or other failures.
@@ -52,11 +53,14 @@ class RequestRetry:
                 self.responsejson = r.json()
                 self.error = None
                 return self.responsejson
-            elif format == 'csv':
-                return r.text
             else:
-                raise ValueError(f'Invalid format {format}')
+                return r.text
 
+        except requests.exceptions.ConnectionError as e:
+            self.error = e
+            raise e
+        except requests.exceptions.RetryError as e:
+            print(f"RetryError: Max retries exceeded. Details: {e}")
         except Exception as e:
             self.error = e
             r.raise_for_status()

@@ -4,7 +4,8 @@ Edit route:
 2. Initiates a new Senotype, which will be written to the database via the Update route.
 
 """
-from flask import Blueprint, request, render_template, session, make_response, abort, current_app
+from flask import Blueprint, request, render_template, session, current_app
+
 
 # The EditForm WTForm
 from models.editform import EditForm
@@ -12,6 +13,14 @@ from models.editform import EditForm
 # Helper classes
 from models.appconfig import AppConfig
 from models.senlib import SenLib
+
+import logging
+
+# Configure consistent logging. This is done at the beginning of each module instead of with a superclass of
+# logger to avoid the need to overload function calls to logger.
+logging.basicConfig(format='[%(asctime)s] %(levelname)s in %(module)s: %(message)s',
+                    level=logging.INFO, datefmt='%Y-%m-%d %H:%M:%S')
+logger = logging.getLogger(__name__)
 
 edit_blueprint = Blueprint('edit', __name__, url_prefix='/edit')
 
@@ -28,17 +37,6 @@ def edit():
     cfg = AppConfig()
 
     # Get IDs for existing Senotype submissions.
-
-    # Logic for using the senlib GitHub repo. (Deprecated)
-    # Get the URLs to the senlib repo.
-    # Base URL for the repo
-    # senlib_url = cfg.getfield(key='SENOTYPE_URL')
-    # URL to the Senotype Editor valueset CSV, stored in the senlib repo
-    # valueset_url = cfg.getfield(key='VALUESET_URL')
-    # URL to the folder for Senotype Submissions in the senlib repo
-    # json_url = cfg.getfield(key='JSON_URL')
-    # Github personal access token for authorized calls
-    # github_token = cfg.getfield(key='GITHUB_TOKEN')
 
     # Senlib interface that fetches senotype data and builds the Senotype treeeview.
     senlib = SenLib(cfg=cfg, userid=session['userid'])
@@ -57,11 +55,23 @@ def edit():
     form_data = session.pop('form_data', None)
     form_errors = session.pop('form_errors', None)
 
+    # Future development
+    # Current state of the FTU paths input.
+    # ftu_tree_json = session.pop('ftu_tree_json', None)
+    # if ftu_tree_json:
+        # ftu_tree = json.loads(ftu_tree_json)
+    # else:
+        # ftu_tree = []
+    # senlib.ftutree = ftu_tree
+
     if form_data:
         # Populate the form with session data--i.e., the data for the submission that
         # the user is attempting to add or update.
+
         form = EditForm(data=form_data)
         senlib.getsessiondata(form=form, form_data=form_data)
+
+        # Obtain information on the selected FTU path.
 
         # Re-inject validation errors from the failed update.
         if form_errors:
@@ -72,12 +82,8 @@ def edit():
 
     elif request.method == 'GET':
 
-        # This scenario occurs on the initial load of the form as a result of the
-        # redirect from Globus login.
-
-        # Clear session variables related to prior senotype edits.
-        session.pop('form_data', None)
-        session.pop('form_errors', None)
+        # This scenario occurs on the initial load of the form as a result of a
+        # redirect--either from Globus login or from a failed update.
 
         # Load an empty form.
         form = EditForm()
@@ -110,16 +116,23 @@ def edit():
             # the senotype JSON.
             senlib.setuserassubmitter(form)
 
-            #form.submitterfirst.data = session['username'].split(' ')[0]
-            #form.submitterlast.data = session['username'].split(' ')[1]
-            #form.submitteremail.data = session['userid']
-
         else:
             # Load from existing data.
             senlib.fetchfromdb(senotypeid=id, form=form)
 
     selected_node_id = request.form.get('selected_node_id') or request.args.get('selected_node_id')
-    # Pass to the edit form the tree of senotype id information for the jstree control.
+
+    # Pass to the edit form:
+    # 1. the tree of senotype id information for the jstree control
+    # Future development -
+    # 2. information for the complete 2D FTU jstree
+    # 3. information for the senotype's FTU jstree
+    # return render_template('edit.html',
+                           #form=form,
+                           #response={'tree_data': senlib.senotypetree,
+                                     #'allftutree_data': current_app.allftutree,
+                                     #'ftu_tree_data': senlib.ftutree},
+                           #selected_node_id=selected_node_id)
     return render_template('edit.html',
                            form=form,
                            response={'tree_data': senlib.senotypetree},
