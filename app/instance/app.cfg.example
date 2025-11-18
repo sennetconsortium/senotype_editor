@@ -24,14 +24,32 @@ ORGANS_BASE_URL='https://data.sennetconsortium.org/organs/'
 DATASET_BASE_URL='https://data.sennetconsortium.org/dataset'
 
 # External base URLs
-# DataCite
+
+# DataCite (DOIs)
 DATACITE_API_BASE_URL='https://api.datacite.org/dois/'
+DATACITE_SENOTYPE_PROVIDER_ID='10.60586'
 DATACITE_DOI_BASE_URL='https://doi.org/'
 DATACITE_HEARTBEAT_URL='https://api.datacite.org/heartbeat'
-# NCBI EUtils
-EUTILS_BASE_URL='https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&retmode=json&id='
-# SciCrunch Resolver
+DATACITE_HOME_URL='https://commons.datacite.org/'
+
+# NCBI EUtils (citations)
+EUTILS_SEARCH_BASE_URL='https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&retmode=json'
+EUTILS_SUMMARY_BASE_URL='https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&retmode=json'
+# API Key to increase number of allowed requests per second to avoid 429 errors from EUtils
+EUTILS_API_KEY='74cae0505adb73ea87a5daa71ed26bd18709'
+
+# PubMed detail page (citations)
+PUBMED_BASE_URL='https://pubmed.ncbi.nlm.nih.gov/'
+
+# SciCrunch Resolver (origins)
 SCICRUNCH_BASE_URL='https://scicrunch.org/resolver/'
-# PURL
-IRI_BASE_URL='http://purl.obolibrary.org/obo/'
+SCICRUNCH_EXPLORE_URL='https://rrid.site/'
+
+# Biomedical Ontology home pages
+OBO_BASE_URL='http://purl.obolibrary.org/obo/'
+CL_HOME_URL='https://www.ebi.ac.uk/ols4/ontologies/cl?tab=classes'
+DOID_HOME_URL='https://disease-ontology.org'
+HGNC_BASE_URL='https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/'
+HGNC_HOME_URL='https://www.genenames.org/'
+UNIPROTKB_BASE_URL='https://www.uniprot.org/uniprotkb/'
 

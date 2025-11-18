@@ -461,13 +461,15 @@ class SenLib:
         Builds a truncated display string.
         """
         if trunclength < 0:
-            trunclength = len(description)
-        if trunclength < len(description):
+            displaylength = len(description)
+        if (trunclength-3) <= len(description):
+            displaylength = trunclength - 3
             ell = '...'
         else:
+            displaylength = trunclength
             ell = ''
 
-        return f'{displayid} ({description[0:trunclength]}{ell})'
+        return f'{displayid} ({description[0:displaylength]}{ell})'
 
     def getregmarkerobjects(self, assertions: list) -> list:
 
@@ -517,7 +519,9 @@ class SenLib:
             code = o.get('code')
             rrid = code.split(':')[1]
             url = f'{base_url}{rrid}.json'
-            origin = api.getresponse(url=url, format='json')
+            #origin = api.getresponse(url=url, format='json')
+            # Debug
+            origin = None
             if origin is None:
                 description = "unknown"
             else:
@@ -901,7 +905,7 @@ class SenLib:
         if len(celltypelist) > 0:
             form.celltype.process(form.celltype, [self.truncateddisplaytext(displayid=item['code'],
                                                                             description=item['term'],
-                                                                            trunclength=100)
+                                                                            trunclength=13)
                                                   for item in celltypelist])
         else:
             form.celltype.process([''])
@@ -963,7 +967,7 @@ class SenLib:
         if len(citationlist) > 0:
             form.citation.process(form.citation, [self.truncateddisplaytext(displayid=item['code'],
                                                                             description=item['term'],
-                                                                            trunclength=25)
+                                                                            trunclength=20)
                                                   for item in citationlist])
         else:
             form.citation.process([''])
@@ -983,7 +987,7 @@ class SenLib:
         if len(datasetlist) > 0:
             form.dataset.process(form.dataset, [self.truncateddisplaytext(displayid=item['code'],
                                                                           description=item['term'],
-                                                                          trunclength=25)
+                                                                          trunclength=15)
                                                 for item in datasetlist])
         else:
             form.dataset.process([''])
@@ -1028,7 +1032,7 @@ class SenLib:
         if len(diagnosislist) > 0:
             form.diagnosis.process(form.diagnosis, [self.truncateddisplaytext(displayid=item['code'],
                                                                               description=item['term'],
-                                                                              trunclength=50)
+                                                                              trunclength=65)
                                                     for item in diagnosislist])
         else:
             form.diagnosis.process([''])
@@ -1209,7 +1213,7 @@ class SenLib:
         if len(celltypelist) > 0:
             form.celltype.process(None, [self.truncateddisplaytext(displayid=item['code'],
                                                                    description=item['term'],
-                                                                   trunclength=40)
+                                                                   trunclength=13)
                                          for item in celltypelist])
         else:
             form.celltype.process(None, [''])
@@ -1247,7 +1251,7 @@ class SenLib:
         if len(citationlist) > 0:
             form.citation.process(None, [self.truncateddisplaytext(displayid=item['code'],
                                                                    description=item['term'],
-                                                                   trunclength=20)
+                                                                   trunclength=15)
                                          for item in citationlist])
         else:
             form.citation.process(None, [''])
@@ -1303,7 +1307,7 @@ class SenLib:
         if len(diagnosislist) > 0:
             form.diagnosis.process(None, [self.truncateddisplaytext(displayid=item['code'],
                                                                     description=item['term'],
-                                                                    trunclength=20)
+                                                                    trunclength=65)
                                           for item in diagnosislist])
         else:
             form.diagnosis.process(None, [''])
