@@ -5,8 +5,20 @@ The dataset routes allow the Edit page to call the SenNet Data Portal's organ pa
 from flask import redirect, Blueprint
 
 from models.ontology_class import OntologyAPI
+from models.appconfig import AppConfig
 
 organ_blueprint = Blueprint('organs', __name__, url_prefix='/organs')
+
+
+@organ_blueprint.route('/home', methods=['GET'])
+def get_organ_home():
+    """
+    Loads the SenNet Data Portal Organs page.
+    """
+
+    cfg = AppConfig()
+    url = f"{cfg.getfield(key='DATA_PORTAL_BASE_URL')}/organs"
+    return redirect(url)
 
 
 @organ_blueprint.route('/<uberon_id>', methods=['GET'])
@@ -34,5 +46,7 @@ def get_organ(uberon_id):
                 term = category.get('term')
             term = term.lower().replace(' ', '_')
 
-            url = f"https://data.sennetconsortium.org/organs/{term}"
+            cfg = AppConfig()
+            organ_url = f"{cfg.getfield(key='DATA_PORTAL_BASE_URL')}/organs"
+            url = f"{organ_url}/{term}"
             return redirect(url)

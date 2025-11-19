@@ -37,14 +37,8 @@ function addLinkButtons(url_base, hidden_input_selector, link_title, target_sele
         var parent = hiddenInput.closest('.d-flex') || hiddenInput.parentElement;
         if (!parent) return;
 
-        // Special case for markers.
-        // A marker can be either a gene or a protein.
+        // Build the link to the external source.
         var url = url_base + encodeURIComponent(code);
-        if (hiddenValue.includes('HGNC')) {
-            url ='https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/' + encodeURIComponent(code);
-        } else if (hiddenValue.includes('UNIPROTKB')) {
-            url='https://www.uniprot.org/uniprotkb/' + encodeURIComponent(code.split(":")[1]);
-        }
 
         var placeholder = parent.querySelector(target_selector);
         if (placeholder) {

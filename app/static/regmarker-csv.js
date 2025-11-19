@@ -218,6 +218,23 @@ document.addEventListener("DOMContentLoaded", function () {
             span.textContent = marker + " (" + description + ") " + actionSymbol;
             li.appendChild(span);
 
+            // Entity detail link
+            // Placeholder span for link button
+            const placeholder = document.createElement('span');
+            placeholder.className = `$marker-link-placeholder ms-2`;
+            placeholder.id = `$marker-link-${marker}`;
+            // Link button
+            const markerlink = document.createElement('a');
+            markerlink.className = 'btn btn-sm btn-outline-primary ms-2';
+            markerlink.style.width = '2.5em';
+            markerlink.href = `/bio/marker/detail/${encodeURIComponent(marker)}`;
+            markerlink.target = '_blank';
+            markerlink.title = description;
+            markerlink.textContent = '🔗';
+            placeholder.appendChild(markerlink);
+
+            li.appendChild(placeholder);
+
             // Remove button
             let btn = document.createElement('button');
             btn.className = 'btn btn-sm btn-danger ms-2';

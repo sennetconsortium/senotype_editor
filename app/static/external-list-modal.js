@@ -21,6 +21,23 @@ function reindexExternalInputs(type) {
     });
 }
 
+// Truncates display to a width specified by the configuration.
+// @ param withId: whether to include the code with the description.
+function displayWithTruncate(info, withId = true) {
+    const trunclength = info.trunclength;
+    const desc = info.description || '';
+    if (withId) {
+        if (desc.length > trunclength - 3) {
+            return `${info.id} (${desc.slice(0, trunclength - 3)}...)`;
+        }
+        return `${info.id} (${desc})`;
+    } else {
+        if (desc.length > trunclength - 3) {
+            return `${desc.slice(0, trunclength - 3)}...`;
+        }
+        return `${desc}`;
+    }
+}
 
 /*
 EXTERNAL_CONFIG
@@ -40,11 +57,12 @@ add modal:
          assertion object
 4. displayText: used in the display of the link button
 
+5. trunclength: length to which to truncate the display text
+
 */
 
-// Factory function to create EXTERNAL_CONFIG with a parameterized length for
-// truncating the display string.
-function createExternalConfig(trunclength = 40) {
+// Factory function to create EXTERNAL_CONFIG.
+function createExternalConfig() {
     return {
         dataset: {
             // Corresponds to a SenNet dataset.
@@ -58,63 +76,56 @@ function createExternalConfig(trunclength = 40) {
                 return [{
                     id: sennetid,
                     uuid,
-
-                    description
+                    description,
+                    trunclength: 15
                 }];
             },
             link: info => ({
-                // Because this is in the existing Globus auth session,
-                // go directly to the dataset's detail page in the Data Portal.
-                href: `https://data.sennetconsortium.org/dataset?uuid=${encodeURIComponent(info.uuid)}`,
+                // Go directly to the dataset's detail page in the Data Portal.
+                href: `/dataset/portal/${encodeURIComponent(info.uuid)}`,
                 title: 'View dataset details'
             }),
-            displayText: info => {
-                // Display both the SenNet ID and part of the description.
-                const desc = info.description || '';
-                if (desc.length > trunclength - 3) {
-                    return `${info.id} (${desc.slice(0, trunclength - 3)}...)`;
-                }
-                return `${info.id} (${desc})`;
+            //displayText: function(info) {
+                //return displayWithTruncate(info);
+            //}
+            displayText: function(info) {
+                return displayWithTruncate(info);
             }
         },
         citation: {
             // Corresponds to a PubMed citation.
             // Synchronous, two-step workflow with EUtils:
-            // 1. Use eSearch to find the publication in the NCBI data.
-            // 2. Use eSummary to obtain the title of the publication, if it exists.
+            // 1. Use eSearch (via the citation/search/term route) to find the publication in the NCBI data.
+            // 2. Use eSummary (via the citation/search/id route) to obtain the title of the publication, if it exists.
             // Specify JSON response format.
             apiSearch: query =>
-                `https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&retmode=json&term=${encodeURIComponent(query)}`,
+                `/citation/search/term/${encodeURIComponent(query)}`,
             parseApiResult: async (data) => {
                 const pmids = data.esearchresult?.idlist || [];
                 if (pmids.length === 0) return [];
                 const summaryRes = await fetch(
-                    `https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&retmode=json&id=${pmids.join(',')}`
+                   `/citation/search/id/${pmids.join(',')}`
                 );
                 const summaryData = await summaryRes.json();
                 // Eutils has array-based responses.
                 return pmids.map(pmid => ({
                     id: `PMID:${pmid}`,
-                    description: summaryData.result[pmid]?.title || pmid
+                    description: summaryData.result[pmid]?.title || pmid,
+                    trunclength: 20
                 }));
             },
             link: info => ({
-                href: `https://pubmed.ncbi.nlm.nih.gov/${encodeURIComponent(info.id.split(':')[1])}`,
+                href: `/citation/detail/${encodeURIComponent(info.id.split(':')[1])}`,
                 title: 'View citation details'
             }),
-            displayText: info => {
-                const desc = info.description || '';
-                if (desc.length > trunclength - 3) {
-                    return `${info.id} (${desc.slice(0, trunclength - 3)}...)`;
-                }
-                return `${info.id} (${desc})`;
+            displayText: function(info) {
+                return displayWithTruncate(info);
             }
         },
         origin: {
-            // Corresponds to an origin from SciCrunch Resolver, in JSON format.
-            // ElasticSearch query.
+            // Corresponds to a search of SciCrunch Resolver.
             apiSearch: query =>
-                `https://scicrunch.org/resolver/${encodeURIComponent(query)}.json`,
+                `/origin/search/${encodeURIComponent(query)}`,
             parseApiResult: data => {
                 let items = [];
                 if (data.hits && Array.isArray(data.hits.hits)) {
@@ -124,19 +135,16 @@ function createExternalConfig(trunclength = 40) {
                 }
                 return items.map(item => ({
                     id: `RRID:${item.identifier || data.identifier || ''}`.replace(/^RRID:RRID:/, 'RRID:'),
-                    description: item.description || item.name || item.identifier || data.identifier || ''
+                    description: item.description || item.name || item.identifier || data.identifier || '',
+                    trunclength: 25
                 }));
             },
             link: info => ({
-                href: `https://scicrunch.org/resolver/${encodeURIComponent(info.id.replace(/^RRID:/, ''))}`,
+                href: `/origin/detail/${encodeURIComponent(info.id.replace(/^RRID:/, ''))}`,
                 title: 'View origin details'
             }),
-            displayText: info => {
-                const desc = info.description || '';
-                if (desc.length > trunclength - 3) {
-                    return `${info.id} (${desc.slice(0, trunclength - 3)}...)`;
-                }
-                return `${info.id} (${desc})`;
+            displayText: function(info) {
+                return displayWithTruncate(info);
             }
         },
         diagnosis: {
@@ -149,25 +157,23 @@ function createExternalConfig(trunclength = 40) {
                     return data.map(item => ({
                         id: item.code || '',
                         description: item.term || '',
+                        trunclength: 65
                     }));
                 } else if (data && data.code) {
                     return [{
                         id: data.code,
-                        description: data.term
+                        description: data.term,
+                        trunclength: 65
                     }];
                 }
                 return [];
             },
             link: info => ({
-                href: `http://purl.obolibrary.org/obo/${encodeURIComponent(info.id.replace(/^DOID:/, 'DOID_'))}`,
+                href: `/bio/obo/detail/${encodeURIComponent(info.id.replace(/^DOID:/, 'DOID_'))}`,
                 title: 'View diagnoses'
             }),
-            displayText: info => {
-                const desc = info.description || '';
-                if (desc.length > trunclength - 3) {
-                    return `${desc.slice(0, trunclength - 3)}...`;
-                }
-                return `${desc}`;
+            displayText: function(info) {
+                return displayWithTruncate(info, false);
             }
         },
         celltype: {
@@ -188,20 +194,16 @@ function createExternalConfig(trunclength = 40) {
                 }
                 return items.map(item => ({
                     id: item.id || item.identifier || '',
-                    description: item.name || item.identifier || ''
+                    description: item.name || item.identifier || '',
+                    trunclength: 13
                 }));
             },
             link: info => ({
-                href: `http://purl.obolibrary.org/obo/${encodeURIComponent(info.id.replace(/^CL:/, 'CL_'))}`,
+                href: `/bio/obo/detail/${encodeURIComponent(info.id.replace(/^CL:/, 'CL_'))}`,
                 title: 'View celltype details'
             }),
-            displayText: info => {
-                const desc = info.description || '';
-                if (desc.length > trunclength - 3) {
-                return `${info.id} (${desc})`;
-                    return `${info.id} (${desc.slice(0, trunclength - 3)}...)`;
-                }
-                return `${info.id} (${desc})`;
+            displayText: function(info) {
+                return displayWithTruncate(info);
             }
         },
         location: {
@@ -215,11 +217,13 @@ function createExternalConfig(trunclength = 40) {
                     return data.map(item => ({
                         id: item.code || '',
                         description: item.term || '',
+                        trunclength: 40
                     }));
                 } else if (data && data.code) {
                     return [{
                         id: data.code,
-                        description: data.term
+                        description: data.term,
+                        trunclength: 40
                     }];
                 }
                 return [];
@@ -229,20 +233,15 @@ function createExternalConfig(trunclength = 40) {
                 href: `/organs/${encodeURIComponent(info.id)}`,
                 title: 'View organ details'
             }),
-            displayText: info => {
-                const desc = info.description || '';
-                if (desc.length > trunclength - 3) {
-                    return `${desc.slice(0, trunclength - 3)}...`;
-                }
-                return `${desc}`;
+            displayText: function(info) {
+                return displayWithTruncate(info, false);
             }
         }
     };
 }
 
 //Initialize the configuration.
-const trunclength = 30;
-const EXTERNAL_CONFIG = createExternalConfig(trunclength);
+const EXTERNAL_CONFIG = createExternalConfig();
 
 // --- Add, Remove, and EventListener Functions ---
 

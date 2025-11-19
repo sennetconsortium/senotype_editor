@@ -11,6 +11,7 @@ from models.appconfig import AppConfig
 # from models.ftutree import FTUTree
 
 # Register Blueprints
+from routes.health.health import health_blueprint
 from routes.globus_auth.globus_auth import login_blueprint
 from routes.globus_index.globus import globus_blueprint
 from routes.edit.edit import edit_blueprint
@@ -19,6 +20,10 @@ from routes.ontology.ontology import ontology_blueprint
 from routes.update.update import update_blueprint
 from routes.dataset.dataset import dataset_blueprint
 from routes.organ.organ import organ_blueprint
+from routes.citation.citation import citation_blueprint
+from routes.origin.origin import origin_blueprint
+from routes.bio.bio import bio_blueprint
+from routes.doi.doi import doi_blueprint
 
 
 def to_pretty_json(value):
@@ -51,6 +56,7 @@ class SenotypeUI:
         logger.info(f"package_base_dir: {package_base_dir}")
 
         # Register route Blueprints.
+        self.app.register_blueprint(health_blueprint)
         self.app.register_blueprint(login_blueprint)
         self.app.register_blueprint(globus_blueprint)
         self.app.register_blueprint(edit_blueprint)
@@ -59,6 +65,10 @@ class SenotypeUI:
         self.app.register_blueprint(update_blueprint)
         self.app.register_blueprint(dataset_blueprint)
         self.app.register_blueprint(organ_blueprint)
+        self.app.register_blueprint(citation_blueprint)
+        self.app.register_blueprint(origin_blueprint)
+        self.app.register_blueprint(bio_blueprint)
+        self.app.register_blueprint(doi_blueprint)
 
         # Register the custom JSON pretty print filter.
         self.app.jinja_env.filters['tojson_pretty'] = to_pretty_json
@@ -110,7 +120,7 @@ app = SenotypeUI(cfg.file, Path(__file__).absolute().parent.parent.parent).app
 if __name__ == "__main__":
     try:
         # donor_app = SenotypeUI(cfg.file, Path(__file__).absolute().parent.parent.parent).app
-        app.run(host='0.0.0.0', port='5000')  # flask port
+        app.run(host='127.0.0.1', port='5000')  # flask port
     except Exception as e:
         print(str(e))
         logger.error(e, exc_info=True)

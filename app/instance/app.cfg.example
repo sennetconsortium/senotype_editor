@@ -7,11 +7,47 @@ SENOTYPE_DB_HOST='host'
 # Flask secret key
 KEY='x'
 # Globus keys
+GLOBUS_URL='https://senlib.dev.sennetconsortium.org/login'
 GLOBUS_SENNET_CLIENT='x'
 GLOBUS_SENNET_SECRET='x'
 
-# API base URLs
+# Sennet base URLs (datasets)
+# uuid-api
 UUID_BASE_URL='https://uuid-api.dev.sennetconsortium.org/uuid'
-#UUID_BASE_URL='https://uuid-api.sennetconsortium.org/uuid'
-UBKG_BASE_URL='http://127.0.0.1:5002'
-#UBKG_BASE_URL='https://ontology.api.hubmapconsortium.org'
+# UBKG
+UBKG_BASE_URL='https://ontology.api.hubmapconsortium.org'
+# entity-api
+ENTITY_BASE_URL='https://entity.api.sennetconsortium.org/entities/'
+# Data Portal
+DATA_PORTAL_BASE_URL='https://data.sennetconsortium.org'
+
+# External base URLs
+
+# DataCite (DOIs)
+DATACITE_API_BASE_URL='https://api.datacite.org/dois/'
+DATACITE_SENOTYPE_PROVIDER_ID='10.60586'
+DATACITE_DOI_BASE_URL='https://doi.org/'
+DATACITE_HEARTBEAT_URL='https://api.datacite.org/heartbeat'
+DATACITE_HOME_URL='https://commons.datacite.org/'
+
+# NCBI EUtils (citations)
+EUTILS_SEARCH_BASE_URL='https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&retmode=json'
+EUTILS_SUMMARY_BASE_URL='https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&retmode=json'
+# API Key to increase number of allowed requests per second to avoid 429 errors from EUtils
+EUTILS_API_KEY='x'
+
+# PubMed detail page (citations)
+PUBMED_BASE_URL='https://pubmed.ncbi.nlm.nih.gov/'
+
+# SciCrunch Resolver (origins)
+SCICRUNCH_BASE_URL='https://scicrunch.org/resolver/'
+SCICRUNCH_EXPLORE_URL='https://rrid.site/'
+
+# Biomedical Ontology home pages
+OBO_BASE_URL='http://purl.obolibrary.org/obo/'
+CL_HOME_URL='https://www.ebi.ac.uk/ols4/ontologies/cl?tab=classes'
+DOID_HOME_URL='https://disease-ontology.org'
+HGNC_BASE_URL='https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/'
+HGNC_HOME_URL='https://www.genenames.org/'
+UNIPROTKB_BASE_URL='https://www.uniprot.org/uniprotkb/'
+

@@ -329,15 +329,16 @@ class SenLib:
         if doi_url is None:
             return ''
         else:
-            doi = doi_url.split('https://doi.org/')[1]
-            url = f'https://api.datacite.org/dois/{doi}'
+            datacite_base = self.cfg.getfield(key='DATACITE_DOI_BASE_URL')
+            doi = doi_url.split(datacite_base)[1]
+            url_base = self.cfg.getfield(key='DATACITE_API_BASE_URL')
+            url = f'{url_base}{doi}'
 
-            print(url)
             logger.info(f'Getting DataCite information for {doi}')
 
             response = api.getresponse(url=url, format='json')
             if response is None:
-                urlheartbeat = 'https://api.datacite.org/heartbeat'
+                urlheartbeat = self.cfg.getfield(key='DATACITE_HEARTBEAT_URL')
                 responseheartbeat = api.getresponse(url=urlheartbeat)
                 if responseheartbeat == 'OK':
                     title = 'unknown title'
@@ -395,11 +396,11 @@ class SenLib:
     def getcitationobjects(self, rawobjects: list) -> list:
 
         """
-        Calls the NCBI EUtils API to obtain the title for the PMID.
+        Calls the NCBI EUtils API (via the citation/search route) to obtain the title for the PMID.
         :param: rawobjects - a list of PMID objects.
         """
         api = RequestRetry()
-        base_url = 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&retmode=json&id='
+        base_url = f"{request.host_url.rstrip('/')}/citation/search/id/"
 
         logging.info('Getting citation data from NCBI EUtils')
 
@@ -408,6 +409,7 @@ class SenLib:
             code = o.get('code')
             pmid = code.split(':')[1]
             url = f'{base_url}{pmid}'
+
             citation = api.getresponse(url=url, format='json')
             result = citation.get('result')
             title = ''
@@ -459,13 +461,15 @@ class SenLib:
         Builds a truncated display string.
         """
         if trunclength < 0:
-            trunclength = len(description)
-        if trunclength < len(description):
+            displaylength = len(description)
+        if (trunclength-3) <= len(description):
+            displaylength = trunclength - 3
             ell = '...'
         else:
+            displaylength = trunclength
             ell = ''
 
-        return f'{displayid} ({description[0:trunclength]}{ell})'
+        return f'{displayid} ({description[0:displaylength]}{ell})'
 
     def getregmarkerobjects(self, assertions: list) -> list:
 
@@ -480,12 +484,15 @@ class SenLib:
             predicate_term = predicate.get('term')
 
             if predicate_term in ['up_regulates', 'down_regulates', 'inconclusively_regulates']:
+                # Regulating marker.
                 rawobjects = assertion.get('objects')
-                logger.info('Getting information on regulating markers from ontology API')
-                listret = self.getmarkerobjects(rawobjects=rawobjects)
-
-                for o in listret:
+                logger.info(f'Getting information from ontology API on markers with {predicate_term} assertions')
+                listassertion = self.getmarkerobjects(rawobjects=rawobjects)
+                # Denormalize by adding the type to the marker object.
+                for o in listassertion:
                     o['type'] = predicate_term
+
+                listret = listret + listassertion
 
         return listret
 
@@ -496,9 +503,16 @@ class SenLib:
         :param: rawobjects - the list of RRID objects.
         """
         api = RequestRetry()
-        base_url = 'https://scicrunch.org/resolver/'
+        base_url = self.cfg.getfield(key='SCICRUNCH_BASE_URL')
 
         logger.info('Getting origin information from SciCrunch Resolver')
+
+        # The SciCrunch Resolver API can return unexpected responses. As the
+        # Resolver is only used to decorate the code with a term, use "unknown"
+        # defensively.
+
+        # It may be necessary to tune by storing the origin description at the time
+        # of writing instead of fetching it on every read.
 
         oret = []
         for o in rawobjects:
@@ -506,11 +520,15 @@ class SenLib:
             rrid = code.split(':')[1]
             url = f'{base_url}{rrid}.json'
             origin = api.getresponse(url=url, format='json')
-            hits = origin.get('hits')
-            if hits is None:
+            if origin is None:
                 description = "unknown"
             else:
-                description = hits.get('hits')[0].get('_source').get('item').get('description', '')
+                hits = origin.get('hits')
+                if hits is None:
+                    description = "unknown"
+                else:
+                    description = hits.get('hits')[0].get('_source').get('item').get('description', '')
+
             oret.append({"code": code, "term": description})
 
         return oret
@@ -522,7 +540,6 @@ class SenLib:
         :param: rawobjects - a list of SenNet dataset objects.
         """
         api = RequestRetry()
-        base_url = 'https://entity.api.sennetconsortium.org/entities/'
         token = session['groups_token']
         headers = {"Authorization": f'Bearer {token}'}
 
@@ -532,6 +549,7 @@ class SenLib:
         for o in rawobjects:
             code = o.get('code')
             snid = code
+            base_url = self.cfg.getfield(key='ENTITY_BASE_URL')
             url = f'{base_url}{snid}'
             dataset = api.getresponse(url=url, format='json', headers=headers)
             title = dataset.get('title', '')
@@ -542,9 +560,11 @@ class SenLib:
     def getmarkerobjects(self, rawobjects: list) -> list:
 
         """
-            Calls the entity API to obtain the description for specified markers.
+            Calls the UBKG API to obtain the description for specified markers.
             :param: rawobjects - a list of specified marker objects.
         """
+
+        logger.info('Getting marker information from the ontology API')
 
         api = RequestRetry()
         cfg = AppConfig()
@@ -557,12 +577,8 @@ class SenLib:
                 oret.append({"code": code, "term": None})
                 continue
             markerid = code.split(':')[1]
-            if 'HGNC' in code:
-                endpoint = 'genes'
-            else:
-                endpoint = 'proteins'
 
-            url = f'{base_url}/{endpoint}/{markerid}'
+            url = f'{base_url}/marker/{markerid}'
 
             resp = api.getresponse(url=url, format='json')
             # Defensive: check if resp is a list and not empty
@@ -593,7 +609,7 @@ class SenLib:
         api = RequestRetry()
         base_url = f"{request.host_url.rstrip('/')}/ontology/celltypes/"
 
-        logger.info('Getting celltype information from ontology API')
+        logger.info('Getting celltype information from the ontology API')
 
         oret = []
         for o in rawobjects:
@@ -617,7 +633,7 @@ class SenLib:
         cfg = AppConfig()
         base_url = f"{request.host_url.rstrip('/')}/ontology/diagnoses/"
 
-        logger.info('Getting diagnosis information from ontology API')
+        logger.info('Getting diagnosis information from the ontology API')
 
         oret = []
         for o in rawobjects:
@@ -640,7 +656,7 @@ class SenLib:
         cfg = AppConfig()
         base_url = f"{request.host_url.rstrip('/')}/ontology/organs"
 
-        logger.info('Getting organ information from ontology API')
+        logger.info('Getting organ information from the ontology API')
 
         oret = []
         for o in rawobjects:
@@ -728,7 +744,7 @@ class SenLib:
         2D FTU CSV.
         """
 
-        iribase = 'http://purl.obolibrary.org/obo/'
+        iribase = self.cfg.getfield(key='IRI_BASE_URL')
         organs = {}
         for assertion in assertions:
             predicate = assertion.get('predicate').get('term')
@@ -887,7 +903,7 @@ class SenLib:
         if len(celltypelist) > 0:
             form.celltype.process(form.celltype, [self.truncateddisplaytext(displayid=item['code'],
                                                                             description=item['term'],
-                                                                            trunclength=100)
+                                                                            trunclength=13)
                                                   for item in celltypelist])
         else:
             form.celltype.process([''])
@@ -949,7 +965,7 @@ class SenLib:
         if len(citationlist) > 0:
             form.citation.process(form.citation, [self.truncateddisplaytext(displayid=item['code'],
                                                                             description=item['term'],
-                                                                            trunclength=25)
+                                                                            trunclength=20)
                                                   for item in citationlist])
         else:
             form.citation.process([''])
@@ -969,7 +985,7 @@ class SenLib:
         if len(datasetlist) > 0:
             form.dataset.process(form.dataset, [self.truncateddisplaytext(displayid=item['code'],
                                                                           description=item['term'],
-                                                                          trunclength=25)
+                                                                          trunclength=15)
                                                 for item in datasetlist])
         else:
             form.dataset.process([''])
@@ -1014,7 +1030,7 @@ class SenLib:
         if len(diagnosislist) > 0:
             form.diagnosis.process(form.diagnosis, [self.truncateddisplaytext(displayid=item['code'],
                                                                               description=item['term'],
-                                                                              trunclength=50)
+                                                                              trunclength=65)
                                                     for item in diagnosislist])
         else:
             form.diagnosis.process([''])
@@ -1195,7 +1211,7 @@ class SenLib:
         if len(celltypelist) > 0:
             form.celltype.process(None, [self.truncateddisplaytext(displayid=item['code'],
                                                                    description=item['term'],
-                                                                   trunclength=40)
+                                                                   trunclength=13)
                                          for item in celltypelist])
         else:
             form.celltype.process(None, [''])
@@ -1233,7 +1249,7 @@ class SenLib:
         if len(citationlist) > 0:
             form.citation.process(None, [self.truncateddisplaytext(displayid=item['code'],
                                                                    description=item['term'],
-                                                                   trunclength=40)
+                                                                   trunclength=15)
                                          for item in citationlist])
         else:
             form.citation.process(None, [''])
@@ -1243,7 +1259,7 @@ class SenLib:
         if len(originlist) > 0:
             form.origin.process(None, [self.truncateddisplaytext(displayid=item['code'],
                                                                  description=item['term'],
-                                                                 trunclength=50)
+                                                                 trunclength=20)
                                        for item in originlist])
         else:
             form.origin.process(None, [''])
@@ -1253,7 +1269,7 @@ class SenLib:
         if len(datasetlist) > 0:
             form.dataset.process(None, [self.truncateddisplaytext(displayid=item['code'],
                                                                   description=item['term'],
-                                                                  trunclength=50)
+                                                                  trunclength=20)
                                         for item in datasetlist])
         else:
             form.dataset.process(None, [''])
@@ -1289,7 +1305,7 @@ class SenLib:
         if len(diagnosislist) > 0:
             form.diagnosis.process(None, [self.truncateddisplaytext(displayid=item['code'],
                                                                     description=item['term'],
-                                                                    trunclength=20)
+                                                                    trunclength=65)
                                           for item in diagnosislist])
         else:
             form.diagnosis.process(None, [''])
@@ -1481,23 +1497,23 @@ class SenLib:
                 else:
                     inc_objects.append(obj)
 
-                if len(up_objects) > 0:
-                    predicate = {"term": 'up_regulates'}
-                    assertion = {"predicate": predicate,
-                                 "objects": up_objects}
-                    assertions.append(assertion)
+            if len(up_objects) > 0:
+                predicate = {"term": 'up_regulates'}
+                assertion = {"predicate": predicate,
+                             "objects": up_objects}
+                assertions.append(assertion)
 
-                if len(down_objects) > 0:
-                    predicate = {"term": 'down_regulates'}
-                    assertion = {"predicate": predicate,
-                                 "objects": down_objects}
-                    assertions.append(assertion)
+            if len(down_objects) > 0:
+                predicate = {"term": 'down_regulates'}
+                assertion = {"predicate": predicate,
+                             "objects": down_objects}
+                assertions.append(assertion)
 
-                if len(inc_objects) > 0:
-                    predicate = {"term": 'inconclusively_regulates'}
-                    assertion = {"predicate": predicate,
-                                 "objects": inc_objects}
-                    assertions.append(assertion)
+            if len(inc_objects) > 0:
+                predicate = {"term": 'inconclusively_regulates'}
+                assertion = {"predicate": predicate,
+                             "objects": inc_objects}
+                assertions.append(assertion)
 
         return assertions
 
@@ -1608,7 +1624,7 @@ class SenLib:
         doi = form_data.get('doi', None)
         if doi is not None:
             doiid = doi.split(' (')[0]
-            doiurl = f'https://doi.org/{doiid}'
+            doiurl = doiid
         else:
             doiurl = None
 
@@ -1704,14 +1720,13 @@ class SenLib:
         form.submitterlast.data = session['username'].split(' ')[1]
         form.submitteremail.data = session['userid']
 
-    def getubkgstatus(self, cfg: AppConfig) -> str:
+    def getubkgstatus(self) -> str:
 
         """
         Check the status of the UBKG API.
-        :param cfg: config file.
         """
         api = RequestRetry()
-        statusurl = cfg.getfield('UBKG_BASE_URL')
+        statusurl = self.cfg.getfield('UBKG_BASE_URL')
 
         try:
             status = api.getresponse(url=statusurl)
@@ -1733,8 +1748,10 @@ class SenLib:
 
         """
 
+        self.cfg = cfg
+
         # Connect to the senlib database.
-        self.database = SenLibMySql(cfg)
+        self.database = SenLibMySql(cfg=self.cfg)
 
         # Senotype Editor assertion valuesets
         self.assertionvaluesets = self.database.assertionvaluesets
@@ -1756,9 +1773,10 @@ class SenLib:
         self.submissionjson = {}
 
         api = RequestRetry()
-        urlheartbeat = 'https://api.datacite.org/heartbeat'
+
+        urlheartbeat = self.cfg.getfield('DATACITE_HEARTBEAT_URL')
         self.datacitestatus = api.getresponse(url=urlheartbeat)
         logger.info(f'DataCite status = {self.datacitestatus}')
 
-        self.ubkgstatus = self.getubkgstatus(cfg=cfg)
+        self.ubkgstatus = self.getubkgstatus()
         logger.info(f'UBKG API status = {self.ubkgstatus}')
