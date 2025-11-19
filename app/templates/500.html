@@ -1,12 +1,10 @@
 {% extends 'base.html' %}
 
-{% block content %}
+{% set page_title = "Internal Server Error (500)" %}
 
-<title>Internal Server Error (500)</title>
-<br>
-<div class="container text-left">
+{% block content %}
+<div class="container statusMsg">
     <h1>Internal Server Error (500)</h1>
-    <p><br><br></p>
     <div>
         <img src="/static/500.png" alt="500 Error" data-height="300" style="max-height: 168px;">
         <br>
@@ -14,7 +12,7 @@
         <p>{{ error }}</p>
     </div>
     <br>
-    <div class="d-grid gap-2 col-6 mx-auto">
+    <div class="d-grid statusMsg__footer">
         <a href="/" class="btn btn-primary btn-lg">Return</a>
     </div>
 </div>
