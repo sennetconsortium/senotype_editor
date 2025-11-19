@@ -57,7 +57,8 @@
         btn.closest('div').remove();
       }
 </script>
-    <title>Senotype Editor</title>
+    <title>Senotype Editor | {{ page_title }}</title>
+    
     <!-- Flask flash message display -->
     {% with messages = get_flashed_messages() %}
       {% if messages %}
@@ -125,12 +126,14 @@
     {% endblock %}
     <!-- bottom -->
     <footer>
-      <div class="text-center m-3">
+      <div class="footer__wrap">
+        <div class="text-center m-3">
         <a href="https://github.com/sennetconsortium/senotype_editor">The Senotype Editor</a>&nbsp; &copy; 2025 by &nbsp;
         <a href="https://www.dbmi.pitt.edu/">Department of Biomedical Informatics, University of Pittsburgh</a> &nbsp; is licensed under&nbsp;
         <a href="https://creativecommons.org/licenses/by/4.0/">Creative Commons Attribution 4.0 International</a>
         <img src="https://mirrors.creativecommons.org/presskit/icons/cc.svg" alt="" style="max-width: 1em; max-height: 1em; margin-left: .2em;">
         <img src="https://mirrors.creativecommons.org/presskit/icons/by.svg" alt="" style="max-width: 1em; max-height: 1em; margin-left: .2em;">
+        </div>
       </div>
     </footer>
     <!-- Bootstrap Javascript -->
