@@ -1,12 +1,11 @@
 {% extends 'base.html' %}
 
+{% set page_title = "Forbidden (403)" %}
+
 {% block content %}
 
-<title>Forbidden (403)</title>
-<br>
-<div class="container text-left">
+<div class="container statusMsg">
     <h1>None Shall Pass</h1>
-    <p><br><br></p>
     <div>
         <img src="/static/403.png" alt="Not found" data-height="300" style="max-height: 168px;">
         <br>
@@ -14,7 +13,7 @@
         <p>{{ error }}</p>
     </div>
     <br>
-    <div class="d-grid gap-2 col-6 mx-auto">
+    <div class="d-grid statusMsg__footer">
         <a href="/" class="btn btn-primary btn-lg">Return</a>
     </div>
 </div>
