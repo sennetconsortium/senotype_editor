@@ -3,7 +3,7 @@ Wraps calls to the DataCite API and DataCite Commons for information on
 Digital Object Identifiers (DOIs).
 """
 
-from flask import Blueprint, jsonify, redirect, abort
+from flask import Blueprint, jsonify, redirect
 
 from models.appconfig import AppConfig
 from models.requestretry import RequestRetry

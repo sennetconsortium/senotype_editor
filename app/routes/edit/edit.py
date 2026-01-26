@@ -4,7 +4,7 @@ Edit route:
 2. Initiates a new Senotype, which will be written to the database via the Update route.
 
 """
-from flask import Blueprint, request, render_template, session, current_app
+from flask import Blueprint, request, render_template, session, current_app, redirect, url_for
 
 
 # The EditForm WTForm
@@ -31,6 +31,12 @@ def edit():
     # Clear any prior error messages that can display in the edit form.
     if 'flashes' in session:
         session['flashes'].clear()
+
+    # If the user has not been authenticated by Globus, redirect
+    # to the Globus login route.
+    if 'userid' not in session:
+        return redirect(url_for('globus.globus'))
+
 
     # Read the app.cfg file outside the Flask application context.
 

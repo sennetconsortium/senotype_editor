@@ -3,7 +3,7 @@ The dataset routes allow the Edit page to call the entity-api and SenNet Data Po
 and pass a request body that includes the Globus authentication token.
 
 """
-from flask import redirect, session, Blueprint, make_response, url_for, Response
+from flask import redirect, session, Blueprint, url_for
 import requests
 from models.appconfig import AppConfig
 
@@ -18,6 +18,12 @@ def get_dataset_api(entity_id):
     :param entity_id: SenNet ID (SNnnn.XXXX.nnn)
 
     """
+
+    # If the user has not been authenticated by Globus, redirect
+    # to the Globus login route.
+    if 'groups_token' not in session:
+        return redirect(url_for('globus.globus'))
+
     # Obtain Globus authentication token.
     token = session["groups_token"]
     headers = {"Authorization": f"Bearer {token}"}

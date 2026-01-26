@@ -2,7 +2,7 @@
 Updates the Senotype repository by writing/overwriting a submission JSON file.
 """
 
-from flask import Blueprint, request, render_template, flash, redirect, session, url_for, current_app
+from flask import Blueprint, request, render_template, flash, redirect, session, url_for
 
 from werkzeug.datastructures import MultiDict
 
@@ -115,6 +115,11 @@ def update():
     Receives POST from the Update form, which has all edit_form fields as hidden inputs (cloned by JS).
     Validates using WTForms and acts on result.
     """
+
+    # If the user has not been authenticated by Globus, redirect
+    # to the Globus login route.
+    if 'userid' not in session:
+        return redirect(url_for('globus.globus'))
 
     # Get IDs for existing Senotype submissions and URLs
     cfg = AppConfig()
