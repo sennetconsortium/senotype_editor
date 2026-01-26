@@ -5,7 +5,7 @@ genes
 proteins
 """
 
-from flask import Blueprint, jsonify, redirect, abort
+from flask import Blueprint, redirect, abort
 
 from models.appconfig import AppConfig
 
