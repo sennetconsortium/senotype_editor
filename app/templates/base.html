@@ -1,146 +1,171 @@
 <!doctype html>
 <!--base class html-->
 <html lang="en">
-  <head>
+<head>
     <link href="/static/css/main.css" rel="stylesheet">
     <link rel="icon" type="image/x-icon" href="/static/sennet.png">
     <style>
-      .input-fixed-width {
-        width: 20ch;
-        display: inline-block;
-      }
+        .input-fixed-width {
+            width: 20ch;
+            display: inline-block;
+        }
     </style>
     <style>
-      /* For spans used to display list elements */
-      .list-field-display {
-        border: 1px solid #d3d3d3;
-        /*margin-left: 1px;*/
-        /*padding: 2px 2px;*/
-        /*background: #fff;*/
-        /* These match Bootstrap .form-control and .w-100 classes */
+        /* For spans used to display list elements */
+        .list-field-display {
+            border: 1px solid #d3d3d3;
+            /*margin-left: 1px;*/
+            /*padding: 2px 2px;*/
+            /*background: #fff;*/
+            /* These match Bootstrap .form-control and .w-100 classes */
 
-        width: 100%;
-        display: block;
-        /* Optional: mimic .form-control font and border-radius */
-        font-size: 1rem;
-        line-height: 1.5;
-        /*border-radius: 0.375rem;*/
-        border:none;
-      }
+            width: 100%;
+            display: block;
+            /* Optional: mimic .form-control font and border-radius */
+            font-size: 1rem;
+            line-height: 1.5;
+            /*border-radius: 0.375rem;*/
+            border: none;
+        }
     </style>
     <style>
-      /* to display symbols used to indicate type of regulation in regulating markers list */
-      .action-symbol {
-        font-weight: bold;
-        font-size: 1 em;
-      }
+        /* to display symbols used to indicate type of regulation in regulating markers list */
+        .action-symbol {
+            font-weight: bold;
+            font-size: 1em;
+        }
     </style>
     <style>
         .label-left-margin {
-          margin-left: 6px !important;
+            margin-left: 6px !important;
         }
     </style>
     <script type="text/javascript">
-      window.addEventListener('pageshow', function(event) {
-        // Forces a reload of a page in case of navigating back, which will hide the spinner animation.
-        if (event.persisted || performance.navigation.type === 2) {
-          location.reload();
-        }
-      });
+        window.addEventListener('pageshow', function (event) {
+            // Forces a reload of a page in case of navigating back, which will hide the spinner animation.
+            if (event.persisted || performance.navigation.type === 2) {
+                location.reload();
+            }
+        });
     </script>
     <script>
-      function clearErrorAlerts(btn) {
-        // Clears display of validation errors.
-        // Remove all error divs
-        document.querySelectorAll('div.text-danger, div.text-bg-danger').forEach(div => div.style.display = 'none');
-        // Remove the button's parent div
-        btn.closest('div').remove();
-      }
-</script>
+        function clearErrorAlerts(btn) {
+            // Clears display of validation errors.
+            // Remove all error divs
+            document.querySelectorAll('div.text-danger, div.text-bg-danger').forEach(div => div.style.display = 'none');
+            // Remove the button's parent div
+            btn.closest('div').remove();
+        }
+    </script>
     <title>Senotype Editor | {{ page_title }}</title>
-    
+
     <!-- Flask flash message display -->
     {% with messages = get_flashed_messages() %}
-      {% if messages %}
-        {% set joined = messages|join(' ') %}
-        <div class="p-1 d-flex align-items-start justify-content-between {{ 'text-bg-danger' if 'Error' in joined else 'text-bg-success' }}" style="position:relative;">
-          <ul class=flashes>
+    {% if messages %}
+    {% set joined = messages|join(' ') %}
+    <div class="p-1 d-flex align-items-start justify-content-between {{ 'text-bg-danger' if 'Error' in joined else 'text-bg-success' }}"
+         style="position:relative;">
+        <ul class=flashes>
             {% for message in messages %}
-              <li>{{ message }}</li>
+            <li>{{ message }}</li>
             {% endfor %}
-          </ul>
-          <button type="button" class="btn btn-sm btn-primary ms-3" onclick="clearErrorAlerts(this)" aria-label="Clear Errors">
+        </ul>
+        <button type="button" class="btn btn-sm btn-primary ms-3" onclick="clearErrorAlerts(this)"
+                aria-label="Clear Errors">
             Clear
-          </button>
-        </div>
-      {% endif %}
+        </button>
+    </div>
+    {% endif %}
     {% endwith %}
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-      <!-- Bootstrap styles -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <!-- Bootstrap styles -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
     <!-- Include jsTree CSS & JS (CDN) -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jstree@3.3.15/dist/themes/default/style.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jstree@3.3.15/dist/themes/default/style.min.css"/>
     <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/jstree@3.3.15/dist/jstree.min.js"></script>
     <style>
-      * {
-        font-family: arial, sans-serif;
-        box-sizing: border-box;
-      }
-      #demo { border-collapse: collapse; }
-      #demo tr:nth-child(odd) { background: #f2f2f2; }
-      #demo td { padding: 2px; }
+        * {
+            font-family: arial, sans-serif;
+            box-sizing: border-box;
+        }
+
+        #demo {
+            border-collapse: collapse;
+        }
+
+        #demo tr:nth-child(odd) {
+            background: #f2f2f2;
+        }
+
+        #demo td {
+            padding: 2px;
+        }
     </style>
-  </head>
-  <body>
-    <!-- Menu navbar -->
-    <nav class="navbar navbar-expand-lg navbar-dark" >
-      <div class="container-fluid">
+</head>
+<body>
+<!-- Menu navbar -->
+<nav class="navbar navbar-expand-lg navbar-dark">
+    <div class="container-fluid">
         <a href="/" class="navbar-brand">
-          <img src="static/editor.png" width="60" height="57" alt="Senotype Editor" style="border: 1px solid #ccc;">
-          <span>Senotype Editor</span>
+            <img src="static/editor.png" width="60" height="57" alt="Senotype Editor" style="border: 1px solid #ccc;">
+            <span>Senotype Editor</span>
         </a>
-        <button type="button" class="navbar-toggler collapsed" data-bs-toggle="collapse" data-bs-target="#senotype-navbar" aria-controls="senotype-navbar" aria-expanded="false" aria-label="Toggle navigation">
-          <span class="navbar-toggler-icon"></span>
+        <button type="button" class="navbar-toggler collapsed" data-bs-toggle="collapse"
+                data-bs-target="#senotype-navbar" aria-controls="senotype-navbar" aria-expanded="false"
+                aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
         </button>
         <div class="justify-content-end navbar-collapse collapse" id="senotype-navbar">
-          <div class="navbar-nav mx-lg-4">
-            <a href="https://sennetconsortium.github.io/senotype_editor/"
-               target="_blank"
-               rel="noopener"
-              >
-              Help
-            </a>
-          </div>
-          <div class="navbar-nav">
-            {% if session.userid and session.username %}
-            <span>{{ session.userid }} ({{ session.username }})</span>
-            {% endif %}
-          </div>
+            <div class="navbar-nav mx-lg-4">
+                <a href="https://sennetconsortium.github.io/senotype_editor/"
+                   target="_blank"
+                   rel="noopener"
+                >
+                    Help
+                </a>
+            </div>
+            <div class="navbar-nav mx-lg-4">
+                {% if session.userid and session.username %}
+                <span>{{ session.userid }} ({{ session.username }})</span>
+                {% endif %}
+            </div>
+            <div class="navbar-nav">
+                {% if session.userid and session.username %}
+                <a href="/logout">Logout</a>
+                {% endif %}
+            </div>
         </div>
-      </div>
-    </nav>
-  
-    {% block content %}
-    {% endblock %}
-    <!-- bottom -->
-    <footer>
-      <div class="footer__wrap">
+    </div>
+</nav>
+
+{% block content %}
+{% endblock %}
+<!-- bottom -->
+<footer>
+    <div class="footer__wrap">
         <div class="text-center m-3">
-        <a href="https://github.com/sennetconsortium/senotype_editor">The Senotype Editor</a>&nbsp; &copy; 2025 by &nbsp;
-        <a href="https://www.dbmi.pitt.edu/">Department of Biomedical Informatics, University of Pittsburgh</a> &nbsp; is licensed under&nbsp;
-        <a href="https://creativecommons.org/licenses/by/4.0/">Creative Commons Attribution 4.0 International</a>
-        <img src="https://mirrors.creativecommons.org/presskit/icons/cc.svg" alt="" style="max-width: 1em; max-height: 1em; margin-left: .2em;">
-        <img src="https://mirrors.creativecommons.org/presskit/icons/by.svg" alt="" style="max-width: 1em; max-height: 1em; margin-left: .2em;">
+            <a href="https://github.com/sennetconsortium/senotype_editor">The Senotype Editor</a>&nbsp; &copy; 2025 by
+            &nbsp;
+            <a href="https://www.dbmi.pitt.edu/">Department of Biomedical Informatics, University of Pittsburgh</a>
+            &nbsp; is licensed under&nbsp;
+            <a href="https://creativecommons.org/licenses/by/4.0/">Creative Commons Attribution 4.0 International</a>
+            <img src="https://mirrors.creativecommons.org/presskit/icons/cc.svg" alt=""
+                 style="max-width: 1em; max-height: 1em; margin-left: .2em;">
+            <img src="https://mirrors.creativecommons.org/presskit/icons/by.svg" alt=""
+                 style="max-width: 1em; max-height: 1em; margin-left: .2em;">
         </div>
-      </div>
-    </footer>
-    <!-- Bootstrap Javascript -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
-  </body>
-  <!-- Custom scripts -->
-  {% block scripts %}
-  {% endblock %}
+    </div>
+</footer>
+<!-- Bootstrap Javascript -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+        crossorigin="anonymous"></script>
+</body>
+<!-- Custom scripts -->
+{% block scripts %}
+{% endblock %}
 </html>
