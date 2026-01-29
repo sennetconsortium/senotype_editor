@@ -10,6 +10,7 @@ KEY='x'
 GLOBUS_URL='https://senlib.dev.sennetconsortium.org/login'
 GLOBUS_SENNET_CLIENT='x'
 GLOBUS_SENNET_SECRET='x'
+GLOBUS_READ_GROUP_UUID = ''
 
 # Sennet base URLs (datasets)
 # uuid-api

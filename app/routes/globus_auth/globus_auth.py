@@ -4,8 +4,7 @@ Globus authentication routes.
 """
 
 from flask import Blueprint, request, redirect, session, abort
-from globus_sdk import AccessTokenAuthorizer, AuthClient, ConfidentialAppAuthClient
-
+from globus_sdk import AccessTokenAuthorizer, AuthClient, ConfidentialAppAuthClient, GroupsClient, GlobusAPIError
 
 # Helper classes
 from models.appconfig import AppConfig
@@ -15,6 +14,13 @@ def get_user_info(token):
     auth_client = AuthClient(authorizer=AccessTokenAuthorizer(token))
     return auth_client.oauth2_userinfo()
 
+def get_group_info(token):
+    authorizer = AccessTokenAuthorizer(token)
+    groups_client = GroupsClient(authorizer=authorizer)
+    try:
+        return groups_client.get_my_groups()
+    except GlobusAPIError as e:
+        print(f"Error: {e.code} - {e.message}")
 
 def load_app_client(consortium: str) -> ConfidentialAppAuthClient:
 
@@ -116,6 +122,19 @@ def login():
             abort(code=403,
                   description='Your Globus account does not have the necessary group privileges to use this application.')
 
+        is_sennet_read_member = None
+        user_groups = get_group_info(groups_token)
+        for group in user_groups:
+            if group['id'] == cfg.getfield(key='GLOBUS_READ_GROUP_UUID'):
+                is_sennet_read_member = True
+                break
+
+        if not is_sennet_read_member:
+            abort(code=403,
+                  description='Your Globus account does not have the necessary group privileges to use this application. Visit https://app.globus.org/groups to check if you have a pending invitation to the Globus group "SenNet - Read".')
+
+
+        session['auth_token'] = auth_token
         session['groups_token'] = groups_token
         session['consortium'] = consortium
         session['userid'] = userid
