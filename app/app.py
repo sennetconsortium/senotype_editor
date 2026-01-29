@@ -24,6 +24,7 @@ from routes.citation.citation import citation_blueprint
 from routes.origin.origin import origin_blueprint
 from routes.bio.bio import bio_blueprint
 from routes.doi.doi import doi_blueprint
+from senotype_editor.app.routes.globus_auth.globus_auth import logout_blueprint
 
 
 def to_pretty_json(value):
@@ -59,6 +60,7 @@ class SenotypeUI:
         self.app.register_blueprint(health_blueprint)
         self.app.register_blueprint(auth_blueprint)
         self.app.register_blueprint(login_blueprint)
+        self.app.register_blueprint(logout_blueprint)
         self.app.register_blueprint(globus_blueprint)
         self.app.register_blueprint(edit_blueprint)
         self.app.register_blueprint(valueset_blueprint)

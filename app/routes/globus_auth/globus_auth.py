@@ -12,15 +12,29 @@ from lib.auth import load_app_client, get_user_info, get_group_info
 
 auth_blueprint = Blueprint('auth', __name__, url_prefix='/auth')
 login_blueprint = Blueprint('login', __name__, url_prefix='/login')
+logout_blueprint = Blueprint('logout', __name__, url_prefix='/logout')
 
 @auth_blueprint.route('', methods=['GET'])
 def auth():
+    cfg = AppConfig()
+
     # Check if user is already logged in and token is still active. Redirect to edit page
-    if 'userid' in session:
+    if 'userid' in session and 'groups_token' in session:
         client = load_app_client(session['consortium'])
         validation_data = client.oauth2_validate_token(session['auth_token'])
         if  validation_data['active']:
             return redirect(f'/edit')
+
+        is_sennet_read_member = None
+        user_groups = get_group_info(session['groups_token'])
+        for group in user_groups:
+            if group['id'] == cfg.getfield(key='GLOBUS_READ_GROUP_UUID'):
+                is_sennet_read_member = True
+                break
+
+        if not is_sennet_read_member:
+            abort(code=403,
+                  description='Your Globus account does not have the necessary group privileges to use this application. Visit https://app.globus.org/groups to check if you have a pending invitation to the Globus group "SenNet - Read".')
 
     return render_template('login.html')
 
@@ -120,3 +134,24 @@ def login():
 
         return redirect(f'/edit')
 
+@logout_blueprint.route('', methods=['GET'])
+def logout():
+    cfg = AppConfig()
+
+    client = load_app_client(session['consortium'])
+
+    if 'auth_token' in session:
+        client.oauth2_revoke_token(session['auth_token'])
+    if 'groups_token' in session:
+        client.oauth2_revoke_token(session['groups_token'])
+
+    session.clear()
+
+    globus_logout_url = (
+        "https://auth.globus.org/v2/web/logout"
+        + "?client={}".format(cfg.getfield("GLOBUS_SENNET_CLIENT"))
+        + "&redirect_uri={}".format(cfg.getfield("FLASK_APP_BASE_URI"))
+        + "&redirect_name={}".format("Senotype Editor")
+    )
+
+    return redirect(globus_logout_url)
