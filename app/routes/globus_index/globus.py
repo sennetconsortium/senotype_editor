@@ -22,4 +22,4 @@ def globus():
         # Authenticate to Globus via the login route.
         # If login is successful, Globus will redirect to the edit page.
         print('Logging into Globus...')
-        return redirect(f'/login')
+        return redirect(f'/auth')
