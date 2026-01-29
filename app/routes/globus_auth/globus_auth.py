@@ -125,15 +125,16 @@ def login():
         is_sennet_read_member = None
         user_groups = get_group_info(groups_token)
         for group in user_groups:
-            if group['id'] == '51155194-09e5-11ed-a1a7-39992a34a522':
+            if group['id'] == cfg.getfield(key='GLOBUS_READ_GROUP_UUID'):
                 is_sennet_read_member = True
                 break
 
         if not is_sennet_read_member:
             abort(code=403,
-                  description='Your Globus account does not have the necessary group privileges to use this application.')
+                  description='Your Globus account does not have the necessary group privileges to use this application. Visit https://app.globus.org/groups to check if you have a pending invitation to the Globus group "SenNet - Read".')
 
 
+        session['auth_token'] = auth_token
         session['groups_token'] = groups_token
         session['consortium'] = consortium
         session['userid'] = userid

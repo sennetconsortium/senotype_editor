@@ -4,8 +4,7 @@ Edit route:
 2. Initiates a new Senotype, which will be written to the database via the Update route.
 
 """
-from flask import Blueprint, request, render_template, session, current_app, redirect, url_for
-
+from flask import Blueprint, request, render_template, session, current_app, redirect, url_for, abort
 
 # The EditForm WTForm
 from models.editform import EditForm
@@ -15,6 +14,8 @@ from models.appconfig import AppConfig
 from models.senlib import SenLib
 
 import logging
+
+from senotype_editor.app.routes.globus_auth.globus_auth import load_app_client
 
 # Configure consistent logging. This is done at the beginning of each module instead of with a superclass of
 # logger to avoid the need to overload function calls to logger.
@@ -36,6 +37,12 @@ def edit():
     # to the Globus login route.
     if 'userid' not in session:
         return redirect(url_for('globus.globus'))
+
+    client = load_app_client(session['consortium'])
+    validation_data = client.oauth2_validate_token(session['auth_token'])
+    if not validation_data['active']:
+        abort(code=403,
+              description='Your token has expired. Please log in again.')
 
 
     # Read the app.cfg file outside the Flask application context.

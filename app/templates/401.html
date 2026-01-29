@@ -1,12 +1,11 @@
 {% extends 'base.html' %}
 
+{% set page_title = "Unauthorized (401)" %}
+
 {% block content %}
 
-<title>Unauthorized (401)</title>
-<br>
-<div class="container text-left">
+<div class="container statusMsg">
     <h1>Unauthorized</h1>
-    <p><br><br></p>
     <div>
         <img src="/static/401.png" alt="Unauthorized" data-height="300" style="max-height: 168px;">
     </div>
