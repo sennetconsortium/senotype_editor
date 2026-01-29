@@ -15,7 +15,7 @@ from models.senlib import SenLib
 
 import logging
 
-from senotype_editor.app.routes.globus_auth.globus_auth import load_app_client
+from lib.auth import load_app_client
 
 # Configure consistent logging. This is done at the beginning of each module instead of with a superclass of
 # logger to avoid the need to overload function calls to logger.
