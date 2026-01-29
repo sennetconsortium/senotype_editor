@@ -12,7 +12,7 @@ from models.appconfig import AppConfig
 
 # Register Blueprints
 from routes.health.health import health_blueprint
-from routes.globus_auth.globus_auth import login_blueprint
+from routes.globus_auth.globus_auth import login_blueprint, auth_blueprint
 from routes.globus_index.globus import globus_blueprint
 from routes.edit.edit import edit_blueprint
 from routes.valueset.valueset import valueset_blueprint
@@ -57,6 +57,7 @@ class SenotypeUI:
 
         # Register route Blueprints.
         self.app.register_blueprint(health_blueprint)
+        self.app.register_blueprint(auth_blueprint)
         self.app.register_blueprint(login_blueprint)
         self.app.register_blueprint(globus_blueprint)
         self.app.register_blueprint(edit_blueprint)

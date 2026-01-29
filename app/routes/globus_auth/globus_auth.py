@@ -3,15 +3,26 @@ Globus authentication routes.
 
 """
 
-from flask import Blueprint, request, redirect, session, abort
+from flask import Blueprint, request, redirect, session, abort, render_template
 
 # Helper classes
 from models.appconfig import AppConfig
 
 from lib.auth import load_app_client, get_user_info, get_group_info
 
+auth_blueprint = Blueprint('auth', __name__, url_prefix='/auth')
 login_blueprint = Blueprint('login', __name__, url_prefix='/login')
 
+@auth_blueprint.route('', methods=['GET'])
+def auth():
+    # Check if user is already logged in and token is still active. Redirect to edit page
+    if 'userid' in session:
+        client = load_app_client(session['consortium'])
+        validation_data = client.oauth2_validate_token(session['auth_token'])
+        if  validation_data['active']:
+            return redirect(f'/edit')
+
+    return render_template('login.html')
 
 @login_blueprint.route('', methods=['GET'])
 def login():
