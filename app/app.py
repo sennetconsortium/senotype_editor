@@ -12,7 +12,7 @@ from models.appconfig import AppConfig
 
 # Register Blueprints
 from routes.health.health import health_blueprint
-from routes.globus_auth.globus_auth import login_blueprint, auth_blueprint
+from routes.globus_auth.globus_auth import login_blueprint, logout_blueprint,  auth_blueprint
 from routes.globus_index.globus import globus_blueprint
 from routes.edit.edit import edit_blueprint
 from routes.valueset.valueset import valueset_blueprint
@@ -24,8 +24,6 @@ from routes.citation.citation import citation_blueprint
 from routes.origin.origin import origin_blueprint
 from routes.bio.bio import bio_blueprint
 from routes.doi.doi import doi_blueprint
-from senotype_editor.app.routes.globus_auth.globus_auth import logout_blueprint
-
 
 def to_pretty_json(value):
     # Custom pretty printer of JSON, used for rendering JSON in <pre> elements.
