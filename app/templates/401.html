@@ -12,21 +12,9 @@
     </div>
     <br>
     <br>
-    <p>This application is not authorized to access the specified provenance database.</p>
-    <p>Possible reasons for this include:</p>
-    <ol>
-        <li>Your account does not have the necessary permissions in the application (HuBMAP or SenNet). Contact the application administrator.</li>
-        <li>The value of <strong>GLOBUS_TOKEN</strong> in the application configuration file is not for a valid authorization token.</li>
-    </ol>
-    <br>
-    <p>Possible reasons for an invalid authorization token include:</p>
-    <ol>
-        <li>The token is for the incorrect consortium--e.g., you specified a HuBMAP token for an update to a donor in SenNet.</li>
-        <li>The token has expired.</li>
-    </ol>
-    <div class="d-grid gap-2 col-6 mx-auto">
-        <a href="/" class="btn btn-primary btn-lg">Return</a>
-    </div>
+    <p>This application requires that the user have a Globus account associated with the SenNet consortium.</p>
+    <p>Please contact the SenNet Help Desk at <a href="mailto:help@sennetconsortium.org" style="color: #3366ff;">help@sennetconsortium.org</a>.</p>
+
 </div>
 
 {% endblock %}

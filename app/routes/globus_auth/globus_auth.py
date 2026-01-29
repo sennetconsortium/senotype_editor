@@ -104,9 +104,22 @@ def login():
         # Also get the user info (sub, email, name, preferred_username) using the AuthClient with the auth token
         user_info = get_user_info(auth_token)
 
+        # Validate authentication token, redirecting to Globus login if
+        # necessary.
+        userid = user_info.get('preferred_username')
+        if userid is None or userid == '':
+            abort(code=401,
+                  description='You need a Globus account associated with the SenNet consortium to use this application.')
+
+        # Validate authorization token, raising HTTP 403 if necessary.
+        if groups_token is None or groups_token == '':
+            abort(code=403,
+                  description='Your Globus account does not have the necessary group privileges to use this application.')
+
         session['groups_token'] = groups_token
         session['consortium'] = consortium
-        session['userid'] = user_info.get('preferred_username')
+        session['userid'] = userid
         session['username'] = user_info.get('name')
 
         return redirect(f'/edit')
+
