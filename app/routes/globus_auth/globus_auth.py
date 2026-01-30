@@ -114,6 +114,12 @@ def login():
             abort(code=403,
                   description='Your Globus account does not have the necessary group privileges to use this application.')
 
+        session['auth_token'] = auth_token
+        session['groups_token'] = groups_token
+        session['consortium'] = consortium
+        session['userid'] = userid
+        session['username'] = user_info.get('name')
+
         is_sennet_read_member = None
         user_groups = get_group_info(groups_token)
         for group in user_groups:
@@ -126,11 +132,6 @@ def login():
                   description='Your Globus account does not have the necessary group privileges to use this application. Visit https://app.globus.org/groups to check if you have a pending invitation to the Globus group "SenNet - Read".')
 
 
-        session['auth_token'] = auth_token
-        session['groups_token'] = groups_token
-        session['consortium'] = consortium
-        session['userid'] = userid
-        session['username'] = user_info.get('name')
 
         return redirect(f'/edit')
 
