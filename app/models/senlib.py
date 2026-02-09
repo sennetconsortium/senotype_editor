@@ -527,7 +527,9 @@ class SenLib:
                 if hits is None:
                     description = "unknown"
                 else:
-                    description = hits.get('hits')[0].get('_source').get('item').get('description', '')
+                    # The name field seems to be consistent across resource types
+                    #description = hits.get('hits')[0].get('_source').get('item').get('description', '')
+                    description = hits.get('hits')[0].get('_source').get('item').get('name', '')
 
             oret.append({"code": code, "term": description})
 

@@ -134,8 +134,10 @@ function createExternalConfig() {
                     items = [data.item || data];
                 }
                 return items.map(item => ({
-                    id: `RRID:${item.identifier || data.identifier || ''}`.replace(/^RRID:RRID:/, 'RRID:'),
-                    description: item.description || item.name || item.identifier || data.identifier || '',
+                    //id: `RRID:${item.docid || data.identifier || ''}`.replace(/^RRID:RRID:/, 'RRID:'),
+                    //item.docid is consistent across SciCrunch resources, including plasmids
+                    id: item.docid.replace(/^rrid:/i, match => match.toUpperCase()),
+                    description: item.name || item.identifier || data.identifier || '',
                     trunclength: 25
                 }));
             },
@@ -352,6 +354,7 @@ function setupExternalModalSearch(type) {
                 } else {
                     items = config.parseApiResult(data);
                 }
+                console.log(items);
                 resultsDiv.innerHTML = '';
                 if (!items || items.length === 0) {
                     resultsDiv.innerHTML = '<div class="text-muted">No results found.</div>';
