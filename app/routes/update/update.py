@@ -44,29 +44,16 @@ def normalize_multidict(md: MultiDict) -> MultiDict:
     return normalized
 
 
-def validate_form(form):
+def validate_form(form, required_field_list_prefixes:list) ->dict:
     """
     Custom validator that includes the hidden inputs passed to the update
     route by the update button on the Edit form.
 
     :param form: WTForms form instance
+    :param required_field_list_prefixes: list of field prefixes for fields that are required.
     :return: dict of errors
     """
 
-    fieldlist_prefixes = [
-        'taxon-',
-        'location-',
-        'celltype-',
-        'hallmark-',
-        'inducer-',
-        'assay-',
-        'citation-',
-        'origin-',
-        'dataset-',
-        'marker-',
-        'regmarker-',
-        'microenvironment-'
-    ]
     errors = {}
 
     # Standard validation of inputs not populated via modal forms.
@@ -79,7 +66,7 @@ def validate_form(form):
 
     # For each prefix, look for keys in form.data that start with prefix and have a non-empty value
     formdata = getattr(form, 'data', {})
-    for prefix in fieldlist_prefixes:
+    for prefix in required_field_list_prefixes:
         # FieldList field base name, e.g. "taxon"
         base_name = prefix.rstrip('-')
         # Find all keys in formdata that start with prefix and have a value
@@ -189,7 +176,8 @@ def update():
 
     # VALIDATE INPUTS AND SUBMIT.
     # Apply custom validator of form data.
-    custom_errors = validate_form(form=form)
+    custom_errors = validate_form(form=form,
+                                  required_field_list_prefixes=senlib.required_fieldlist_prefixes)
 
     if len(custom_errors) == 0:
 

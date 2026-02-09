@@ -125,6 +125,12 @@
                 <!-- Name -->
                 <div class="col-md-8 d-flex align-items-center">
                     <label for="{{ form.senotypename.id }}" class="me-2 mb-0 label-wide label-left-margin"><strong>{{ form.senotypename.label.text }}</strong></label>
+                    <!-- required marker: keyboard-focusable, accessible tooltip via CSS -->
+                    <span class="required-star"
+                          role="note"
+                          tabindex="0"
+                          aria-label="required"
+                          data-tooltip="Required">*</span>
                     {{ form.senotypename(class="form-control", style="width: 100%;", rows="1") }}
                 </div>
             </div>

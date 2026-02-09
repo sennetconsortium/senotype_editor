@@ -1780,3 +1780,19 @@ class SenLib:
 
         self.ubkgstatus = self.getubkgstatus()
         logger.info(f'UBKG API status = {self.ubkgstatus}')
+
+        # List of the prefixes of categorical fields in the Edit form that are required
+        self.required_fieldlist_prefixes = [
+            'taxon-',
+            'location-',
+            'celltype-',
+            'hallmark-',
+            'inducer-',
+            'assay-',
+            'citation-',
+            'origin-',
+            'dataset-',
+            'marker-',
+            'regmarker-',
+            'microenvironment-'
+        ]
