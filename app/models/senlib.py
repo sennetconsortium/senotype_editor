@@ -579,10 +579,16 @@ class SenLib:
                 oret.append({"code": code, "term": None})
                 continue
             markerid = code.split(':')[1]
+            markertype = code.split(':')[0]
+            if markertype == 'HGNC':
+                marker = 'genes'
+            else:
+                marker = 'proteins'
 
-            url = f'{base_url}/marker/{markerid}'
+            url = f'{base_url}/{marker}/{markerid}'
 
             resp = api.getresponse(url=url, format='json')
+            print(resp)
             # Defensive: check if resp is a list and not empty
             if not resp or not isinstance(resp, list) or not resp[0]:
                 term = code

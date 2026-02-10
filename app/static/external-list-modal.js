@@ -134,7 +134,6 @@ function createExternalConfig() {
                     items = [data.item || data];
                 }
                 return items.map(item => ({
-                    //id: `RRID:${item.docid || data.identifier || ''}`.replace(/^RRID:RRID:/, 'RRID:'),
                     //item.docid is consistent across SciCrunch resources, including plasmids
                     id: item.docid.replace(/^rrid:/i, match => match.toUpperCase()),
                     description: item.name || item.identifier || data.identifier || '',
@@ -214,7 +213,6 @@ function createExternalConfig() {
                 `/ontology/organs/${encodeURIComponent(query)}/term`,
             parseApiResult: data => {
                 // Response will be a list of JSON objects.
-                console.log(data);
                 if (Array.isArray(data)) {
                     return data.map(item => ({
                         id: item.code || '',
