@@ -134,14 +134,14 @@ function createExternalConfig() {
                     items = [data.item || data];
                 }
                 return items.map(item => ({
-                    //item.docid is consistent across SciCrunch resources, including plasmids
                     id: item.docid.replace(/^rrid:/i, match => match.toUpperCase()),
-                    description: item.name || item.identifier || data.identifier || '',
+                    //description: item.docid + ' (' + item.name + ')'|| '',
+                    description: item.name,
                     trunclength: 25
                 }));
             },
             link: info => ({
-                href: `/origin/detail/${encodeURIComponent(info.id.replace(/^RRID:/, ''))}`,
+                href: `/origin/detail/${encodeURIComponent(info.id)}`,
                 title: 'View origin details'
             }),
             displayText: function(info) {

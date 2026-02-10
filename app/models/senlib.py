@@ -507,18 +507,21 @@ class SenLib:
 
         logger.info('Getting origin information from SciCrunch Resolver')
 
-        # The SciCrunch Resolver API can return unexpected responses. As the
-        # Resolver is only used to decorate the code with a term, use "unknown"
-        # defensively.
-
-        # It may be necessary to tune by storing the origin description at the time
-        # of writing instead of fetching it on every read.
+        # SciCrunch Resolver is only used to decorate the code with a term.
+        # Use "unknown" defensively.
 
         oret = []
         for o in rawobjects:
             code = o.get('code')
-            rrid = code.split(':')[1]
-            url = f'{base_url}{rrid}.json'
+            # IDs for Antibodies and cells have higher resolution (vendor)
+            # than RRID, using the dash as delimiter. However, the
+            # search URL that returns JSON only has resolution at the
+            # RRID level. Strip higher-resolution identifiers.
+            searchcode = code
+            if '-' in code:
+                searchcode = code.split('-')[0]
+            url = f'{base_url}{searchcode}.json'
+
             origin = api.getresponse(url=url, format='json')
             if origin is None:
                 description = "unknown"
@@ -527,9 +530,10 @@ class SenLib:
                 if hits is None:
                     description = "unknown"
                 else:
-                    # The name field seems to be consistent across resource types
-                    #description = hits.get('hits')[0].get('_source').get('item').get('description', '')
-                    description = hits.get('hits')[0].get('_source').get('item').get('name', '')
+                    if len(hits.get('hits')) == 0:
+                        description = 'unknown'
+                    else:
+                        description = hits.get('hits')[0].get('_source').get('item').get('name', '')
 
             oret.append({"code": code, "term": description})
 
@@ -588,7 +592,6 @@ class SenLib:
             url = f'{base_url}/{marker}/{markerid}'
 
             resp = api.getresponse(url=url, format='json')
-            print(resp)
             # Defensive: check if resp is a list and not empty
             if not resp or not isinstance(resp, list) or not resp[0]:
                 term = code
