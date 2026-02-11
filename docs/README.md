@@ -195,7 +195,7 @@ Instead of using internal valuesets for these inputs, the Senotype Editor obtain
 | cell type        | UBKG               | Cell Ontology (CL)      |
 | diagnosis        | UBKG               | Disease Ontology (DOID) |
 | citation         | NCBI PubMed        | PMID                    |
-| origin           | SciCrunch          | RRID                    |
+| origin (RRID)    | SciCrunch          | RRID                    |
 | dataset          | SenNet Data Portal | SenNet ID               |
 | gene marker      | UBKG               | HGNC                    |
 | protein marker   | UBKG               | UniProtKB               |
@@ -223,7 +223,7 @@ detail page in the source that corresponds to the object.
 | cell type             | EMBL-EBI Ontology Lookup Service (OLS) |
 | diagnosis             | Disease Ontology                       |
 | citation              | PubMed                                 |
-| origin                | SciCrunch                              |
+| origin                | RRID Portal (see below)                |
 | dataset               | SenNet Data Portal                     |
 | gene marker           | HGNC                                   |
 | protein marker        | UniprotKB                              |
@@ -258,7 +258,40 @@ to facilitate finding an appropriate identifier.
 
 The Senotype Editor is not integrated with these external sites.
 
-## Marker assertions
+## Details for external assertions
+### SenNet datasets 
+The Search feature ![img_12.png](img_12.png) for datasets will direct to the Senotype Consortium pages, including
+the Data Portal.
+
+If the user wishes to associate a senotype with a dataset that is not published, they will need
+to log into the Data Portal again with their SenNet user ID.
+
+### Origin (SciCrunch RRID) 
+A senotype definition must be associated with at least one *origin*, or _Research Resource Identifier_ (RRID). RRIDs
+are managed in the [RRID Portal](https://rrid.site/). The RRID Portal uses the SciCrunch API for searches.
+
+RRIDs are organized by resource type:
+- Cores, Instruments, and Tools
+- Plasmids
+- Biosamples
+- Cells
+- Antibodies
+- Organisms
+
+The Search feature ![img_12.png](img_12.png) of the Origin section directs to the RRID Portal.
+Once the user identifies a RRID, they must enter the ID in the search window. The 'RRID:' part of the ID is optional;
+however, any other letters are required (e.g., "SCR", "AddGene", etc.).
+
+Antibodies and cell lines have identifiers with a higher level of resolution than the RRID because they also
+identify vendors. The Search feature displays the names provided by vendors to distinguish different offerings of the
+same origin.
+
+![img_26.png](img_26.png)
+
+The Details page for an origin will open a link to the SciCrunch detail page for the origin.
+Depending on the type of origin, the SciCrunch detail page may redirect to another site, such as that of a vendor.
+
+### Marker assertions
 
 ![img_18.png](img_18.png)
 
@@ -272,7 +305,7 @@ Marker assertion management for both specified and regulating markers is similar
 1. The ![img_9.png](img_9.png) button opens a search window that allows the addition of a single marker.
 2. The ![img_19.png](img_19.png) button opens a window for bulk import of a group of markers.
 
-### Search windows (individual addition)
+#### Search windows (individual addition)
 A marker Search window searches for gene or protein markers. 
 
 The user can enter different types of identifiers for markers, including:
@@ -292,14 +325,14 @@ The Search window for regulating markers includes a field for type of regulating
 
 ![img_21.png](img_21.png)
 
-### Bulk Addition windows
+#### Bulk Addition windows
 Bulk addition windows allow the user to load a large number of markers from a local CSV file that the user specifies.
 
 The bulk addition windows will only add information from a CSV if:
 * the CSV has the expected format
 * all markers in the CSV can be found in an external source
 
-#### Specified markers
+### Specified markers
 The CSV used for bulk upload of specified markers must have the following structure:
 
 | column | values                                                                |
@@ -313,7 +346,7 @@ type,id
 gene,BRCA1
 protein,Q13201
 ```
-#### Regulating markers
+### Regulating markers
 The CSV used for bulk upload of regulating arkers must have the following structure:
 
 | column | values                                                                                                                         |
