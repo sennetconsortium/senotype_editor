@@ -50,6 +50,7 @@ def validate_form(form, required_field_list_prefixes:list) ->dict:
     route by the update button on the Edit form.
 
     :param form: WTForms form instance
+    :param required_fields: list of required fields that are not lists.
     :param required_field_list_prefixes: list of field prefixes for fields that are required.
     :return: dict of errors
     """
@@ -60,12 +61,13 @@ def validate_form(form, required_field_list_prefixes:list) ->dict:
     if not form.validate():
         errors.update(form.errors)
 
-    # Now check that each prefix has at least one non-empty value in form.data (request.form)
     # form.data is a dict of {fieldname: value}
     # form._fields contains all Field objects
 
-    # For each prefix, look for keys in form.data that start with prefix and have a non-empty value
     formdata = getattr(form, 'data', {})
+
+    # Check that each prefix has at least one non-empty value in form.data (request.form)
+    # For each prefix, look for keys in form.data that start with prefix and have a non-empty value
     for prefix in required_field_list_prefixes:
         # FieldList field base name, e.g. "taxon"
         base_name = prefix.rstrip('-')
@@ -93,6 +95,7 @@ def validate_form(form, required_field_list_prefixes:list) ->dict:
     # if ftu_tree_json == '[]':
         # errors['ftu_tree_json'] = ['At least one ftu path must be selected.']
 
+    print(errors)
     return errors
 
 

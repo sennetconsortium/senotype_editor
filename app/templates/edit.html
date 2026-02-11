@@ -134,23 +134,39 @@
                     {{ form.senotypename(class="form-control", style="width: 100%;", rows="1") }}
                 </div>
             </div>
-            <!-- Senotype id, name, description errors -->
+            <!-- Senotype id, name errors -->
             <div class="row mb-1">
                   <div class="col-md-4">
                     {% for error in form.senotypeid.errors %}
                       <div class="text-danger">{{ error }}</div>
                     {% endfor %}
                   </div>
+
                   <div class="col-md-8">
-                    {% for error in form.senotypename.errors %}
-                      <div class="text-danger">{{ error }}</div>
-                    {% endfor %}
+                      <div class="d-flex">
+                          <!-- empty placeholder that matches the label's width -->
+                          <div class="label-wide"></div>
+
+                          <!-- errors aligned with the label (and input) -->
+                          <div class="senotype-name-error-area">
+                              {% for error in form.senotypename.errors %}
+                                <div class="text-danger">{{ error }}</div>
+                              {% endfor %}
+                          </div>
+                      </div>
                   </div>
                 </div>
             <!-- Senotype description -->
             <div class="row align-items-center mb-1">
                 <div class="col md-12 d-flex align-items-center">
                     <label for="{{ form.senotypedescription.id }}" class="me-2 mb-0 label-wide label-left-margin"><strong>{{ form.senotypedescription.label.text }}</strong></label>
+                    <span class="required-star"
+                          role="note"
+                          tabindex="0"
+                          aria-label="required"
+                          data-tooltip="Required">
+                         *
+                    </span>
                     {{ form.senotypedescription(class="form-control", style="width: 100%;", rows="1") }}
                 </div>
             </div>

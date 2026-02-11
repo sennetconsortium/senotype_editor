@@ -142,8 +142,8 @@ class EditForm(Form):
 
     # Senotype
     senotypeid = StringField('ID')
-    senotypename = TextAreaField('Name', validators=[validators.InputRequired()])
-    senotypedescription = TextAreaField('Description', validators=[validators.InputRequired()])
+    senotypename = TextAreaField('Name', validators=[validators.InputRequired(message="The Senotype name is required.")])
+    senotypedescription = TextAreaField('Description', validators=[validators.InputRequired(message="The Senotype description is required.")])
     doi = TextAreaField('DOI')
 
     # Provenance and version
