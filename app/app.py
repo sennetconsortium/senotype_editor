@@ -120,7 +120,8 @@ app = SenotypeUI(cfg.file, Path(__file__).absolute().parent.parent.parent).app
 
 if __name__ == "__main__":
     try:
-        # donor_app = SenotypeUI(cfg.file, Path(__file__).absolute().parent.parent.parent).app
+        #donor_app = SenotypeUI(cfg.file, Path(__file__).absolute().parent.parent.parent).app
+        #app = SenotypeUI(cfg.file, Path(__file__).absolute().parent.parent.parent).app
         app.run(host='127.0.0.1', port='5000')  # flask port
     except Exception as e:
         print(str(e))

@@ -44,6 +44,8 @@ PUBMED_BASE_URL='https://pubmed.ncbi.nlm.nih.gov/'
 # SciCrunch Resolver (origins)
 SCICRUNCH_BASE_URL='https://scicrunch.org/resolver/'
 SCICRUNCH_EXPLORE_URL='https://rrid.site/'
+# SciCrunch Resolver for antibodies and cell lines, which have higher resolution IDs
+SCICRUNCH_HIGHER_URL='https://scicrunch.org/scicrunch/resolver/'
 
 # Biomedical Ontology home pages
 OBO_BASE_URL='http://purl.obolibrary.org/obo/'

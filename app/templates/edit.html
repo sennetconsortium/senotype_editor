@@ -125,6 +125,12 @@
                 <!-- Name -->
                 <div class="col-md-8 d-flex align-items-center">
                     <label for="{{ form.senotypename.id }}" class="me-2 mb-0 label-wide label-left-margin"><strong>{{ form.senotypename.label.text }}</strong></label>
+                    <!-- required marker: keyboard-focusable, accessible tooltip via CSS -->
+                    <span class="required-star"
+                          role="note"
+                          tabindex="0"
+                          aria-label="required"
+                          data-tooltip="Required">*</span>
                     {{ form.senotypename(class="form-control", style="width: 100%;", rows="1") }}
                 </div>
             </div>
@@ -316,6 +322,7 @@
 {{ search_modal(
     modal_id="citationSearchModal",
     modal_label="Search PubMed for Citation PMID",
+    modal_help="Enter a search string that is part of the title of a PubMed article.",
     input_id="citation-search-input",
     explore_url="/citation/detail",
     explore_text="Explore PubMed",
@@ -324,7 +331,8 @@
 <!-- Modal for external API search for RRID origin-->
 {{ search_modal(
     modal_id="originSearchModal",
-    modal_label="Search SciCrunch for Origin RRID",
+    modal_label="Search the RRID Portal for Origin RRID",
+    modal_help="Enter the RRID of a resource identified in the RRID Portal (e.g., AB_1598149, RRID:AB_1598149).",
     input_id="origin-search-input",
     explore_url="/origin/explore",
     explore_text="Explore SciCrunch",
@@ -334,6 +342,7 @@
 {{ search_modal(
     modal_id="datasetSearchModal",
     modal_label="Search SenNet Data Portal for dataset ID",
+    modal_help="Use the SenNet ID of a dataset in the Data Portal (e.g, SNT999.ABCD.999).",
     input_id="dataset-search-input",
     explore_url="/dataset/portal/explore",
     explore_text="Explore SenNet Data Portal",
@@ -342,7 +351,8 @@
 <!-- Modal for external DataCite API search for DOI -->
 {{ search_modal(
     modal_id="doiSearchModal",
-    modal_label="Search DataCite for DOI, using the SenNet ID portion",
+    modal_label="Search DataCite for DOI",
+    modal_help="Provide the portion of a DOI that corresponds to the SenNet ID of the dataset (e.g., SNT999.ABCD.999).",
     input_id="doi-search-input",
     explore_url="/doi/explore",
     explore_text="Explore DataCite Commons",
@@ -352,6 +362,7 @@
 {{ search_modal(
     modal_id="celltypeSearchModal",
     modal_label="Search UBKG for cell type",
+    modal_help="Enter a string that is part of the name of the cell type.",
     input_id="celltype-search-input",
     explore_url="/bio/home/cl",
     explore_text="Explore Cell Ontology",
@@ -361,6 +372,7 @@
 {{ search_modal(
     modal_id="diagnosisSearchModal",
     modal_label="Search UBKG for diagnosis",
+    modal_help="Enter a string that is part of the name of the diagnosis.",
     input_id="diagnosis-search-input",
     explore_url="/bio/home/doid",
     explore_text="Explore Disease Ontology",
@@ -370,6 +382,7 @@
 {{ search_modal(
     modal_id="locationSearchModal",
     modal_label="Search UBKG for location (organ)",
+    modal_help="Enter a string that is part of the name of the organ.",
     input_id="location-search-input",
     explore_url="/organs/home",
     explore_text="Explore SenNet Organs",

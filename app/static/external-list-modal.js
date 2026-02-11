@@ -134,13 +134,14 @@ function createExternalConfig() {
                     items = [data.item || data];
                 }
                 return items.map(item => ({
-                    id: `RRID:${item.identifier || data.identifier || ''}`.replace(/^RRID:RRID:/, 'RRID:'),
-                    description: item.description || item.name || item.identifier || data.identifier || '',
+                    id: item.docid.replace(/^rrid:/i, match => match.toUpperCase()),
+                    //description: item.docid + ' (' + item.name + ')'|| '',
+                    description: item.name,
                     trunclength: 25
                 }));
             },
             link: info => ({
-                href: `/origin/detail/${encodeURIComponent(info.id.replace(/^RRID:/, ''))}`,
+                href: `/origin/detail/${encodeURIComponent(info.id)}`,
                 title: 'View origin details'
             }),
             displayText: function(info) {
@@ -212,7 +213,6 @@ function createExternalConfig() {
                 `/ontology/organs/${encodeURIComponent(query)}/term`,
             parseApiResult: data => {
                 // Response will be a list of JSON objects.
-                console.log(data);
                 if (Array.isArray(data)) {
                     return data.map(item => ({
                         id: item.code || '',
@@ -352,6 +352,7 @@ function setupExternalModalSearch(type) {
                 } else {
                     items = config.parseApiResult(data);
                 }
+                console.log(items);
                 resultsDiv.innerHTML = '';
                 if (!items || items.length === 0) {
                     resultsDiv.innerHTML = '<div class="text-muted">No results found.</div>';
