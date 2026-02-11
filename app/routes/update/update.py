@@ -95,7 +95,6 @@ def validate_form(form, required_field_list_prefixes:list) ->dict:
     # if ftu_tree_json == '[]':
         # errors['ftu_tree_json'] = ['At least one ftu path must be selected.']
 
-    print(errors)
     return errors
 
 

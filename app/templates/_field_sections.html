@@ -44,50 +44,56 @@ Arguments:
         <ul id="{{ field_name }}-list" class="list-group mb-2 w-100" style="margin-bottom:0!important; margin-left: 12px;">
             <!-- Parse code from value provided by WTForms field. -->
             {% for field in form[field_name] %}
-                {% set full_value = field.data %}
-                {% if show_code %}
-                    {% set display_value = full_value %}
-                {% else %}
-                    {% set display_value = (
-                        full_value[full_value.find('(')+1:full_value.rfind(')')]
-                        if '(' in full_value and ')' in full_value else full_value
-                    ) %}
-                {% endif %}
-                {% set hidden_value = (full_value or '').split(' ')[0] %}
-                <li class="list-group-item d-flex justify-content-between align-items-center w-100">
-                    <!-- Hidden input used to store value for post -->
-                    <input name="{{ field.name }}" type="hidden" value="{{ hidden_value }}">
-                    <!-- Span for value displayed in list -->
-                    <span class="list-field-display" style="padding-left:3px; padding-right:3px;" name="{{ field_name }}_field_display">{{ display_value }}</span>
-                    <!-- For fields with external links, create a placeholder for the link button created via Javascript. -->
-                    {% if field_name == "dataset" %}
-                        <!-- Placeholder for the dataset link button, id is unique per hidden_value -->
-                        <span class="dataset-link-placeholder ms-2" id="dataset-link-{{ hidden_value | e }}"></span>
-                    {% endif %}
-                    {% if field_name == "citation" %}
-                        <!-- Placeholder for the citation link button, id is unique per hidden_value -->
-                        <span class="citation-link-placeholder ms-2" id="citation-link-{{ hidden_value | e }}"></span>
-                    {% endif %}
-                    {% if field_name == "origin" %}
-                        <!-- Placeholder for the origin link button, id is unique per hidden_value -->
-                        <span class="origin-link-placeholder ms-2" id="origin-link-{{ hidden_value | e }}"></span>
-                    {% endif %}
-                    {% if field_name == "celltype" %}
-                        <!-- Placeholder for the celltype link button, id is unique per hidden_value -->
-                        <span class="celltype-link-placeholder ms-2" id="celltype-link-{{ hidden_value | e }}"></span>
-                    {% endif %}
-                    {% if field_name == "diagnosis" %}
-                        <!-- Placeholder for the diagnosis link button, id is unique per hidden_value -->
-                        <span class="diagnosis-link-placeholder ms-2" id="diagnosis-link-{{ hidden_value | e }}"></span>
-                    {% endif %}
-                    {% if field_name == "location" %}
-                        <!-- Placeholder for the organ link button, id is unique per hidden_value -->
-                        <span class="location-link-placeholder ms-2" id="location-link-{{ hidden_value | e }}"></span>
-                    {% endif %}
-                    <!-- Button to remove this value from the list -->
-                    <button type="button" class="btn btn-sm btn-danger ms-2" style="width: 2.5em;" onclick="removeValue(this)"> - </button>
+                {# Normalize full_value to a string so we can safely call string ops #}
+                {% set full_value = field.data or ''%}
 
-                </li>
+                {# Skip adding a list element when there's no data or only whitespace #}
+                {% if full_value|trim %}
+                    {% if show_code %}
+                        {% set display_value = full_value %}
+                    {% else %}
+                        {% set display_value = (
+                            full_value[full_value.find('(')+1:full_value.rfind(')')]
+                            if '(' in full_value and ')' in full_value else full_value
+                        ) %}
+                    {% endif %}
+                    {% set hidden_value = (full_value or '').split(' ')[0] %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center w-100">
+
+                        <!-- Hidden input used to store value for post -->
+                        <input name="{{ field.name }}" type="hidden" value="{{ hidden_value }}">
+                        <!-- Span for value displayed in list -->
+                        <span class="list-field-display" style="padding-left:3px; padding-right:3px;" name="{{ field_name }}_field_display">{{ display_value }}</span>
+                        <!-- For fields with external links, create a placeholder for the link button created via Javascript. -->
+                        {% if field_name == "dataset" %}
+                            <!-- Placeholder for the dataset link button, id is unique per hidden_value -->
+                            <span class="dataset-link-placeholder ms-2" id="dataset-link-{{ hidden_value | e }}"></span>
+                        {% endif %}
+                        {% if field_name == "citation" %}
+                            <!-- Placeholder for the citation link button, id is unique per hidden_value -->
+                            <span class="citation-link-placeholder ms-2" id="citation-link-{{ hidden_value | e }}"></span>
+                        {% endif %}
+                        {% if field_name == "origin" %}
+                            <!-- Placeholder for the origin link button, id is unique per hidden_value -->
+                            <span class="origin-link-placeholder ms-2" id="origin-link-{{ hidden_value | e }}"></span>
+                        {% endif %}
+                        {% if field_name == "celltype" %}
+                            <!-- Placeholder for the celltype link button, id is unique per hidden_value -->
+                            <span class="celltype-link-placeholder ms-2" id="celltype-link-{{ hidden_value | e }}"></span>
+                        {% endif %}
+                        {% if field_name == "diagnosis" %}
+                            <!-- Placeholder for the diagnosis link button, id is unique per hidden_value -->
+                            <span class="diagnosis-link-placeholder ms-2" id="diagnosis-link-{{ hidden_value | e }}"></span>
+                        {% endif %}
+                        {% if field_name == "location" %}
+                            <!-- Placeholder for the organ link button, id is unique per hidden_value -->
+                            <span class="location-link-placeholder ms-2" id="location-link-{{ hidden_value | e }}"></span>
+                        {% endif %}
+                        <!-- Button to remove this value from the list -->
+                        <button type="button" class="btn btn-sm btn-danger ms-2" style="width: 2.5em;" onclick="removeValue(this)"> - </button>
+
+                    </li>
+                {% endif %}
             {% endfor %}
             <!-- Validation errors -->
             {% for error in form[field_name].errors %}
