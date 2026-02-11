@@ -35,16 +35,22 @@ Arguments:
     </span>
     <div class="d-flex align-items-start">
         <ul id="marker-list" class="list-group mb-2 w-100">
-            {% for field in form.marker %}
-                {% set full_value = field.data %}
-                {% set marker_code = field.data.split('(')[0].strip() if field.data else '' %}
-                <li class="list-group-item d-flex justify-content-between align-items-center">
-                    <input type="hidden" name="{{ field.name }}" value="{{ marker_code }}">
-                    <span class="list-field-display" name="{{ field_name }}_field_display">{{ full_value }}</span>
-                    <!-- Placeholder for the marker link button, id is unique per hidden_value -->
-                    <span class="marker-link-placeholder ms-2" id="marker-link-{{ hidden_value | e }}"></span>
-                    <button type="button" class="btn btn-sm btn-danger ms-2" style="width: 2.5em;" onclick="removeMarker(this)">-</button>
-                </li>
+            {% for field in form.marker%}
+
+                {# Normalize full_value to a string so we can safely call string ops #}
+                {% set full_value = field.data or ''%}
+
+                {# Skip adding a list element when there's no data or only whitespace #}
+                {% if full_value|trim %}
+                    {% set marker_code = field.data.split('(')[0].strip() if field.data else '' %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <input type="hidden" name="{{ field.name }}" value="{{ marker_code }}">
+                        <span class="list-field-display" name="{{ field_name }}_field_display">{{ full_value }}</span>
+                        <!-- Placeholder for the marker link button, id is unique per hidden_value -->
+                        <span class="marker-link-placeholder ms-2" id="marker-link-{{ hidden_value | e }}"></span>
+                        <button type="button" class="btn btn-sm btn-danger ms-2" style="width: 2.5em;" onclick="removeMarker(this)">-</button>
+                    </li>
+                {% endif %}
             {% endfor %}
             {% for error in form.marker.errors %}
                 <div class="text-danger">{{ error }}</div>
