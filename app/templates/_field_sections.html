@@ -30,7 +30,7 @@ Arguments:
     {# header #}
     <strong style="margin-left: 12px;">{{ form[field_name].label }}</strong>
     <!--Required span (*) with tooltip-->
-    {% set required_fields = ['taxon', 'location', 'celltype','hallmark','inducer','assay','citation','origin','dataset','marker','regmarker','microenvironment'] %}
+    {% set required_fields = ['taxon', 'location', 'celltype','hallmark','microenvironment'] %}
     {% if field_name in required_fields %}
     <span class="required-star"
                           role="note"
