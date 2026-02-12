@@ -206,6 +206,8 @@ def update():
         flash(f'Successfully {result_action_root}ed senotype with ID {update_id}.')
 
         # Trigger a reload of the edit form that refreshes with the updated data.
+        session.pop('form_errors', None)
+        session.pop('form_data', None)
         form = EditForm(request.form)
         senlib = SenLib(cfg=cfg, userid=session['userid'])
         senlib.fetchfromdb(senotypeid=update_id, form=form)
@@ -221,6 +223,7 @@ def update():
                                          #'allftutree_data': current_app.allftutree,
                                          #'ftu_tree_data': senlib.ftutree},
                                #selected_node_id=update_id)
+
         return render_template('edit.html',
                                form=form,
                                response={'tree_data': senlib.senotypetree},

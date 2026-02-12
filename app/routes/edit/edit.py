@@ -29,6 +29,7 @@ edit_blueprint = Blueprint('edit', __name__, url_prefix='/edit')
 @edit_blueprint.route('', methods=['POST', 'GET'])
 def edit():
 
+
     # Clear any prior error messages that can display in the edit form.
     if 'flashes' in session:
         session['flashes'].clear()
@@ -43,7 +44,6 @@ def edit():
     if not validation_data['active']:
         abort(code=403,
               description='Your token has expired. Please log in again.')
-
 
     # Read the app.cfg file outside the Flask application context.
 

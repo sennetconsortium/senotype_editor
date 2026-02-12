@@ -436,7 +436,6 @@ class SenLib:
         """
 
         for assertion in assertions:
-
             assertion_predicate = assertion.get('predicate')
             # Check both the IRI and term values for a match.
             iri = assertion_predicate.get('IRI')
@@ -882,6 +881,7 @@ class SenLib:
 
         # Get senotype data
         dictsenlib = self.getsenotypejson(id=senotypeid)
+        print('fetchfromdb: senotypeid', senotypeid)
         senotype = dictsenlib.get('senotype')
         form.senotypename.data = senotype.get('name', '')
         form.senotypedescription.data = senotype.get('definition', '')
@@ -960,6 +960,10 @@ class SenLib:
             form.agevalue.data = age.get('value', '')
             form.agelowerbound.data = age.get('lowerbound', '')
             form.ageupperbound.data = age.get('upperbound', '')
+        else:
+            form.agevalue.data = ''
+            form.agelowerbound.data = ''
+            form.ageupperbound.data = ''
         form.ageunit.data = 'year'
 
         # BMI
@@ -968,6 +972,10 @@ class SenLib:
             form.bmivalue.data = bmi.get('value', '')
             form.bmilowerbound.data = bmi.get('lowerbound', '')
             form.bmiupperbound.data = bmi.get('upperbound', '')
+        else:
+            form.bmivalue.data = ''
+            form.bmilowerbound.data = ''
+            form.bmiupperbound.data = ''
         form.bmiunit.data = 'kg/m2'
 
         # sex
