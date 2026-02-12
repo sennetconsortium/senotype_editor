@@ -67,8 +67,10 @@
             </div>
           </div>
           <!-- New version button -->
+            <!-- The new version functionality will be disabled for the initial release.
+            Change the class to class="btn mt-2" to enable. -->
             <button type="button"
-                class="btn mt-2"
+                    class="d-none"
                 id="new-version-btn"
                 disabled
                 style="
@@ -179,14 +181,15 @@
                   </div>
             </div>
             <!-- DOI -->
-            <div class="row mb-1 row-doi">
+            <!-- DOI will be disabled for initial release. -->
+            <div class="row mb-1 row-doi d-none" aria-hidden="true">
                   <div class="col-md-12">
                       {{ render_textarea_section(form, 'doi', 'doiSearchModal', '#FEF2F2', link_base_url='/doi/search/', link_title='View DOI details', parse_code=False ) }}
                   </div>
                   <div class="col-md-4">
                     <!-- For alignment -->
                   </div>
-                </div>
+            </div>
           </div> <!-- col-md-8 (Submission column) -->
     </div> <!-- row (Main row) -->
     <!-- Simple Assertions section-->
