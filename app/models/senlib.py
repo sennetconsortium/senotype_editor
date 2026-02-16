@@ -436,21 +436,26 @@ class SenLib:
         """
 
         for assertion in assertions:
-
             assertion_predicate = assertion.get('predicate')
+            # Check both the IRI and term values for a match.
             iri = assertion_predicate.get('IRI')
             term = assertion_predicate.get('term')
+
             pred = ''
             if iri == predicate:
                 pred = predicate
-
             elif term == predicate:
                 pred = predicate
+
             if pred != '':
+                # This is a context assertion.
+                # Check whether this is the specified context.
+
                 objects = assertion.get('objects', [])
                 for o in objects:
-                    objcontext = o.get('type')
-                    if objcontext == context:
+                    object_context = o.get('term')
+                    if object_context == context:
+                        # This is the object for the specified context assertion.
                         return o
 
         return {}
@@ -876,6 +881,7 @@ class SenLib:
 
         # Get senotype data
         dictsenlib = self.getsenotypejson(id=senotypeid)
+        print('fetchfromdb: senotypeid', senotypeid)
         senotype = dictsenlib.get('senotype')
         form.senotypename.data = senotype.get('name', '')
         form.senotypedescription.data = senotype.get('definition', '')
@@ -954,14 +960,22 @@ class SenLib:
             form.agevalue.data = age.get('value', '')
             form.agelowerbound.data = age.get('lowerbound', '')
             form.ageupperbound.data = age.get('upperbound', '')
+        else:
+            form.agevalue.data = ''
+            form.agelowerbound.data = ''
+            form.ageupperbound.data = ''
         form.ageunit.data = 'year'
 
         # BMI
-        bmi = self.getstoredcontextassertiondata(assertions=assertions, predicate='has_context', context='BMI')
+        bmi = self.getstoredcontextassertiondata(assertions=assertions, predicate='has_context', context='bmi')
         if bmi != {}:
             form.bmivalue.data = bmi.get('value', '')
             form.bmilowerbound.data = bmi.get('lowerbound', '')
             form.bmiupperbound.data = bmi.get('upperbound', '')
+        else:
+            form.bmivalue.data = ''
+            form.bmilowerbound.data = ''
+            form.bmiupperbound.data = ''
         form.bmiunit.data = 'kg/m2'
 
         # sex
@@ -1441,18 +1455,27 @@ class SenLib:
             code = row['code']
 
             objects = []
-            value = form_data.get(context_object_name)
-            if value is not None:
-                lowerbound_name = f'{context_object_name}lowerbound'
+            # Look for a form data field with name that corresponds
+            # the value stored in the context_assertion_code table.
+            # The name of the field in form data will have 'value'
+            # appended--e.g., agevalue.
+
+            search_key = f'{context_object_name}value'.lower()
+            search_value = form_data.get(search_key)
+
+            if search_value is not None:
+                # Get the associated context fields:
+                # lowerbound, upperbound, unit
+                lowerbound_name = f'{context_object_name}lowerbound'.lower()
                 lowerbound = form_data.get(lowerbound_name)
-                upperbound_name = f'{context_object_name}upperbound'
+                upperbound_name = f'{context_object_name}upperbound'.lower()
                 upperbound = form_data.get(upperbound_name)
-                unit_name = f'{context_object_name}unit'
+                unit_name = f'{context_object_name}unit'.lower()
                 unit = form_data.get(unit_name)
                 obj = {
-                    "term": context_object_name,
+                    "term": context_object_name.lower(),
                     "code": code,
-                    "value": value
+                    "value": search_value
                 }
                 if lowerbound is not None:
                     obj["lowerbound"] = lowerbound
@@ -1468,7 +1491,7 @@ class SenLib:
                                  "objects": objects}
                     assertions.append(assertion)
 
-            return assertions
+        return assertions
 
     def buildregmarkerassertions(self, form_data: MultiDict) -> list:
         """
@@ -1798,12 +1821,12 @@ class SenLib:
             'location-',
             'celltype-',
             'hallmark-',
-            'inducer-',
-            'assay-',
-            'citation-',
-            'origin-',
-            'dataset-',
-            'marker-',
-            'regmarker-',
+            #'inducer-',
+            #'assay-',
+            #'citation-',
+            #'origin-',
+            #'dataset-',
+            #'marker-',
+            #'regmarker-',
             'microenvironment-'
         ]

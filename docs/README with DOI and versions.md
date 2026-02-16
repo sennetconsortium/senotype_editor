@@ -36,6 +36,14 @@ Relations Ontology.
 Senotype definitions are maintained in the *Senotype library* (**SenLib**). Senotype definitions are stored in Senlib in JSON format and conform
 to the schema defined in the [senlib](https://github.com/sennetconsortium/senlib/blob/main/doc/Senotype_Submission_Schema.md) GitHub repository.
 
+As described in the senlib [provenance model](https://github.com/sennetconsortium/senlib/blob/main/doc/Senotype_Submission_Schema.md#provenance-model),
+a senotype corresponds to a set of _submission_ files that represent different versions of the evolving definition of the senotype. 
+A senotype submission corresponds to a version of a senotype definition.
+
+Because each version of a senotype can be _published_ by associating it with a Digital Object Identifier (DOI) in DataCite, 
+the fundamental level of organization in the Senlib database is the submission. 
+Each submission has a unique _SenNet identifier_ in both SenNet and the Senlib database.
+
 ## The Senotype Editor
 The **Senotype Editor** application allows users to manage senotype definitions in the Senlib database. 
 Because the majority of the assertions in a senotype definition involve categorical data, most of the work of defining a senotype will
@@ -46,7 +54,9 @@ involve the selection of values from lists.
 With the Senotype Editor, users can:
 1. **review** a senotype definition
 2. **create** a new senotype definition
-2. **revise** a senotype definition
+2. **revise** an unpublished senotype definition
+3. **publish** a senotype definition by associating it with a DOI
+4. **create a new version** of a published senotype definition
 
 # User Authentication
 Only users with Globus accounts with proper authentication will be able to use the Senotype Editor. 
@@ -78,7 +88,9 @@ translate the codes of a senotype definition into descriptive terms.
 
 # Business Rules of the Senotype Editor
 
-**A user can only edit a senotype submission file for which they are authorized.** Authorization is controlled by means of the SenNet Consortium's Globus environment.
+Two rules govern whether a user can edit a senotype submission.
+1. **A user can only edit a senotype submission file for which they are authorized.** Authorization is controlled by means of the SenNet Consortium's Globus environment.
+2. **Only unpublished submissions can be edited**. Once a submission is associated with a DOI, it becomes read-only in the Senotype Editor. To change a senotype definition, a user must create a new version of the definition--i.e., build another submission.
 
 # Using the Senotype Library Navigator
 
@@ -95,12 +107,14 @@ for the submission into the Definition section.
 ![img_32.png](img_32.png)
 
 ## Edit state
-The icon next to a submission node indicates whether the submission can be edited. 
+The icon next to a submission node indicates whether the submission can be edited.
+1. A lock icon ( ![img_4.png](img_4.png)) indicates that the submission has been published and is read-only. The controls in the Definition section will be disabled.
+2. A pencil icon (![img_6.png](img_6.png)) indicates that the submission has not been published and can be edited.
 
-A pencil icon (![img_6.png](img_6.png)) indicates that the submission can be edited.
+A senotype definition will have, at most, one version (submission file) that can be edited.
 
 ## Authorization state
-Only authorized users may edit a senotype.
+Even if a senotype submission is potentially editable, only authorized users may edit it.
 If a senotype shows a "prohibited" icon ( ![img_8.png](img_8.png)), the user is not authorized to edit the submission file. 
 Although the data for the submission will still display in the Definition section, controls will be disabled.
 
@@ -112,6 +126,16 @@ into the Definition section defaults for the new submission, including:
 1. a new SenNet ID
 2. the Globus name and email of the user, as submitter
 
+## Creating a new version of an existing senotype
+If all of the versions (submission files) of a senotype definition have been published, the user can use
+the **new version** button at the bottom right of the Navigator to create a new, editable version. 
+The Editor will load into the Definition section:
+1. a new SenNet ID
+2. the Globus name and email of the user as submitter
+3. the data from the latest version of the senotype definition
+
+A user will be able to create a new version of a senotype definition even if the latest version of the senotype was 
+created by another user. 
 
 # Using the Senotype Definition tools
 
@@ -124,6 +148,31 @@ required for a senotype are indicated with a red asterisk.
 The user can edit the **name** and **description** for the submission. 
 The Navigator will use the name for the latest version of a senotype definition as 
 the name of the definition node.
+
+## DOI
+
+The DOI section allows the user to associate the senotype submission with a DOI in DataCite.
+
+Clicking the ![img_9.png](img_9.png) button will launch a search window. 
+
+![img_11.png](img_11.png)
+
+The search window will search DataCite for a DOI with ID that _exactly_ matches the value that the user enters in the **Enter query...** 
+input. Because all senotype DOIs will have the same DataCite provider (e.g, 10.6586), the search window only needs 
+the unique portion of the DOI, which usually corresponds to the SenNet ID of the dataset. 
+
+For example, if the DOI's full URL is https://doi.org/10.60586/snt259.dzbl.489, only snt259.dzbl.489 is required as a search term.
+
+If the search window finds a matching DOI in DataCite, it will 
+display the title of the citation as a link. If the user clicks the link, the Editor will associate 
+the senotype submission with the selected DOI.
+
+The ![img_12.png](img_12.png) button in the search window opens the DataCite Commons search window.
+
+When the user associates a DOI with a senotype submission, the Editor warns that saving the DOI with the submission
+will make the submission read-only.
+
+The ![img_13.png](img_13.png) button allows the user to remove the DOI from the submission.
 
 ## Assertions
 The Definition section allows the definition of assertions between a senotype and its characteristics.
