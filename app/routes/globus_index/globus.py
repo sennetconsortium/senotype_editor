@@ -9,7 +9,7 @@ from flask import Blueprint, request, redirect, session
 globus_blueprint = Blueprint('globus', __name__, url_prefix='/')
 
 
-@globus_blueprint.route('', methods=['GET', 'POST'])
+@globus_blueprint.route('', methods=['GET'])
 def globus():
 
     # Clear messages.
