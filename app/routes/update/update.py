@@ -50,6 +50,7 @@ def validate_form(form, required_field_list_prefixes:list) ->dict:
     route by the update button on the Edit form.
 
     :param form: WTForms form instance
+    :param required_fields: list of required fields that are not lists.
     :param required_field_list_prefixes: list of field prefixes for fields that are required.
     :return: dict of errors
     """
@@ -60,12 +61,13 @@ def validate_form(form, required_field_list_prefixes:list) ->dict:
     if not form.validate():
         errors.update(form.errors)
 
-    # Now check that each prefix has at least one non-empty value in form.data (request.form)
     # form.data is a dict of {fieldname: value}
     # form._fields contains all Field objects
 
-    # For each prefix, look for keys in form.data that start with prefix and have a non-empty value
     formdata = getattr(form, 'data', {})
+
+    # Check that each prefix has at least one non-empty value in form.data (request.form)
+    # For each prefix, look for keys in form.data that start with prefix and have a non-empty value
     for prefix in required_field_list_prefixes:
         # FieldList field base name, e.g. "taxon"
         base_name = prefix.rstrip('-')
@@ -204,6 +206,8 @@ def update():
         flash(f'Successfully {result_action_root}ed senotype with ID {update_id}.')
 
         # Trigger a reload of the edit form that refreshes with the updated data.
+        session.pop('form_errors', None)
+        session.pop('form_data', None)
         form = EditForm(request.form)
         senlib = SenLib(cfg=cfg, userid=session['userid'])
         senlib.fetchfromdb(senotypeid=update_id, form=form)
@@ -219,6 +223,7 @@ def update():
                                          #'allftutree_data': current_app.allftutree,
                                          #'ftu_tree_data': senlib.ftutree},
                                #selected_node_id=update_id)
+
         return render_template('edit.html',
                                form=form,
                                response={'tree_data': senlib.senotypetree},

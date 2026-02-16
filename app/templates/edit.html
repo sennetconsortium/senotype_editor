@@ -33,7 +33,13 @@
 {% from "_ftu_section.html" import render_jstree_section %}
 
 <!-- START OF PAGE -->
-<!-- EDIT FORM -->
+<!-- EDIT FORM
+     The Edit form allows the user to:
+     1. select an existing senotype via a treeview
+     2. create a new senotype via the "new" element of the treeview
+     3. change the data of an existing or new senotype
+
+-->
 <form id="edit_form" method="post" action= "/edit" class="mt-0 m-3">
     <!-- Senotype / Submission -->
     <div class="row">
@@ -67,8 +73,10 @@
             </div>
           </div>
           <!-- New version button -->
+            <!-- The new version functionality will be disabled for the initial release.
+            Change the class to class="btn mt-2" to enable. -->
             <button type="button"
-                class="btn mt-2"
+                    class="d-none"
                 id="new-version-btn"
                 disabled
                 style="
@@ -134,23 +142,39 @@
                     {{ form.senotypename(class="form-control", style="width: 100%;", rows="1") }}
                 </div>
             </div>
-            <!-- Senotype id, name, description errors -->
+            <!-- Senotype id, name errors -->
             <div class="row mb-1">
                   <div class="col-md-4">
                     {% for error in form.senotypeid.errors %}
                       <div class="text-danger">{{ error }}</div>
                     {% endfor %}
                   </div>
+
                   <div class="col-md-8">
-                    {% for error in form.senotypename.errors %}
-                      <div class="text-danger">{{ error }}</div>
-                    {% endfor %}
+                      <div class="d-flex">
+                          <!-- empty placeholder that matches the label's width -->
+                          <div class="label-wide"></div>
+
+                          <!-- errors aligned with the label (and input) -->
+                          <div class="senotype-name-error-area">
+                              {% for error in form.senotypename.errors %}
+                                <div class="text-danger">{{ error }}</div>
+                              {% endfor %}
+                          </div>
+                      </div>
                   </div>
                 </div>
             <!-- Senotype description -->
             <div class="row align-items-center mb-1">
                 <div class="col md-12 d-flex align-items-center">
                     <label for="{{ form.senotypedescription.id }}" class="me-2 mb-0 label-wide label-left-margin"><strong>{{ form.senotypedescription.label.text }}</strong></label>
+                    <span class="required-star"
+                          role="note"
+                          tabindex="0"
+                          aria-label="required"
+                          data-tooltip="Required">
+                         *
+                    </span>
                     {{ form.senotypedescription(class="form-control", style="width: 100%;", rows="1") }}
                 </div>
             </div>
@@ -163,14 +187,15 @@
                   </div>
             </div>
             <!-- DOI -->
-            <div class="row mb-1 row-doi">
+            <!-- DOI will be disabled for initial release. -->
+            <div class="row mb-1 row-doi d-none" aria-hidden="true">
                   <div class="col-md-12">
                       {{ render_textarea_section(form, 'doi', 'doiSearchModal', '#FEF2F2', link_base_url='/doi/search/', link_title='View DOI details', parse_code=False ) }}
                   </div>
                   <div class="col-md-4">
                     <!-- For alignment -->
                   </div>
-                </div>
+            </div>
           </div> <!-- col-md-8 (Submission column) -->
     </div> <!-- row (Main row) -->
     <!-- Simple Assertions section-->
@@ -272,6 +297,9 @@
         {{ render_fieldlist_section(form, "dataset", "datasetSearchModal", show_code=True,  col_class="col-md-4 input-cellBox", label_bg="#EBF6F9") }}
     </div>
     <!-- Specified Markers/Regulating Markers -->
+    <!-- To manage the display of the large number of markers
+         that are expected, wrap the marker sections in an accordion class.
+    -->
     <div class="accordion" id="markerAccordion">
       <div class="accordion-item">
         <h3 class="accordion-header" id="headingMarkers">
@@ -300,7 +328,8 @@
 </form>
 
 <!-- MODAL DIVS -->
-<!-- Valueset Select modals for simple assertions:
+<!-- Modal select windows that appear when the user clicks the "add" button of an input-->
+<!-- Valueset Select modals for valueset-based assertions:
      taxon
      location
      hallmark
@@ -317,7 +346,7 @@
 {{ valueset_modal("assayModal", "Assay", "assay-modal-list") }}
 {{ valueset_modal("sexModal", "Sex", "sex-modal-list") }}
 
-<!-- Search modals for external API searches -->
+<!-- Modals for inputs that require external API searches -->
 <!-- Modal for external API search for PubMed citation-->
 {{ search_modal(
     modal_id="citationSearchModal",
@@ -470,7 +499,10 @@
     </div>
 </div>
 
-<!-- UPDATE FORM below edit_form -->
+<!-- UPDATE FORM
+     The Update form calls the /update route to validate inputs
+     and write data to the senotype database
+-->
 <form id="update_form" method="post" action="/update" class="my-4">
   <div class="d-flex flex-row-reverse container-fluid">
     <div class="mx-2">
@@ -495,8 +527,9 @@
 </form>
 
 <!-- CSV UPLOAD CSV MODAL FORMS -->
-<!-- Modal divs with form to upload bulk load of markers via CSV. Placed outside of edit form so that the divs will not
-display with transparent background--apparently, a known bug in this scenario. -->
+<!-- Modal divs with forms to upload bulk load of markers via CSV. These divs are placed outside of the edit form so that
+the divs will not display with transparent background--apparently, a known bug in this scenario. -->
+
 <!-- Specified Markers -->
 <div class="modal fade" id="markerCsvModal" tabindex="-1" aria-labelledby="markerCsvModalLabel">
     <div class="modal-dialog">
@@ -526,6 +559,7 @@ display with transparent background--apparently, a known bug in this scenario. -
                     </ul>
                     <input type="file" class="form-control mb-2" id="marker-csv-file" accept=".csv" required>
                     <div id="csv-validation-results" class="mt-2 small">
+                        <!--Container of status messages from the marker-csv script-->
                     </div>
             </div>
             <div class="modal-footer">
@@ -588,6 +622,7 @@ display with transparent background--apparently, a known bug in this scenario. -
                     <br>
                      <input type="file" class="form-control mb-2" id="regmarker-csv-file" accept=".csv" required>
                     <div id="regcsv-validation-results" class="mt-2 small">
+                        <!--Container of status messages from the regmarker-csv script-->
                     </div>
             </div>
             <div class="modal-footer">

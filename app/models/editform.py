@@ -22,56 +22,97 @@ def to_num(val):
         raise ValidationError("Ages must be numbers.")
 
 
-def validate_age(val) -> str:
+def validate_numeric(val:float, field_name:str, rangemin: float=0, rangemax: float=100) -> str:
 
     """
-    Custom validator for age.
-
-    Assumes that age unit is years.
+    Custom validator for a numeric field.
+    :param val: the value to validate
+    :param field_name: the field name
+    :param rangemin: the lower bound of the range
+    :param rangemax: the upper bound of the range
 
     """
 
     if val is None:
-        return "ok"
-    if val < 0:
-        return 'Age must be positive.'
-    if val > 90:
-        return 'Ages over 89 years must be set to 90 years.'
+        return 'ok'
+    if val < rangemin:
+        return f'The minimum value of {field_name} is {str(rangemin)}.'
+    if rangemax is not None:
+        if val > rangemax:
+            return f'The maximum value of {field_name} is {str(rangemax)}.'
+    else:
+        return 'ok'
 
-    return "ok"
+    return 'ok'
 
 
-def validate_age_range(form, field):
+def validate_range(form, field):
     """
-    Validates that:
-    1. The age value, lowerbound, and upperbound are all ages.
+    Validates for a set of context fields (age, BMI) that:
+    1. The value, lowerbound, and upperbound are all ages.
     1. The lowerbound is less than both the value and upperbound.
-    2. The age value is less than the upperbound.
-
-    Assumes that the validateage validator is called prior.
+    2. The value is less than the upperbound.
 
     Both the form and field parameters are required by WTForms.
 
     """
 
-    agevalue = to_num(form.agevalue.data)
-    lowerbound = to_num(form.agelowerbound.data)
-    upperbound = to_num(form.ageupperbound.data)
+    isage = field.name in ['agevalue', 'agelowerbound', 'ageupperbound']
+    isbmi = field.name in ['bmivalue', 'bmilowerbound', 'bmiupperbound']
 
-    valuevalidate = validate_age(agevalue)
-    lowerboundvalidate = validate_age(lowerbound)
-    upperboundvalidate = validate_age(upperbound)
+    if isage:
+        valuedisplay = 'age'
+        rangevalue = to_num(form.agevalue.data)
+        rangelowerbound = to_num(form.agelowerbound.data)
+        rangeupperbound = to_num(form.ageupperbound.data)
+        # Maximum age
+        rangemax = 89
+
+    elif isbmi:
+        # BMI
+        valuedisplay = 'BMI'
+        rangevalue = to_num(form.bmivalue.data)
+        rangelowerbound = to_num(form.bmilowerbound.data)
+        rangeupperbound = to_num(form.bmiupperbound.data)
+        rangemax = 100
+    else:
+        raise ValidationError(f'Unknown field for validator: {field.name}')
+
+    # Validate that all values in the set are numeric and non-negative.
+    valuevalidate = validate_numeric(val=rangevalue, field_name=valuedisplay, rangemax=rangemax)
+    lowerboundvalidate = validate_numeric(val=rangelowerbound, field_name='lowerbound', rangemax=rangemax)
+    upperboundvalidate = validate_numeric(val=rangeupperbound, field_name='upperbound', rangemax=rangemax)
 
     if valuevalidate == "ok" and lowerboundvalidate == "ok" and upperboundvalidate == "ok":
-        if lowerbound is not None and agevalue is not None and lowerbound > agevalue:
-            raise ValidationError('The age must be >= the age lower bound.')
-        if agevalue is not None and upperbound is not None and agevalue > upperbound:
-            raise ValidationError('The age must be <= the age upper bound.')
-        if lowerbound is not None and upperbound is not None and lowerbound > upperbound:
-            raise ValidationError('The age lower bound must be <= the age upper bound.')
+
+        # Validate that lowerbound <= value <= upperbound.
+        # Display an error next to only one of the three fields.
+        if (rangevalue is not None
+                and rangelowerbound is not None
+                and rangelowerbound > rangevalue
+                and 'value' in field.name):
+            raise ValidationError(f'{valuedisplay} must be >=  lower bound.')
+
+        if (rangevalue is not None
+                and rangeupperbound is not None
+                and rangevalue > rangeupperbound
+                and 'value' in field.name):
+            raise ValidationError(f'{valuedisplay} must be <= upper bound.')
+
+        if (rangelowerbound is not None
+                and rangeupperbound is not None
+                and rangelowerbound > rangeupperbound
+                and 'lowerbound' in field.name) :
+            raise ValidationError('lower bound must be <= the upper bound.')
+
     else:
-        errors = ';'.join(s for s in [valuevalidate, lowerboundvalidate, upperboundvalidate] if s != "ok")
-        raise ValidationError(errors)
+        # Display numeric validation error next to the field with the error.
+        if valuevalidate != 'ok' and 'value' in field.name:
+            raise ValidationError(valuevalidate)
+        if lowerboundvalidate != 'ok' and 'lowerbound' in field.name:
+            raise ValidationError(lowerboundvalidate)
+        if upperboundvalidate != 'ok' and 'upperbound' in field.name:
+            raise ValidationError(upperboundvalidate)
 
 
 def validate_number(field):
@@ -142,8 +183,8 @@ class EditForm(Form):
 
     # Senotype
     senotypeid = StringField('ID')
-    senotypename = TextAreaField('Name', validators=[validators.InputRequired()])
-    senotypedescription = TextAreaField('Description', validators=[validators.InputRequired()])
+    senotypename = TextAreaField('Name', validators=[validators.InputRequired(message="The Senotype name is required.")])
+    senotypedescription = TextAreaField('Description', validators=[validators.InputRequired(message="The Senotype description is required.")])
     doi = TextAreaField('DOI')
 
     # Provenance and version
@@ -166,15 +207,15 @@ class EditForm(Form):
     assay = FieldList(StringField('Assay'), min_entries=0)
 
     # Context assertions
-    agevalue = StringField('Value', validators=[validate_age_range])
-    agelowerbound = StringField('Lower', validators=[validate_age_range])
-    ageupperbound = StringField('Upper', validators=[validate_age_range])
+    agevalue = StringField('Value', validators=[validate_range])
+    agelowerbound = StringField('Lower', validators=[validate_range])
+    ageupperbound = StringField('Upper', validators=[validate_range])
     ageunit = StringField('Unit')
     ageunit.data = 'year'
 
-    bmivalue = StringField('Value')
-    bmilowerbound = StringField('Lower')
-    bmiupperbound = StringField('Upper')
+    bmivalue = StringField('Value', validators=[validate_range])
+    bmilowerbound = StringField('Lower', validators=[validate_range])
+    bmiupperbound = StringField('Upper', validators=[validate_range])
     bmiunit = StringField('Unit')
     bmiunit.data = 'kg/m2'
 
