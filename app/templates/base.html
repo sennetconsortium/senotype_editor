@@ -1,5 +1,6 @@
 <!doctype html>
-<!--base class html-->
+<!--base class-->
+<!-- Elements common to all pages, including headers, navbar menu, and footer-->
 <html lang="en">
 <head>
     <link href="/static/css/main.css" rel="stylesheet">
@@ -60,24 +61,24 @@
     </script>
     <title>Senotype Editor | {{ page_title }}</title>
 
-    <!-- Flask flash message display -->
+    <!-- Flask flash message display that appears at the top of the page-->
     {% with messages = get_flashed_messages() %}
-    {% if messages %}
-    {% set joined = messages|join(' ') %}
-    <div class="p-1 d-flex align-items-start justify-content-between {{ 'text-bg-danger' if 'Error' in joined else 'text-bg-success' }}"
-         style="position:relative;">
-        <ul class=flashes>
-            {% for message in messages %}
-            <li>{{ message }}</li>
-            {% endfor %}
-        </ul>
-        <button type="button" class="btn btn-sm btn-primary ms-3" onclick="clearErrorAlerts(this)"
-                aria-label="Clear Errors">
-            Clear
-        </button>
-    </div>
-    {% endif %}
+        {% if messages %}
+            {% set joined = messages|join(' ') %}
+            <!-- If flash messages are from an error, display in red; otherwise, display in green.-->
+            <div class="p-1 d-flex align-items-start justify-content-between {{ 'text-bg-danger' if 'Error' in joined else 'text-bg-success' }}" style="position:relative;">
+                <ul class=flashes>
+                    {% for message in messages %}
+                        <li>{{ message }}</li>
+                    {% endfor %}
+                </ul>
+                <button type="button" class="btn btn-sm btn-primary ms-3" onclick="clearErrorAlerts(this)" aria-label="Clear Errors">
+                    Clear
+                </button>
+            </div>
+        {% endif %}
     {% endwith %}
+
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <!-- Bootstrap styles -->
@@ -148,16 +149,19 @@
     </div>
 </nav>
 
+<!--Specific content for page that included this page -->
 {% block content %}
 {% endblock %}
-<!-- bottom -->
+
+<!-- Bottom--i.e., footer and scripts that must appear at the end of the page -->
 <footer>
     <div class="footer__wrap">
         <div class="text-center m-3">
             <a href="https://github.com/sennetconsortium/senotype_editor">The Senotype Editor</a>&nbsp; &copy; <span id="current-year"></span> by
-<script>
-  document.getElementById('current-year').textContent = new Date().getFullYear();
-</script>&nbsp;
+            <script>
+                // Display the current year for the copyright statement.
+                document.getElementById('current-year').textContent = new Date().getFullYear();
+            </script>&nbsp;
             <a href="https://www.dbmi.pitt.edu/">Department of Biomedical Informatics, University of Pittsburgh</a>
             &nbsp; is licensed under&nbsp;
             <a href="https://creativecommons.org/licenses/by/4.0/">Creative Commons Attribution 4.0 International</a>
