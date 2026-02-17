@@ -129,9 +129,7 @@ def login():
 
         if not is_senotype_edit_member:
             abort(code=403,
-                  description='Your Globus account does not have the necessary group privileges to use this application. Visit https://app.globus.org/groups to check if you have a pending invitation to the Globus group "Senotype Edit".')
-
-
+                  description='Your Globus account does not have the necessary group privileges to use this application.')
 
         return redirect(f'/edit')
 
