@@ -14,6 +14,12 @@ import pandas as pd
 
 from models.ontology_class import OntologyAPI
 
+import logging
+# Configure consistent logging. This is done at the beginning of each module instead of with a superclass of
+# logger to avoid the need to overload function calls to logger.
+logging.basicConfig(format='[%(asctime)s] %(levelname)s in %(module)s: %(message)s',
+                    level=logging.INFO, datefmt='%Y-%m-%d %H:%M:%S')
+logger = logging.getLogger(__name__)
 
 valueset_blueprint = Blueprint('valueset', __name__, url_prefix='/valueset')
 
@@ -26,6 +32,10 @@ def getapp_assertionvalueset(predicate: str) -> pd.DataFrame:
 
     df = current_app.assertionvaluesets
     # Check whether the predicate corresponds to an IRI.
+
+    if len(df) == 0:
+        logging.info('current_app.assertionvaluesets is empty')
+
     dfassertion = df[df['predicate_IRI'] == predicate]
     if len(dfassertion) == 0:
         # Check whether the predicate corresponds to a term.

@@ -68,7 +68,7 @@ class SenLibMySql:
 
         listjson = []
 
-        logger.info('Fetching senotypes')
+        logger.info('Fetching all senotypes')
 
         rows = self._fetch(query='SELECT * FROM senotype')
         for row in rows:
@@ -161,12 +161,15 @@ class SenLibMySql:
             self.senlibjsonids = self._getsenotypeids()
 
             # Get the Senotype Editor assertion valuesets.
+            logger.info('Fetching assertion valuesets.')
             self.assertionvaluesets = self._gettable(tablename='senotype_editor_valuesets')
 
             # Get the Senotype Editor assertion-object maps.
+            logger.info('Fetching assertion-object maps. ')
             self.assertion_predicate_object = self._gettable(tablename='assertion_predicate_object')
 
             # Get the Senotype Editor context assertion maps.
+            logger.info('Fetching context assertion maps.')
             self.context_assertion_code = self._gettable(tablename='context_assertion_code')
 
         except errors.DatabaseError as db_err:

@@ -1783,7 +1783,9 @@ class SenLib:
 
         self.cfg = cfg
 
+
         # Connect to the senlib database.
+        logger.info(f'Connecting to SenLib database')
         self.database = SenLibMySql(cfg=self.cfg)
 
         # Senotype Editor assertion valuesets
