@@ -580,7 +580,6 @@ class SenLib:
         api = RequestRetry()
         cfg = AppConfig()
         base_url = cfg.getfield('UBKG_BASE_URL')
-
         oret = []
         for o in rawobjects:
             code = o.get('code').strip()
@@ -881,7 +880,6 @@ class SenLib:
 
         # Get senotype data
         dictsenlib = self.getsenotypejson(id=senotypeid)
-        print('fetchfromdb: senotypeid', senotypeid)
         senotype = dictsenlib.get('senotype')
         form.senotypename.data = senotype.get('name', '')
         form.senotypedescription.data = senotype.get('definition', '')
@@ -1043,7 +1041,8 @@ class SenLib:
                 ]
             )
         else:
-            form.regmarker.process(None, [''])
+            #form.regmarker.process(None, [''])
+            form.regmarker.process([''])
 
         # Future development:
         # Build an FTU treeview JSON from the ftupath data.
@@ -1828,5 +1827,5 @@ class SenLib:
             #'dataset-',
             #'marker-',
             #'regmarker-',
-            'microenvironment-'
+            #'microenvironment-'
         ]

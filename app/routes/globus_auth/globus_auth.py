@@ -25,16 +25,16 @@ def auth():
         if  validation_data['active']:
             return redirect(f'/edit')
 
-        is_sennet_read_member = None
+        is_senotype_edit_member = None
         user_groups = get_group_info(session['groups_token'])
         for group in user_groups:
-            if group['id'] == cfg.getfield(key='GLOBUS_READ_GROUP_UUID'):
-                is_sennet_read_member = True
+            if group['id'] == cfg.getfield(key='GLOBUS_EDIT_GROUP_UUID'):
+                is_senotype_edit_member = True
                 break
 
-        if not is_sennet_read_member:
+        if not is_senotype_edit_member:
             abort(code=403,
-                  description='Your Globus account does not have the necessary group privileges to use this application. Visit https://app.globus.org/groups to check if you have a pending invitation to the Globus group "SenNet - Read".')
+                  description='Your Globus account does not have the necessary group privileges to use this application. Visit https://app.globus.org/groups to check if you have a pending invitation to the Globus group "Senotype Edit ".')
 
     return render_template('login.html')
 
@@ -120,18 +120,16 @@ def login():
         session['userid'] = userid
         session['username'] = user_info.get('name')
 
-        is_sennet_read_member = None
+        is_senotype_edit_member = None
         user_groups = get_group_info(groups_token)
         for group in user_groups:
-            if group['id'] == cfg.getfield(key='GLOBUS_READ_GROUP_UUID'):
-                is_sennet_read_member = True
+            if group['id'] == cfg.getfield(key='GLOBUS_EDIT_GROUP_UUID'):
+                is_senotype_edit_member = True
                 break
 
-        if not is_sennet_read_member:
+        if not is_senotype_edit_member:
             abort(code=403,
-                  description='Your Globus account does not have the necessary group privileges to use this application. Visit https://app.globus.org/groups to check if you have a pending invitation to the Globus group "SenNet - Read".')
-
-
+                  description='Your Globus account does not have the necessary group privileges to use this application.')
 
         return redirect(f'/edit')
 
