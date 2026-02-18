@@ -54,11 +54,6 @@ def edit():
     # Senlib interface that fetches senotype data and builds the Senotype treeeview.
     senlib = SenLib(cfg=cfg, userid=session['userid'])
 
-    # Cache the assertions valueset dataframe for use by routes like valueset.
-    # The valueset dataframe should not change during the current editing transaction.
-    # JAS 18 FEB 2026 This is now done in the __init__ of the object.
-    # current_app.assertionvaluesets = senlib.assertionvaluesets
-
     # Check if we have session data for the form.
     # The presence of session data corresponds to the state of the form at the time of
     # validation errors resulting from an attempt at updating.
