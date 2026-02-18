@@ -2,31 +2,42 @@
 Calls the hs-ontology API.
 
 """
+import re
 from flask import Blueprint
 from models.ontology_class import OntologyAPI
 
 ontology_blueprint = Blueprint('ontology', __name__, url_prefix='/ontology')
 ontapi = OntologyAPI()
 
+def prepare_id(id:str) -> str:
+    """
+    Strips case-variant vocabulary prefix from id--e.g., "HGNC:1001" -> "1001"
+
+    """
+
+    stripped = re.sub(r'(?i)hgnc:', '', id)
+    stripped = re.sub(r'(?i)uniprotkb:', '', stripped)
+    stripped = re.sub(r'(?i)cl:', '', stripped)
+    return stripped
 
 @ontology_blueprint.route('/genes/<subpath>')
 def ontology_genes_proxy(subpath):
 
-    endpoint = f'genes/{subpath}'
+    endpoint = f'genes/{prepare_id(subpath)}'
     return ontapi.get_ontology_api_response(endpoint=endpoint,target='genes')
 
 
 @ontology_blueprint.route('/proteins/<subpath>')
 def ontology_proteins_proxy(subpath):
 
-    endpoint = f'proteins/{subpath}'
+    endpoint = f'proteins/{prepare_id(subpath)}'
     return ontapi.get_ontology_api_response(endpoint=endpoint, target='proteins')
 
 
 @ontology_blueprint.route('/celltypes/<subpath>')
 def ontology_celltypes_proxy(subpath):
 
-    endpoint = f'celltypes/{subpath}'
+    endpoint = f'celltypes/{prepare_id(subpath.lower())}'
     return ontapi.get_ontology_api_response(endpoint=endpoint, target='celltypes')
 
 
@@ -36,9 +47,10 @@ def ontology_diagnoses_proxy_generic(subpath):
     # Try to find a diagnosis by searching on term. If no results,
     # Try to find a diagnosis by searching on code.
 
+    subpath = prepare_id(subpath)
     diag = ontology_diagnoses_proxy_term(subpath)
 
-    if not diag:
+    if len(diag) == 0:
         diag = ontology_diagnoses_proxy_code(subpath)
 
     return diag
@@ -50,9 +62,14 @@ def ontology_diagnoses_proxy_term(subpath):
     # Returns information on a diagnosis based on a search string.
 
     # First get the DOID code corresponding to the search term.
+
     endpoint = f'terms/{subpath}/codes'
     response = ontapi.get_ontology_api_response(endpoint=endpoint, target='diagnoses')
     # The response is either a list of dicts or a dict with a message key.
+    if type(response) is not list:
+        endpoint = f'terms/{subpath.lower()}/codes'
+        response = ontapi.get_ontology_api_response(endpoint=endpoint, target='diagnoses')
+
     doi_response = []
     if type(response) is list:
         for r in response:
@@ -73,7 +90,10 @@ def ontology_diagnoses_proxy_term(subpath):
 def ontology_diagnoses_proxy_code(subpath):
     # Returns information on a diagnosis based on a code.
 
-    endpoint = f'codes/{subpath}/terms'
+    if 'DOID' not in subpath.upper():
+        subpath = 'DOID:' + subpath.upper()
+
+    endpoint = f'codes/{subpath.upper()}/terms'
     resp = ontapi.get_ontology_api_response(endpoint=endpoint, target='diagnoses')
     doi_response = []
     try:
