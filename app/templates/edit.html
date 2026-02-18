@@ -351,7 +351,7 @@
 {{ search_modal(
     modal_id="citationSearchModal",
     modal_label="Search PubMed for Citation PMID",
-    modal_help="Enter a search string that is part of the title of a PubMed article.",
+    modal_help="Enter either a string that is in title of a PubMed article or the PMID (e.g., 41705430, PMID:41705430).",
     input_id="citation-search-input",
     explore_url="/citation/detail",
     explore_text="Explore PubMed",
@@ -391,7 +391,7 @@
 {{ search_modal(
     modal_id="celltypeSearchModal",
     modal_label="Search UBKG for cell type",
-    modal_help="Enter a string that is part of the name of the cell type.",
+    modal_help="Enter either a string that is in the name of the cell type or the Cell Ontology ID (e.g., CL:0020011, 0020011",
     input_id="celltype-search-input",
     explore_url="/bio/home/cl",
     explore_text="Explore Cell Ontology",
@@ -401,7 +401,7 @@
 {{ search_modal(
     modal_id="diagnosisSearchModal",
     modal_label="Search UBKG for diagnosis",
-    modal_help="Enter the exact name for the diagnosis from Disease Ontology. Use the search button to go to the Disease Ontology site.",
+    modal_help="Enter the exact name for the diagnosis from Disease Ontology (e.g. diabetes) or the diagnosis identifier (e.g., DOID:9351, 9351). Use the search button to go to the Disease Ontology site.",
     input_id="diagnosis-search-input",
     explore_url="/bio/home/doid",
     explore_text="Explore Disease Ontology",
@@ -411,7 +411,7 @@
 {{ search_modal(
     modal_id="locationSearchModal",
     modal_label="Search UBKG for location (organ)",
-    modal_help="Enter a string that is part of the name of the organ.",
+    modal_help="Enter a string that is in the name of the organ.",
     input_id="location-search-input",
     explore_url="/organs/home",
     explore_text="Explore SenNet Organs",
@@ -424,6 +424,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="markerSearchModalLabel">Search UBKG for marker</h5>
+                <h6 class="modal-help" id="markerSearchModalHelpLabel">For <strong>genes</strong>, enter HGNC ID, symbol, alias, or past symbol; for <strong>proteins</strong>, enter UniprotKB ID or symbol.</h6>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
@@ -454,7 +455,8 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="regmarkerSearchModalLabel">Search UBKG for marker</h5>
+                <h5 class="modal-title" id="regmarkerSearchModalLabel">Search UBKG for marker.</h5>
+                <h6 class="modal-help" id="regmarkerSearchModalHelpLabel">For <strong>genes</strong>, enter HGNC ID, symbol, alias, or past symbol; for <strong>proteins</strong>, enter UniprotKB ID or symbol.</h6>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
