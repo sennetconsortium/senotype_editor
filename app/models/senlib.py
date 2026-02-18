@@ -1793,7 +1793,7 @@ class SenLib:
 
         # Cache the assertion valuesets at the app level
         # for use by routes like valueset
-        current_app.assertionvaluesets = self.assertionvaluesets
+        #current_app.assertionvaluesets = self.assertionvaluesets
 
         # Senotype Editor assertion-object maps
         self.assertion_predicate_object = self.database.assertion_predicate_object

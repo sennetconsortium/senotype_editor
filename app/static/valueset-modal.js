@@ -81,39 +81,62 @@ function addValuesetToList(fieldname, valuesetId, valuesetLabel) {
 }
 
 // Load valueset list in modal via AJAX, parameterized by assertion predicate and field name
+
 function initValuesetModal(predicate, fieldname) {
     var modalId = fieldname + 'Modal';
     var listDivId = fieldname + '-modal-list';
     var modal = document.getElementById(modalId);
     if (!modal) return;
+
     modal.addEventListener('show.bs.modal', function () {
         var valuesetListDiv = document.getElementById(listDivId);
-        valuesetListDiv.innerHTML = '<div class="text-muted">Loading ' + fieldname + ' list...</div>';
-        fetch('/valueset?predicate=' + encodeURIComponent(predicate)) // Flask route should return JSON [{id,label},...]
-            .then(response => response.json())
+        if (!valuesetListDiv) return;
+
+        // Clear and show spinner
+        valuesetListDiv.innerHTML = '';
+        var spinnerWrap = document.createElement('div');
+        spinnerWrap.className = 'd-flex align-items-center justify-content-center py-3';
+        spinnerWrap.setAttribute('role', 'status');
+        spinnerWrap.innerHTML = '<div class="spinner-border text-secondary" role="status" aria-hidden="true"></div>' +
+                                '<span class="visually-hidden">Loading ' + fieldname + ' list...</span>';
+        valuesetListDiv.appendChild(spinnerWrap);
+
+        fetch('/valueset?predicate=' + encodeURIComponent(predicate))
+            .then(response => {
+                if (!response.ok) throw new Error('Network response was not ok');
+                return response.json();
+            })
             .then(data => {
+                // Remove spinner
                 valuesetListDiv.innerHTML = '';
+                if (!Array.isArray(data) || data.length === 0) {
+                    valuesetListDiv.innerHTML = '<div class="text-muted">No ' + fieldname + ' available.</div>';
+                    return;
+                }
+
                 data.forEach(function(item) {
                     var btn = document.createElement('button');
                     btn.className = 'list-group-item list-group-item-action';
+                    btn.type = 'button';
                     btn.textContent = item.label;
                     btn.onclick = function () {
                         addValuesetToList(fieldname, item.id, item.label);
-                        // Move focus out of the modal before hiding.
-                        // This avoids triggering prevents accessibility errors about focused
-                        // elements inside aria-hidden containers. (Bootstrap apparently inserts
-                        // aria-hidden statements.)
-                        document.activeElement.blur();
+
+                        // Move focus out of the modal before hiding to avoid accessibility issues.
+                        if (document.activeElement && typeof document.activeElement.blur === 'function') {
+                            document.activeElement.blur();
+                        }
 
                         // Hide modal
                         var modalEl = document.getElementById(modalId);
                         var bsModal = bootstrap.Modal.getInstance(modalEl);
-                        bsModal.hide();
+                        if (bsModal) bsModal.hide();
                     };
                     valuesetListDiv.appendChild(btn);
                 });
             })
             .catch(() => {
+                // Remove spinner and show error
                 valuesetListDiv.innerHTML = '<div class="text-danger">Error loading ' + predicate + ' list.</div>';
             });
     });

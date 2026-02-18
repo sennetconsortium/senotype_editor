@@ -11,8 +11,11 @@ import pandas as pd
 
 # Used to obtain the valueset for location, which is obtained from the hs-ontology-api
 # instead of the senlib database.
-
 from models.ontology_class import OntologyAPI
+# application configuration
+from models.appconfig import AppConfig
+# Interface to MySql database
+from models.senlib_mysql import SenLibMySql
 
 import logging
 # Configure consistent logging. This is done at the beginning of each module instead of with a superclass of
@@ -30,11 +33,12 @@ def getapp_assertionvalueset(predicate: str) -> pd.DataFrame:
     :param predicate: assertion predicate. Can be either an IRI or a term.
     """
 
-    df = current_app.assertionvaluesets
-    # Check whether the predicate corresponds to an IRI.
+    # Query the SenLib database to obtain valueset information.
+    cfg = AppConfig()
+    database = SenLibMySql(cfg=cfg)
+    df = database.assertionvaluesets
 
-    if len(df) == 0:
-        logging.info('current_app.assertionvaluesets is empty')
+    # Check whether the predicate corresponds to an IRI.
 
     dfassertion = df[df['predicate_IRI'] == predicate]
     if len(dfassertion) == 0:
