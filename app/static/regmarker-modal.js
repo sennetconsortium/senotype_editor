@@ -132,7 +132,7 @@ document.addEventListener('DOMContentLoaded', function () {
         resultsDiv.innerHTML = '';
 
         // Get selected marker type and action
-        var markerType = document.querySelector('input[name="marker-type"]:checked');
+        var markerType = document.querySelector('input[name="regmarker-type"]:checked');
         var type = markerType ? markerType.value : "gene";
         var markerActionRadio = document.querySelector('input[name="regmarker-action"]:checked');
         var action = markerActionRadio ? markerActionRadio.value : "up_regulates";
@@ -143,6 +143,7 @@ document.addEventListener('DOMContentLoaded', function () {
             resultsDiv.innerHTML = '<div class="text-muted">Searching UBKG API...</div>';
 
             var apiUrl;
+            console.log(type);
             if (type === "protein") {
                 apiUrl = '/ontology/proteins/' + encodeURIComponent(query.toUpperCase());
             } else {
@@ -155,6 +156,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     return response.json();
                 })
                 .then(data => {
+                    console.log(data);
                     resultsDiv.innerHTML = '';
                     var items = Array.isArray(data) ? data : [data];
                     if (items.length === 0) {
