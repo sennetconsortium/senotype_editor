@@ -449,7 +449,7 @@
                     <!--Add explore button to external site-->
                     {{ explore_button(
                         btn_id="marker-explore",
-                        explore_url="/explore",
+                        explore_url="/explore/hgnc",
                         explore_text="Explore marker") }}
                 </div>
                 <div id="marker-search-results" class="mt-3">
@@ -505,8 +505,8 @@
                     <input type="text" id="regmarker-search-input" class="form-control" placeholder="Enter query...">
                     <!--Add explore button to external site-->
                     {{ explore_button(
-                        btn_id="marker-explore",
-                        explore_url="/explore",
+                        btn_id="regmarker-explore",
+                        explore_url="/explore/hgnc",
                         explore_text="Explore marker") }}
                 </div>
                 <div id="regmarker-search-results" class="mt-3">
@@ -678,5 +678,6 @@ the divs will not display with transparent background--apparently, a known bug i
 <script src="{{ url_for('static', filename='marker-csv.js') }}"></script>
 <script src="{{ url_for('static', filename='regmarker-modal.js') }}"></script>
 <script src="{{ url_for('static', filename='regmarker-csv.js') }}"></script>
+<script src="{{ url_for('static', filename='marker-explore-update.js') }}"></script>
 <script src="{{ url_for('static', filename='doi-modal.js') }}"></script>
 {% endblock %}
