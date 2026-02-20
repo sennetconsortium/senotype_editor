@@ -1,0 +1,12 @@
+{# Jinja macro to define an "explore" button linked to an external source (e.g., HGNC) #}
+{% macro explore_button(btn_id, explore_url, explore_text) %}
+<a class="btn btn-sm btn-outline-primary ms-2 mb-2"
+                        id="{{ btn_id }}"
+                        style="width: 2.5em;"
+                        href="{{ explore_url }}"
+                        target="_blank"
+                        title="{{ explore_text }}"
+                        aria-label="{{ explore_text }}">
+                        🔍
+</a>
+{% endmacro %}

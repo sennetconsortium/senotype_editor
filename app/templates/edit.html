@@ -29,6 +29,8 @@
 {% from "_valueset_modal_macro.html" import valueset_modal %}
 <!-- Renders "external search modals"--i.e., modals that call external APIs -->
 {% from "_search_modal_macro.html" import search_modal %}
+<!-- Renders the "explore" button that links to a search page in an external site -->
+{% from "_explore_button_macro.html" import explore_button %}
 <!-- Possible future development: FTU tree -->
 {% from "_ftu_section.html" import render_jstree_section %}
 
@@ -442,7 +444,14 @@
                         </div>
                     </div>
                 </div>
-                <input type="text" id="marker-search-input" class="form-control" placeholder="Enter query...">
+                <div class="input-group mb-2">
+                    <input type="text" id="marker-search-input" class="form-control" placeholder="Enter query...">
+                    <!--Add explore button to external site-->
+                    {{ explore_button(
+                        btn_id="marker-explore",
+                        explore_url="/explore",
+                        explore_text="Explore marker") }}
+                </div>
                 <div id="marker-search-results" class="mt-3">
                     <!-- Search results from API appear here -->
                 </div>
@@ -492,7 +501,14 @@
                         </div>
                     </div>
                 </div>
-                <input type="text" id="regmarker-search-input" class="form-control" placeholder="Enter query...">
+                <div class="input-group mb-2">
+                    <input type="text" id="regmarker-search-input" class="form-control" placeholder="Enter query...">
+                    <!--Add explore button to external site-->
+                    {{ explore_button(
+                        btn_id="marker-explore",
+                        explore_url="/explore",
+                        explore_text="Explore marker") }}
+                </div>
                 <div id="regmarker-search-results" class="mt-3">
                     <!-- Search results from API appear here -->
                 </div>
