@@ -102,7 +102,7 @@ A pencil icon (![img_6.png](img_6.png)) indicates that the submission can be edi
 ## Authorization state
 Only authorized users may edit a senotype.
 If a senotype shows a "prohibited" icon ( ![img_8.png](img_8.png)), the user is not authorized to edit the submission file. 
-Although the data for the submission will still display in the Definition section, controls will be disabled.
+Although the data for the submission will still display in the Definition section, editing controls that can add, delete, or change data will be disabled.
 
 ![img_7.png](img_7.png)
 
@@ -242,16 +242,16 @@ object list in the Edit page.
 The forms of search terms depend on the external source. For example, to search for a cell type, a user
 can enter either the Cell Ontology ID or a portion of the preferred term (e.g,. "fibroblast")
 
-| input type | search source                         | forms of search term                                                          | example                                                |
-|------------|---------------------------------------|-------------------------------------------------------------------------------|:-------------------------------------------------------|
-| citation   | NCBI EUtils API                       | exact PMID; portion of publication title                                      | 41247924; predictors                                   |
-| origin     | RRID Portal (SciCrunch)               | exact RRID                                                                    | 4850064                                                |
-| dataset    | SenNet entity-api; SenNet Data Portal | exact SenNet ID                                                               | SNT699.FVQD.882                                        |
-| location   | hs-ontology API (UBKG API)            | portion of SenNet organ name                                                  | lung                                                   |
-| diagnosis  | hs-ontology API (UBKG API)            | exact DOID; exact match for a preferred term or synonym                       | DOID:3083; chronic obstructive pulmonary disease; copd |
-| celltype   | hs-ontology API (UBKG API)            | exact CLID; portion of a preferred term                                       | 4006000; fibroblast                                    |
-| gene       | hs-ontology API (UBKG API)            | exact: HGNC ID; approved symbol; alias; prior approved symbol; or prior alias | 1100; BRCA1; BRCC1                                     |
-| protein    | hs-ontology API (UBKG API)            | exact: UniProtKB ID; UniProtKB entry name                                     | Q13201;MMRN1_HUMAN                                     |
+| input type | search source                         | forms of search term                                                          | example                                                      |
+|------------|---------------------------------------|-------------------------------------------------------------------------------|:-------------------------------------------------------------|
+| citation   | NCBI EUtils API                       | exact PMID; portion of publication title                                      | 41247924; predictors                                         |
+| origin     | RRID Portal (SciCrunch)               | exact RRID                                                                    | 4850064                                                      |
+| dataset    | SenNet entity-api; SenNet Data Portal | exact SenNet ID                                                               | SNT699.FVQD.882                                              |
+| location   | hs-ontology API (UBKG API)            | portion of SenNet organ name                                                  | lung                                                         |
+| diagnosis  | hs-ontology API (UBKG API)            | exact DOID; exact match for a preferred term or synonym                       | DOID:3083; 3083; chronic obstructive pulmonary disease; copd |
+| celltype   | hs-ontology API (UBKG API)            | exact CLID; portion of a preferred term                                       | CL:4006000; 4006000; fibroblast                              |
+| gene       | hs-ontology API (UBKG API)            | exact: HGNC ID; approved symbol; alias; prior approved symbol; or prior alias | HGNC:1100; 1100; BRCA1; BRCC1                                |
+| protein    | hs-ontology API (UBKG API)            | exact: UniProtKB ID; UniProtKB entry name                                     | UNPROTKB:Q13201; Q13201; MMRN1_HUMAN                         |
 
 
 #### Search button 

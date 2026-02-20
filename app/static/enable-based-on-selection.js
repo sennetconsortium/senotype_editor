@@ -29,18 +29,41 @@ $(function() {
 
     elements.forEach(function(el) {
 
-        // Do not change the senotype jstree, the marker accordion, or the hidden
-        // selected node input.
+        /* Do not change:
+           1. the senotype jstree
+           2. the marker accordion
+           3. the hidden selected node input
+           4. detail link buttons for externally-linked assertions (e.g., HGNC home page for genes)
+        */
 
         // Collect all jsTree node and anchor IDs.
         var jsTreeElements = document.querySelectorAll('.jstree-node, .jstree-anchor');
-        var leaveAlone = ['btn-accordion', 'selected_node_id'];
+        var leaveAlone = ['btn-accordion',
+        'selected_node_id'];
         // Add all jsTree node and anchor IDs to leaveAlone
         jsTreeElements.forEach(function(el) {
             if (el.id) {
                 leaveAlone.push(el.id);
             }
         });
+
+        // External link buttons are consistently visible with a white background.
+        // Find all <span> elements whose id contains "-link"and add their ids
+        // to the leaveAlone list, avoiding duplicates. Set background color.
+        var linkSpans = document.querySelectorAll('span[id*="-link"]');
+        linkSpans.forEach(function(span) {
+            var id = span.id;
+            if (id && leaveAlone.indexOf(id) === -1) {
+                leaveAlone.push(id);
+            }
+            // background color
+            var a = span.querySelector('a.btn'); // or 'a.btn' if you only want anchors with .btn
+            if (a) {
+                a.classList.add('btn-white');
+            }
+        });
+
+
         if (leaveAlone.includes(el.id)) return;
 
         // Readonly controls are always disabled.
