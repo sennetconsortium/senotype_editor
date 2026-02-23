@@ -1,0 +1,8 @@
+
+/* Override Bootstrap button colors */
+.btn-white {
+  background-color: #fff !important;
+  color: #212529 !important;
+  border-color: #ced4da !important;
+  box-shadow: none !important;
+}

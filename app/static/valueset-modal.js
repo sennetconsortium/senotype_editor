@@ -92,29 +92,28 @@ function initValuesetModal(predicate, fieldname) {
         var valuesetListDiv = document.getElementById(listDivId);
         if (!valuesetListDiv) return;
 
-        // Clear and show spinner
-        valuesetListDiv.innerHTML = '';
-        var spinnerWrap = document.createElement('div');
-        spinnerWrap.className = 'd-flex align-items-center justify-content-center py-3';
-        spinnerWrap.setAttribute('role', 'status');
-        spinnerWrap.innerHTML = '<div class="spinner-border text-secondary" role="status" aria-hidden="true"></div>' +
-                                '<span class="visually-hidden">Loading ' + fieldname + ' list...</span>';
-        valuesetListDiv.appendChild(spinnerWrap);
+        async function fetchValueSet(predicate) {
+            // Clear and show spinner
+            valuesetListDiv.innerHTML = '';
+            var spinnerWrap = document.createElement('div');
+            spinnerWrap.className = 'd-flex align-items-center justify-content-center py-3';
+            spinnerWrap.setAttribute('role', 'status');
+            spinnerWrap.setAttribute('id', 'spinner-' + fieldname)
+            spinnerWrap.innerHTML = '<div class="spinner-border text-secondary" role="status" aria-hidden="true"></div>' +
+                '<span class="visually-hidden">Loading ' + fieldname + ' list...</span>';
+            valuesetListDiv.appendChild(spinnerWrap);
 
-        fetch('/valueset?predicate=' + encodeURIComponent(predicate))
-            .then(response => {
-                if (!response.ok) throw new Error('Network response was not ok');
-                return response.json();
-            })
-            .then(data => {
-                // Remove spinner
-                valuesetListDiv.innerHTML = '';
+            try {
+                const response = await fetch('/valueset?predicate=' + encodeURIComponent(predicate));
+                if (!response.ok)
+                    throw new Error('Network response was not ok');
+
+                const data = await response.json()
                 if (!Array.isArray(data) || data.length === 0) {
                     valuesetListDiv.innerHTML = '<div class="text-muted">No ' + fieldname + ' available.</div>';
                     return;
                 }
-
-                data.forEach(function(item) {
+                data.forEach(function (item) {
                     var btn = document.createElement('button');
                     btn.className = 'list-group-item list-group-item-action';
                     btn.type = 'button';
@@ -134,11 +133,15 @@ function initValuesetModal(predicate, fieldname) {
                     };
                     valuesetListDiv.appendChild(btn);
                 });
-            })
-            .catch(() => {
-                // Remove spinner and show error
+            } catch (error) {
                 valuesetListDiv.innerHTML = '<div class="text-danger">Error loading ' + predicate + ' list.</div>';
-            });
+            } finally {
+                // Remove spinner
+                document.getElementById('spinner-' + fieldname).remove();
+            }
+        }
+
+        fetchValueSet(predicate);
     });
 }
 
