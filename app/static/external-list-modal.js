@@ -368,7 +368,6 @@ function setupExternalModalSearch(type) {
                 } else {
                     items = config.parseApiResult(data);
                 }
-                console.log(items);
                 resultsDiv.innerHTML = '';
                 if (!items || items.length === 0) {
                     resultsDiv.innerHTML = '<div class="text-muted">No results found.</div>';
