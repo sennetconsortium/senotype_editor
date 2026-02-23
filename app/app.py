@@ -24,6 +24,7 @@ from routes.citation.citation import citation_blueprint
 from routes.origin.origin import origin_blueprint
 from routes.bio.bio import bio_blueprint
 from routes.doi.doi import doi_blueprint
+from routes.explore.explore import explore_blueprint
 
 def to_pretty_json(value):
     # Custom pretty printer of JSON, used for rendering JSON in <pre> elements.
@@ -70,6 +71,8 @@ class SenotypeUI:
         self.app.register_blueprint(origin_blueprint)
         self.app.register_blueprint(bio_blueprint)
         self.app.register_blueprint(doi_blueprint)
+        self.app.register_blueprint(explore_blueprint)
+
 
         # Register the custom JSON pretty print filter.
         self.app.jinja_env.filters['tojson_pretty'] = to_pretty_json
