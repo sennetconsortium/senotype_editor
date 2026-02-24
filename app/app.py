@@ -15,7 +15,7 @@ from routes.health.health import health_blueprint
 from routes.globus_auth.globus_auth import login_blueprint, logout_blueprint,  auth_blueprint
 from routes.globus_index.globus import globus_blueprint
 from routes.edit.edit import edit_blueprint
-from routes.valueset.valueset import valueset_blueprint
+from routes.valueset.valueset import build_valueset_cache, valueset_blueprint
 from routes.ontology.ontology import ontology_blueprint
 from routes.update.update import update_blueprint
 from routes.dataset.dataset import dataset_blueprint
@@ -51,6 +51,9 @@ class SenotypeUI:
         self.config = config
         self.app.config.from_pyfile(self.config)
         self.app.secret_key = self.app.config['KEY']
+
+        # Build valueset cache.
+        self.app.valueset_cache = build_valueset_cache()
 
         logger.info(f"package_base_dir: {package_base_dir}")
 
