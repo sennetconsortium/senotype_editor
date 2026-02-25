@@ -57,7 +57,6 @@ function addValuesetToList(fieldname, valuesetId, valuesetLabel) {
     input.type = 'hidden';
     input.className = 'form-control w-100';// d-none';
     input.value = valuesetId;
-    console.log(input.value);
     li.appendChild(input);
     // Show label in list.
     var span = document.createElement('span');
