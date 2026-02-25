@@ -5,6 +5,7 @@ Uses assertionvaluesets, a Pandas DataFrame of valueset information
 obtqined by the SenLib class and cached in the current app.
 
 """
+from typing import Any
 
 from flask import Blueprint, jsonify, current_app, request
 import pandas as pd
@@ -27,19 +28,42 @@ logger = logging.getLogger(__name__)
 valueset_blueprint = Blueprint('valueset', __name__, url_prefix='/valueset')
 
 
-def getapp_assertionvalueset(predicate: str) -> pd.DataFrame:
+def build_valueset_cache() -> dict[str, Any]:
+    cfg = AppConfig()
+    database = SenLibMySql(cfg=cfg)
+    df = database.assertionvaluesets
+
+    # loop through the unique predicates in the db and build cache.
+    cache = {}
+    for predicate in df['predicate_term'].unique():
+        if predicate == 'located_in':
+            # Query the hs-ontology-api to get list of SenNet organs.
+            ontapi = OntologyAPI()
+            endpoint = 'organs?application_context=sennet'
+            response = ontapi.get_ontology_api_response(endpoint=endpoint, target='organs')
+            listret = [
+                {'id': resp.get('organ_uberon'), 'label': resp.get('term')}
+                for resp in response
+            ]
+        else:
+            # Convert the valueset dataframe to desired list of dicts
+            listret = [
+                {'id': row['valueset_code'], 'label': row['valueset_term']}
+                for _, row in getapp_assertionvalueset(predicate=predicate, df=df).iterrows()
+            ]
+
+        cache[predicate] = listret
+
+    return cache
+
+
+def getapp_assertionvalueset(predicate: str, df: pd.DataFrame) -> pd.DataFrame:
     """
     Obtain the valueset associated with an assertion predicate.
     :param predicate: assertion predicate. Can be either an IRI or a term.
     """
 
-    # Query the SenLib database to obtain valueset information.
-    cfg = AppConfig()
-    database = SenLibMySql(cfg=cfg)
-    df = database.assertionvaluesets
-
     # Check whether the predicate corresponds to an IRI.
-
     dfassertion = df[df['predicate_IRI'] == predicate]
     if len(dfassertion) == 0:
         # Check whether the predicate corresponds to a term.
@@ -50,24 +74,13 @@ def getapp_assertionvalueset(predicate: str) -> pd.DataFrame:
 
 @valueset_blueprint.route('', methods=['GET'])
 def valueset():
-
     # Get the assertion predicate.
     predicate = request.args.get('predicate')
 
-    if predicate == 'located_in':
-        # Query the hs-ontology-api to get list of SenNet organs.
-        ontapi = OntologyAPI()
-        endpoint = f'organs?application_context=sennet'
-        response = ontapi.get_ontology_api_response(endpoint=endpoint, target='organs')
-        listret = [
-            {'id': resp.get('organ_uberon'), 'label': resp.get('term')}
-            for resp in response
-        ]
-    else:
-        # Convert the valueset dataframe to desired list of dicts
-        listret = [
-            {'id': row['valueset_code'], 'label': row['valueset_term']}
-            for _, row in getapp_assertionvalueset(predicate=predicate).iterrows()
-        ]
+    # Obtain the valueset for the predicate from the cache.
+    valueset_cache = current_app.valueset_cache
+    result = valueset_cache.get(predicate)
+    if result is None:
+        return jsonify({'error': f'No valueset found for predicate {predicate}'}), 404
 
-    return jsonify(listret)
+    return jsonify(result)
