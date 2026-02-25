@@ -353,7 +353,10 @@ function setupExternalModalSearch(type) {
         resultsDiv.innerHTML = '';
         if (query.length > 0 && query !== lastSearch) {
             lastSearch = query;
-            resultsDiv.innerHTML = `<div class="text-muted">Searching ...</div>`;
+
+            resultsDiv.innerHTML = `<div class="d-flex align-items-center">
+                    <div class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></div>
+                    <div class="text-muted">Searching ...</div>`;
             try {
                 const apiUrl = config.apiSearch(query);
                 const response = await fetch(apiUrl);
