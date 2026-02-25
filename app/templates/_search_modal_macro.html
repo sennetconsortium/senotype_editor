@@ -1,3 +1,6 @@
+<!-- Renders the "explore" button that links to a search page in an external site -->
+{% from "_explore_button_macro.html" import explore_button %}
+
 {# Jinja macro for an external API search modal #}
 {% macro search_modal(modal_id, modal_label, modal_help, input_id, explore_url, explore_text, results_id, placeholder='Enter query...') %}
 <div class="modal fade" id="{{ modal_id }}" tabindex="-1" aria-labelledby="{{ modal_label }}Label">
@@ -18,14 +21,16 @@
             <div class="modal-body">
                 <div class="input-group mb-2">
                     <input type="text" id="{{ input_id }}" class="form-control" placeholder="{{ placeholder }}">
-                    <a class="btn btn-sm btn-outline-primary ms-2 mb-2"
+                    <!--Add explore button to external site-->
+                    {{ explore_button(modal_id ~ '_explore', explore_url, explore_text) }}
+                    <!--<a class="btn btn-sm btn-outline-primary ms-2 mb-2"
                         style="width: 2.5em;"
                         href="{{ explore_url }}"
                         target="_blank"
                         title="{{ explore_text }}"
                         aria-label="{{ explore_text }}">
                         🔍
-                    </a>
+                    </a>-->
                 </div>
                 <div id="{{ results_id }}" class="mt-3">
                     <!-- Search results from API appear here -->

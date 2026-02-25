@@ -146,6 +146,22 @@ function createExternalConfig() {
             }),
             displayText: function(info) {
                 return displayWithTruncate(info);
+            },
+            apiDetailSearch: queryDetail =>
+                `/origin/search/${encodeURIComponent(querydetail)}`,
+            parseDetailApiResult: data => {
+                let items = [];
+                if (data.hits && Array.isArray(data.hits.hits)) {
+                    items = data.hits.hits.map(hit => hit._source.item);
+                } else if (data.identifier || (data.item && data.item.identifier)) {
+                    items = [data.item || data];
+                }
+                return items.map(item => ({
+                    id: item.docid.replace(/^rrid:/i, match => match.toUpperCase()),
+                    //description: item.docid + ' (' + item.name + ')'|| '',
+                    description: item.name,
+                    trunclength: 25
+                }));
             }
         },
         diagnosis: {
@@ -352,7 +368,6 @@ function setupExternalModalSearch(type) {
                 } else {
                     items = config.parseApiResult(data);
                 }
-                console.log(items);
                 resultsDiv.innerHTML = '';
                 if (!items || items.length === 0) {
                     resultsDiv.innerHTML = '<div class="text-muted">No results found.</div>';

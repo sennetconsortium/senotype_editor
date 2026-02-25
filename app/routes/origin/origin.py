@@ -39,7 +39,6 @@ def translate_searchurl(searchterm:str)->str:
         base_url = cfg.getfield(key='SCICRUNCH_BASE_URL')
         searchterm = f'{searchterm}'
 
-    print('final searchterm: ', searchterm)
     return f'{base_url}{searchterm}'
 
 @origin_blueprint.route('/search/<searchterm>', methods=['GET'])

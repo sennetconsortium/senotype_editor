@@ -44,7 +44,7 @@ def get_organ(uberon_id):
                 term = organ.get('term')
             else:
                 term = category.get('term')
-            term = term.lower().replace(' ', '_')
+            term = term.lower().replace(' ', '-')
 
             cfg = AppConfig()
             organ_url = f"{cfg.getfield(key='DATA_PORTAL_BASE_URL')}/organs"

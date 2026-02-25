@@ -254,13 +254,13 @@ can enter either the Cell Ontology ID or a portion of the preferred term (e.g,. 
 | protein    | hs-ontology API (UBKG API)            | exact: UniProtKB ID; UniProtKB entry name                                     | UNPROTKB:Q13201; Q13201; MMRN1_HUMAN                         |
 
 
-#### Search button 
+#### Explore button 
 In an external search window, the ![img_12.png](img_12.png)   button opens the corresponding home page of an external site 
-to facilitate finding an appropriate identifier. For example, the Search button for the cell type selection opens the 
+to facilitate finding an appropriate identifier. For example, the **Explore** button for the cell type selection opens the 
 page of the OLS Search for the Cell Ontology.
 
 The Senotype Editor is not integrated with these external sites. 
-Once the user finds an appropriate identifier or search term, they will need to enter it into the search term of the Select window.
+Once the user finds an appropriate identifier or search term, they can enter the id or term into the search box of the Select window.
 
 ## Details for specific external assertions
 ### SenNet datasets 
@@ -321,14 +321,17 @@ The user can enter different types of identifiers for markers, including:
 5. UniProtKB ID (e.g., Q13201)
 6. UniProtKB entry name (e.g., MMRN1_HUMAN)
 
-![img_20.png](img_20.png)
+![img_35.png](img_35.png)
 
 The Search window for regulating markers includes a field for type of regulating:
 + upregulation
 + downregulation
 + inconclusive regulation
 
-![img_21.png](img_21.png)
+![img_36.png](img_36.png)
+
+Both types of Search window feature an Explore button ( ![img_12.png](img_12.png) ) that will open a home page for
+a marker vocabulary (HGNC or UniProtKB), based on the selected type of marker.
 
 #### Bulk Addition windows
 Bulk addition windows allow the user to load a large number of markers from a local CSV file that the user specifies.
