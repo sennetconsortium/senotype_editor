@@ -25,14 +25,15 @@ from routes.origin.origin import origin_blueprint
 from routes.bio.bio import bio_blueprint
 from routes.doi.doi import doi_blueprint
 
+
 def to_pretty_json(value):
     # Custom pretty printer of JSON, used for rendering JSON in <pre> elements.
     return json.dumps(value, sort_keys=True,
                       indent=4, separators=(',', ': '))
 
 
-# Configure consistent logging. This is done at the beginning of each module instead of with a superclass of
-# logger to avoid the need to overload function calls to logger.
+# Configure consistent logging. This is done at the beginning of each module instead of with a
+# superclass of logger to avoid the need to overload function calls to logger.
 logging.basicConfig(format='[%(asctime)s] %(levelname)s in %(module)s: %(message)s',
                     level=logging.INFO, datefmt='%Y-%m-%d %H:%M:%S')
 logger = logging.getLogger(__name__)
@@ -120,8 +121,8 @@ app = SenotypeUI(cfg.file, Path(__file__).absolute().parent.parent.parent).app
 
 if __name__ == "__main__":
     try:
-        #donor_app = SenotypeUI(cfg.file, Path(__file__).absolute().parent.parent.parent).app
-        #app = SenotypeUI(cfg.file, Path(__file__).absolute().parent.parent.parent).app
+        # donor_app = SenotypeUI(cfg.file, Path(__file__).absolute().parent.parent.parent).app
+        # app = SenotypeUI(cfg.file, Path(__file__).absolute().parent.parent.parent).app
         app.run(host='127.0.0.1', port='5000')  # flask port
     except Exception as e:
         print(str(e))

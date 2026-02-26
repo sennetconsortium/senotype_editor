@@ -2,6 +2,10 @@
 **/__pycache__/
 __pycache__/
 
+# Ignore virtual environments
+venv/
+env/
+
 # Ignore compiled python files
 **/*.pyc
 *.pyc

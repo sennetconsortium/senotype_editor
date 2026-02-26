@@ -22,6 +22,8 @@ services:
       start_period: 40s
     ports:
       - "5010:5010"
+    environment:
+      - APP_CONFIG=/usr/src/app/app.cfg
     volumes:
       - ../app/instance/app.cfg:/usr/src/app/app.cfg
       - ../log:/usr/src/app/log
