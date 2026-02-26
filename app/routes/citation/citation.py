@@ -17,6 +17,11 @@ def getcitationsearchterm(searchterm):
     """
     Search NCBI EUtils for publications that match the search term.
     :param searchterm: search term
+
+    The anticipated use cases are:
+    1. A case-insensitive string in format "PMID:x" or "x",
+       where x is an integer.
+    2. A string that is assumed to be part of a title of a citation.
     """
     cfg = AppConfig()
     base_url = cfg.getfield(key='EUTILS_SEARCH_BASE_URL')
@@ -24,7 +29,13 @@ def getcitationsearchterm(searchterm):
     # calls to EUtils will be erratic because of 429 errors.
     api_key = cfg.getfield(key='EUTILS_API_KEY')
 
-    url = f"{base_url}&term={searchterm}&api_key={api_key}"
+    if 'pmid' in searchterm.lower() or searchterm.isnumeric():
+        # This is assumed to be a PMID string.
+        url = f"{base_url}&term={searchterm}&api_key={api_key}"
+    else:
+        # This is assumed to be part of a title.
+        url = f"{base_url}&term={searchterm}[title]&api_key={api_key}"
+
     api = RequestRetry()
     resp = api.getresponse(url=url, format='json')
     return jsonify(resp)
