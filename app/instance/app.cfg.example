@@ -26,14 +26,21 @@ DATA_PORTAL_BASE_URL='https://data.sennetconsortium.org'
 # External base URLs
 
 # DataCite (DOIs)
+# Base URL to search for information on a DOI
 DATACITE_API_BASE_URL='https://api.datacite.org/dois/'
+# The DataCite provider ID for SenNet
 DATACITE_SENOTYPE_PROVIDER_ID='10.60586'
+# The base URL to load a detail page on a DOI
 DATACITE_DOI_BASE_URL='https://doi.org/'
+# Status URL for DataCite
 DATACITE_HEARTBEAT_URL='https://api.datacite.org/heartbeat'
+# Home page for DataCite
 DATACITE_HOME_URL='https://commons.datacite.org/'
 
 # NCBI EUtils (citations)
-EUTILS_SEARCH_BASE_URL='https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&retmode=json'
+# Base URL for a search for a set of PMIDs that match search criteria. Returns as JSON, sorted by descending publication date.
+EUTILS_SEARCH_BASE_URL='https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&retmode=json&sort=pub_date'
+# Base URL to obtain details for a PMID, including the title.
 EUTILS_SUMMARY_BASE_URL='https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&retmode=json'
 # API Key to increase number of allowed requests per second to avoid 429 errors from EUtils
 EUTILS_API_KEY='x'
@@ -41,8 +48,10 @@ EUTILS_API_KEY='x'
 # PubMed detail page (citations)
 PUBMED_BASE_URL='https://pubmed.ncbi.nlm.nih.gov/'
 
-# SciCrunch Resolver (origins)
+# SciCrunch Resolver (origins, or research resources)
+# Base URL to obtain information on a researh resource
 SCICRUNCH_BASE_URL='https://scicrunch.org/resolver/'
+# Home page for the RRID Portal
 SCICRUNCH_EXPLORE_URL='https://rrid.site/'
 # SciCrunch Resolver for antibodies and cell lines, which have higher resolution IDs
 SCICRUNCH_HIGHER_URL='https://scicrunch.org/scicrunch/resolver/'

@@ -108,7 +108,12 @@ function createExternalConfig() {
                 );
                 const summaryData = await summaryRes.json();
                 // Eutils has array-based responses.
-                return pmids.map(pmid => ({
+                // The Eutils esummary (called by the /citation/search/id)
+                // will return PMIDs without document summaries, which seem to be
+                // invalid PMIDs. Filter results to citations with titles.
+                return pmids
+                .filter(pmid => summaryData.result?.[pmid]?.title != null)
+                .map(pmid => ({
                     id: `PMID:${pmid}`,
                     description: summaryData.result[pmid]?.title || pmid,
                     trunclength: 20
