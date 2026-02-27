@@ -11,6 +11,7 @@ from configparser import ConfigParser
 from flask import abort
 from pathlib import Path
 import logging
+import os
 
 # Configure consistent logging. This is done at the beginning of each module instead of with a superclass of
 # logger to avoid the need to overload function calls to logger.
@@ -38,17 +39,32 @@ class AppConfig:
         named "senotype-editor".
         In a "containerized" deployment, the application looks for the app.cfg file in the /usr/src/app
         folder, which is bound to a volume on the host machine.
+
+        Resolution order:
+        1. ``APP_CONFIG`` environment variable
+        2. /usr/src/app/app.cfg  (Docker volume mount)
+        3. ~/senotype-editor/app.cfg  (local bare-metal fallback)
         """
 
-        # Try the volume folder first.
-        self.path = '/usr/src/app'
-        self.file = self.path + '/app.cfg'
-        try:
-            stream = open(self.file, 'r')
-        except FileNotFoundError as e:
-            home = str(Path('~').expanduser())
-            self.path = home + '/senotype-editor'
-            self.file = self.path + '/app.cfg'
+        # Check for an explicit config path via environment variable.
+        env_config = os.environ.get('APP_CONFIG')
+        if env_config:
+            self.file = env_config
+            self.path = str(Path(env_config).parent)
+        else:
+            # Backwards compatibility: if no environment variable is set, look for the config file
+            # in the expected locations.
+            file = '/usr/src/app/app.cfg'
+            if os.path.isfile(file):
+                self.path = os.path.dirname(file)
+                self.file = file
+            else:
+                home = os.path.expanduser('~')
+                self.path = home + '/senotype-editor'
+                self.file = self.path + '/app.cfg'
+                if not os.path.isfile(self.file):
+                    msg = f'Missing configuration file {self.file}.'
+                    raise FileNotFoundError(msg)
 
         self.parser = self.getconfigparser()
 
