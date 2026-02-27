@@ -18,6 +18,7 @@ def prepare_id(id:str) -> str:
     stripped = re.sub(r'(?i)hgnc:', '', id)
     stripped = re.sub(r'(?i)uniprotkb:', '', stripped)
     stripped = re.sub(r'(?i)cl:', '', stripped)
+
     return stripped
 
 @ontology_blueprint.route('/genes/<subpath>')
@@ -49,7 +50,6 @@ def ontology_diagnoses_proxy_generic(subpath):
 
     subpath = prepare_id(subpath)
     diag = ontology_diagnoses_proxy_term(subpath)
-
     if len(diag) == 0:
         diag = ontology_diagnoses_proxy_code(subpath)
 
@@ -92,9 +92,9 @@ def ontology_diagnoses_proxy_code(subpath):
 
     if 'DOID' not in subpath.upper():
         subpath = 'DOID:' + subpath.upper()
-
     endpoint = f'codes/{subpath.upper()}/terms'
     resp = ontapi.get_ontology_api_response(endpoint=endpoint, target='diagnoses')
+
     doi_response = []
     try:
         terms = resp.get('terms')

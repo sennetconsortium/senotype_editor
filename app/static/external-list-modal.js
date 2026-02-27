@@ -108,7 +108,12 @@ function createExternalConfig() {
                 );
                 const summaryData = await summaryRes.json();
                 // Eutils has array-based responses.
-                return pmids.map(pmid => ({
+                // The Eutils esummary (called by the /citation/search/id)
+                // will return PMIDs without document summaries, which seem to be
+                // invalid PMIDs. Filter results to citations with titles.
+                return pmids
+                .filter(pmid => summaryData.result?.[pmid]?.title != null)
+                .map(pmid => ({
                     id: `PMID:${pmid}`,
                     description: summaryData.result[pmid]?.title || pmid,
                     trunclength: 20
@@ -353,11 +358,46 @@ function setupExternalModalSearch(type) {
         resultsDiv.innerHTML = '';
         if (query.length > 0 && query !== lastSearch) {
             lastSearch = query;
-            resultsDiv.innerHTML = `<div class="text-muted">Searching ...</div>`;
+
+            resultsDiv.innerHTML = `<div class="d-flex align-items-center">
+                    <div class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></div>
+                    <div class="text-muted">Searching ...</div>`;
             try {
                 const apiUrl = config.apiSearch(query);
                 const response = await fetch(apiUrl);
-                if (!response.ok) throw new Error("API error");
+
+                // Handle 400 and 404 errors. Parse custom error messages if they were provided.
+                if (!response.ok) {
+                    if (response.status === 400 || response.status === 404) {
+                        // Try to parse structured JSON error; otherwise fallback to text
+                        let errBody = null;
+                        try {
+                            errBody = await response.json();
+                        } catch {
+                            // not JSON, try plain text
+                            try {
+                                errBody = await response.text();
+                            } catch {
+                                // 404s from other than Senotype routes do not contain custom messages.
+                                if (response.status === 404) {
+                                    errBody = "No results found."
+                                } else {
+                                    errBody = null;
+                                }
+                            }
+                        }
+                        const message = errBody && typeof errBody === 'object'
+                            ? (errBody.message || JSON.stringify(errBody))
+                            : (errBody || 'Error in request. Please check your input.');
+
+                        resultsDiv.innerHTML = `<div class="text-danger">${escapeHtml(message)}</div>`;
+                        return; // stop further processing
+                    }
+
+                    // For other non-2xx statuses throw to be handled by the catch block
+                    throw new Error(`API error: HTTP ${response.status}`);
+                }
+
                 const data = await response.json();
                 let items = [];
                 // Citation parse is async, dataset/origin are sync
@@ -370,7 +410,7 @@ function setupExternalModalSearch(type) {
                 }
                 resultsDiv.innerHTML = '';
                 if (!items || items.length === 0) {
-                    resultsDiv.innerHTML = '<div class="text-muted">No results found.</div>';
+                    resultsDiv.innerHTML = '<div class="text-danger">No results found.</div>';
                 } else {
                     items.forEach(info => {
                         const btn = document.createElement('button');
@@ -382,7 +422,7 @@ function setupExternalModalSearch(type) {
 
                             // Move focus out of the modal before hiding.
                             // This avoids triggering prevents accessibility errors about focused
-                            // elements inside aria-hidden containers. (Bootstrap apparently inserts
+                            // elements inside aria-hidden containers. (Bootstrap inserts
                             // aria-hidden statements.)
                             document.activeElement.blur();
 
@@ -394,10 +434,11 @@ function setupExternalModalSearch(type) {
                     });
                 }
             } catch (e) {
-                resultsDiv.innerHTML = `<div class="text-danger">Error fetching ${type} details or no results.</div>`;
+                // Network errors, CORS, or thrown errors for non-400 HTTP statuses
+                resultsDiv.innerHTML = `<div class="text-danger">Error fetching ${escapeHtml(type)} details: ${escapeHtml(e.message)}</div>`;
             }
         } else {
-            resultsDiv.innerHTML = '<div class="text-muted">No results found.</div>';
+            resultsDiv.innerHTML = '<div class="text-danger">No results found.</div>';
         }
     });
 }
@@ -406,3 +447,13 @@ function setupExternalModalSearch(type) {
 document.addEventListener('DOMContentLoaded', function () {
     ['dataset', 'citation', 'origin','celltype','diagnosis','location'].forEach(setupExternalModalSearch);
 });
+
+function escapeHtml(s) {
+  if (!s) return '';
+  return String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
