@@ -3,7 +3,7 @@ Calls the hs-ontology API.
 
 """
 import re
-from flask import Blueprint
+from flask import Blueprint, make_response
 from models.ontology_class import OntologyAPI
 
 ontology_blueprint = Blueprint('ontology', __name__, url_prefix='/ontology')
@@ -52,7 +52,6 @@ def ontology_diagnoses_proxy_generic(subpath):
     diag = ontology_diagnoses_proxy_term(subpath)
     if len(diag) == 0:
         diag = ontology_diagnoses_proxy_code(subpath)
-
     return diag
 
 
@@ -97,6 +96,11 @@ def ontology_diagnoses_proxy_code(subpath):
 
     doi_response = []
     try:
+        if 'error' in resp.keys():
+            # Return errors from the API as 404s.
+            err = f"Error from ontology API: {resp['error']}"
+            return make_response(err, 404)
+
         terms = resp.get('terms')
         for t in terms:
             if t.get('term_type') == 'PT':
