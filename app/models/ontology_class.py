@@ -20,9 +20,13 @@ class OntologyAPI:
         """
         api = RequestRetry()
         url = f"{self.urlbase}/{endpoint}"
+
         response = api.getresponse(url=url, format='json')
+
         if type(response) is dict:
             if response.get('message') is not None:
+                return make_response(f'no {target} found', 404)
+            elif response.get('error') is not None:
                 return make_response(f'no {target} found', 404)
             else:
                 return response

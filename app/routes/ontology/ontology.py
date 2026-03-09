@@ -3,7 +3,7 @@ Calls the hs-ontology API.
 
 """
 import re
-from flask import Blueprint
+from flask import Blueprint, make_response
 from models.ontology_class import OntologyAPI
 
 ontology_blueprint = Blueprint('ontology', __name__, url_prefix='/ontology')
@@ -52,7 +52,6 @@ def ontology_diagnoses_proxy_generic(subpath):
     diag = ontology_diagnoses_proxy_term(subpath)
     if len(diag) == 0:
         diag = ontology_diagnoses_proxy_code(subpath)
-
     return diag
 
 
@@ -64,13 +63,18 @@ def ontology_diagnoses_proxy_term(subpath):
     # First get the DOID code corresponding to the search term.
 
     endpoint = f'terms/{subpath}/codes'
+
     response = ontapi.get_ontology_api_response(endpoint=endpoint, target='diagnoses')
     # The response is either a list of dicts or a dict with a message key.
+
+    # Try a case-sensitive search.
+    print('ontology_diagnoses_proxy_term, case-sensitive', response)
     if type(response) is not list:
+        # Try a case-insensitive search.
         endpoint = f'terms/{subpath.lower()}/codes'
         response = ontapi.get_ontology_api_response(endpoint=endpoint, target='diagnoses')
 
-    doi_response = []
+    diag_response = []
     if type(response) is list:
         for r in response:
             sab = r.get('code').split(':')[0]
@@ -78,12 +82,14 @@ def ontology_diagnoses_proxy_term(subpath):
             if sab in ['DOID']:
                 # Get the PT for the diagnosis code.
                 endpoint2 = f"codes/{code}/terms"
+                # Because the prior call found a code, there will be
+                # a response that is a list of term dicts.
                 response2 = ontapi.get_ontology_api_response(endpoint=endpoint2, target='diagnoses')
-                terms = response2.get('terms')
+                terms = response2[0].get('terms')
                 for t in terms:
                     if t.get('term_type') == 'PT':
-                        doi_response.append({'code': code, 'term': t.get('term')})
-    return doi_response
+                        diag_response.append({'code': code, 'term': t.get('term')})
+    return diag_response
 
 
 @ontology_blueprint.route('/diagnoses/<subpath>/code')
@@ -93,19 +99,24 @@ def ontology_diagnoses_proxy_code(subpath):
     if 'DOID' not in subpath.upper():
         subpath = 'DOID:' + subpath.upper()
     endpoint = f'codes/{subpath.upper()}/terms'
-    resp = ontapi.get_ontology_api_response(endpoint=endpoint, target='diagnoses')
+    response = ontapi.get_ontology_api_response(endpoint=endpoint, target='diagnoses')
 
-    doi_response = []
-    try:
-        terms = resp.get('terms')
-        for t in terms:
-            if t.get('term_type') == 'PT':
-                doi_response.append({'code': subpath, 'term': t.get('term')})
-    except AttributeError:
+    if type(response) is not list:
+        # Error (404, 400) from API
+        return response
+
+    diag_response = []
+    #try:
+
+    terms = response[0].get('terms')
+    for t in terms:
+        if t.get('term_type') == 'PT':
+            diag_response.append({'code': subpath, 'term': t.get('term')})
+    #except AttributeError:
         # AttributeError occurs in response to a 404 from get_ontology_api_response.
-        pass
+        #pass
 
-    return doi_response
+    return diag_response
 
 
 @ontology_blueprint.route('/organs/<subpath>/term')
