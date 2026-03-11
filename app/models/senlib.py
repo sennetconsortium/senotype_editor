@@ -28,8 +28,8 @@ from models.appconfig import AppConfig
 # Interface to MySql database
 from models.senlib_mysql import SenLibMySql
 
-# For external API requests
-from models.requestretry import RequestRetry
+# Helper class for external APIs
+from models.senlib_api import SenLibAPI
 
 # Configure consistent logging. This is done at the beginning of each module instead of with a superclass of
 # logger to avoid the need to overload function calls to logger.
@@ -321,33 +321,20 @@ class SenLib:
         Calls the DataCite API to obtain the title for a DOI.
         :param senotype: senotype object of a senotype JSON
         """
-        title = ''
+
         doi_url = senotype.get('doi', '')
 
-        api = RequestRetry()
-
+        title = ''
         if doi_url is None:
             return ''
         else:
-            datacite_base = self.cfg.getfield(key='DATACITE_DOI_BASE_URL')
-            doi = doi_url.split(datacite_base)[1]
-            url_base = self.cfg.getfield(key='DATACITE_API_BASE_URL')
-            url = f'{url_base}{doi}'
 
-            logger.info(f'Getting DataCite information for {doi}')
+            # It is possible to obtain the title via external API call;
+            # however, this raises the risk of timeout.
 
-            response = api.getresponse(url=url, format='json')
-            if response is None:
-                urlheartbeat = self.cfg.getfield(key='DATACITE_HEARTBEAT_URL')
-                responseheartbeat = api.getresponse(url=urlheartbeat)
-                if responseheartbeat == 'OK':
-                    title = 'unknown title'
-                else:
-                    title = 'invalid response from DataCite API'
-            else:
-                title = response.get('data').get('attributes').get('titles')[0].get('title', '')
+            title = self.api.getdoidescription(doi_url=doi_url)
 
-            return f'{doi_url} ({title})'
+        return f'{doi_url} ({title})'
 
     def getstoredsimpleassertiondata(self, assertions: list, predicate: str) -> list:
         """
@@ -396,31 +383,21 @@ class SenLib:
     def getcitationobjects(self, rawobjects: list) -> list:
 
         """
-        Calls the NCBI EUtils API (via the citation/search route) to obtain the title for the PMID.
+        Obtains citation assertion information from a Senotype submission JSON.
         :param: rawobjects - a list of PMID objects.
         """
-        api = RequestRetry()
-        base_url = f"{request.host_url.rstrip('/')}/citation/search/id/"
-
-        logging.info('Getting citation data from NCBI EUtils')
 
         oret = []
         for o in rawobjects:
             code = o.get('code')
-            pmid = code.split(':')[1]
-            url = f'{base_url}{pmid}'
+            title = o.get('title')
+            if title is None or title.strip() == '':
+                title = 'unknown'
 
-            citation = api.getresponse(url=url, format='json')
-            result = citation.get('result')
-            title = ''
-            if result is None:
-                title = "unknown"
-            else:
-                entry = result.get(pmid)
-                if entry is None:
-                    title = "unknown"
-                else:
-                    title = entry.get('title', '')
+                # It is possible to obtain the title via external API call;
+                # however, this raises the risk of timeout.
+                #pmid = code.split(':')[1]
+                #title = self.api.getcitationtitle(pmid=pmid)
 
             oret.append({"code": code, "term": title})
 
@@ -504,41 +481,20 @@ class SenLib:
     def getoriginobjects(self, rawobjects: list) -> list:
 
         """
-        Calls the SciCrunch API to obtain the title for the RRID.
+        Obtains origin information for a set of RRIDs.
         :param: rawobjects - the list of RRID objects.
         """
-        api = RequestRetry()
-        base_url = self.cfg.getfield(key='SCICRUNCH_BASE_URL')
-
-        logger.info('Getting origin information from SciCrunch Resolver')
-
-        # SciCrunch Resolver is only used to decorate the code with a term.
-        # Use "unknown" defensively.
 
         oret = []
         for o in rawobjects:
             code = o.get('code')
-            # IDs for Antibodies and cells have higher resolution (vendor)
-            # than RRID, using the dash as delimiter. However, the
-            # search URL that returns JSON only has resolution at the
-            # RRID level. Strip higher-resolution identifiers.
-            searchcode = code
-            if '-' in code:
-                searchcode = code.split('-')[0]
-            url = f'{base_url}{searchcode}.json'
+            description = o.get('term')
+            if description is None or description.strip() == '':
+                description = 'unknown'
 
-            origin = api.getresponse(url=url, format='json')
-            if origin is None:
-                description = "unknown"
-            else:
-                hits = origin.get('hits')
-                if hits is None:
-                    description = "unknown"
-                else:
-                    if len(hits.get('hits')) == 0:
-                        description = 'unknown'
-                    else:
-                        description = hits.get('hits')[0].get('_source').get('item').get('name', '')
+                # It is possible to obtain the description via external API call;
+                # however, this raises the risk of timeout.
+                #description = self.api.getorigindescription(code=code)
 
             oret.append({"code": code, "term": description})
 
@@ -550,21 +506,19 @@ class SenLib:
         Calls the entity API to obtain the description for the SenNet dataset.
         :param: rawobjects - a list of SenNet dataset objects.
         """
-        api = RequestRetry()
-        token = session['groups_token']
-        headers = {"Authorization": f'Bearer {token}'}
-
-        logger.info('Getting dataset information from SenNet entity-api')
 
         oret = []
         for o in rawobjects:
-            code = o.get('code')
-            snid = code
-            base_url = self.cfg.getfield(key='ENTITY_BASE_URL')
-            url = f'{base_url}{snid}'
-            dataset = api.getresponse(url=url, format='json', headers=headers)
-            title = dataset.get('title', '')
-            oret.append({"code": code, "term": title})
+            snid = o.get('code')
+            title = o.get('term')
+            if title is None or title.strip() == '':
+                title = 'unknown'
+
+                # It is possible to obtain the title via external API call;
+                # however, this raises the risk of timeout.
+                #title = self.api.getdatasettitle(snid=snid)
+
+            oret.append({"code": snid, "term": title})
 
         return oret
 
@@ -575,42 +529,22 @@ class SenLib:
             :param: rawobjects - a list of specified marker objects.
         """
 
-        logger.info('Getting marker information from the ontology API')
 
-        api = RequestRetry()
-        cfg = AppConfig()
-        base_url = cfg.getfield('UBKG_BASE_URL')
         oret = []
         for o in rawobjects:
             code = o.get('code').strip()
             if not code or ':' not in code:
-                oret.append({"code": code, "term": None})
+                oret.append({"code": code, "term": f'{code} (unknown)'})
                 continue
-            markerid = code.split(':')[1]
-            markertype = code.split(':')[0]
-            if markertype == 'HGNC':
-                marker = 'genes'
-            else:
-                marker = 'proteins'
 
-            url = f'{base_url}/{marker}/{markerid}'
+            term = o.get('term')
+            if term is None or term.strip() == '':
+                term = 'unknown'
 
-            resp = api.getresponse(url=url, format='json')
-            # Defensive: check if resp is a list and not empty
-            if not resp or not isinstance(resp, list) or not resp[0]:
-                term = code
-            else:
-                data = resp[0]
-                if 'HGNC' in code:
-                    # For genes
-                    term = data.get('approved_symbol', code)
-                else:
-                    # For proteins
-                    recommended_names = data.get('recommended_name')
-                    if isinstance(recommended_names, list) and recommended_names:
-                        term = recommended_names[0].strip()
-                    else:
-                        term = code
+                # It is possible to obtain the title via external API call;
+                # however, this raises the risk of timeout.
+                # term = self.api.getmarkerdescription(code=code)
+
             oret.append({"code": code, "term": term})
 
         return oret
@@ -618,24 +552,23 @@ class SenLib:
     def getcelltypeobjects(self, rawobjects: list) -> list:
 
         """
-        Calls the UBKG API to obtain descriptions for cell types.
+        Obtain information on cell type assertions in a senotype.
         :param: rawobjects - a list of cell type objects
         """
-        api = RequestRetry()
-        base_url = f"{request.host_url.rstrip('/')}/ontology/celltypes/"
 
-        logger.info('Getting celltype information from the ontology API')
 
         oret = []
         for o in rawobjects:
             code = o.get('code').split(':')[1]
-            url = f'{base_url}{code}'
-            celltype = api.getresponse(url=url, format='json')
+            term = o.get('term')
+            if term is None or term.strip() == '':
+                term = 'unknown'
 
-            # celltypes returns a list of JSON objects
-            if len(celltype) > 0:
-                name = celltype[0].get('cell_type').get('name', '')
-                oret.append({"code": f'CL:{code}', "term": name})
+                # It is possible to obtain the title via external API call;
+                # however, this raises the risk of timeout.
+                # term = self.api.getcelltypeterm(code=code)
+
+            oret.append({"code": f'CL:{code}', "term": term})
         return oret
 
     def getdiagnosisobjects(self, rawobjects: list) -> list:
@@ -644,44 +577,40 @@ class SenLib:
         Calls the UBKG API to obtain descriptions for diagnoses.
         :param: rawobjects - a list of diagnosis objects
         """
-        api = RequestRetry()
-        cfg = AppConfig()
-        base_url = f"{request.host_url.rstrip('/')}/ontology/diagnoses/"
-
-        logger.info('Getting diagnosis information from the ontology API')
 
         oret = []
         for o in rawobjects:
             code = o.get('code')
-            url = f'{base_url}{code}/code'
-            diagnoses = api.getresponse(url=url, format='json')
-            # diagnoses returns a list of JSON objects
-            if len(diagnoses) > 0:
-                term = diagnoses[0].get('term')
-                oret.append({"code": code, "term": term})
+            term = o.get('term')
+            if term is None or term.strip() == '':
+                term = f'{code} (unknown)'
+
+                # It is possible to obtain the title via external API call;
+                # however, this raises the risk of timeout.
+                #term = self.api.getdiagnosisterm(code=code)
+
+            oret.append({"code": code, "term": term})
         return oret
 
     def getlocationobjects(self, rawobjects: list) -> list:
 
         """
-        Calls the UBKG API to obtain descriptions for organs.
+        Obtains information on a set of location assertions in a senotype.
         :param: rawobjects - a list of organ objects
         """
-        api = RequestRetry()
-        cfg = AppConfig()
-        base_url = f"{request.host_url.rstrip('/')}/ontology/organs"
-
-        logger.info('Getting organ information from the ontology API')
 
         oret = []
         for o in rawobjects:
             code = o.get('code')
-            url = f'{base_url}/{code}/code'
-            organs = api.getresponse(url=url, format='json')
-            # diagnoses returns a list of JSON objects
-            if len(organs) > 0:
-                term = organs[0].get('term')
-                oret.append({"code": code, "term": term})
+            term = o.get('term')
+            if term is None or term.strip() == '':
+                term = f'{code} (unknown)'
+
+                # It is possible to obtain the term via external API call;
+                # however, this raises the risk of timeout.
+                # term = self.api.getlocationterm(code=code)
+
+            oret.append({"code": code, "term": term})
 
         return oret
 
@@ -1753,23 +1682,7 @@ class SenLib:
         form.submitterlast.data = session['username'].split(' ')[1]
         form.submitteremail.data = session['userid']
 
-    def getubkgstatus(self) -> str:
 
-        """
-        Check the status of the UBKG API.
-        """
-        api = RequestRetry()
-        statusurl = self.cfg.getfield('UBKG_BASE_URL')
-
-        try:
-            status = api.getresponse(url=statusurl)
-            if 'Hello!' in status:
-                return 'OK'
-            else:
-                return 'NOT OK'
-
-        except ConnectionError as e:
-            abort(500, description=f'Error connecting to the UBKG API: {e}')
 
     def __init__(self, cfg: AppConfig, userid: str):
 
@@ -1782,7 +1695,6 @@ class SenLib:
         """
 
         self.cfg = cfg
-
 
         # Connect to the senlib database.
         logger.info(f'Connecting to SenLib database')
@@ -1807,13 +1719,13 @@ class SenLib:
 
         self.submissionjson = {}
 
-        api = RequestRetry()
+        # Helper for calls to external APIs.
+        self.api = SenLibAPI()
 
-        urlheartbeat = self.cfg.getfield('DATACITE_HEARTBEAT_URL')
-        self.datacitestatus = api.getresponse(url=urlheartbeat)
+        self.datacitestatus = self.api.getdatacitestatus()
         logger.info(f'DataCite status = {self.datacitestatus}')
 
-        self.ubkgstatus = self.getubkgstatus()
+        self.ubkgstatus = self.api.getubkgstatus()
         logger.info(f'UBKG API status = {self.ubkgstatus}')
 
         # List of the prefixes of categorical fields in the Edit form that are required
@@ -1821,13 +1733,5 @@ class SenLib:
             'taxon-',
             'location-',
             'celltype-',
-            'hallmark-',
-            #'inducer-',
-            #'assay-',
-            #'citation-',
-            #'origin-',
-            #'dataset-',
-            #'marker-',
-            #'regmarker-',
-            #'microenvironment-'
+            'hallmark-'
         ]
