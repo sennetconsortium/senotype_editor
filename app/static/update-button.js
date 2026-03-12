@@ -114,7 +114,9 @@ document.addEventListener("DOMContentLoaded", function () {
             if (el.classList?.contains("list-field-display")) {
                 // For spans, obtain the name attribute, not el.name.
                 // This is set by both Jinja templates and the modal Javascripts
+
                 const spanName = el.getAttribute("name");
+                console.log(spanName);
                 if (!spanName) return;
 
                 // Create a new hidden input based on the span.

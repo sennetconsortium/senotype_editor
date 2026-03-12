@@ -59,7 +59,7 @@ function addValuesetToList(fieldname, valuesetId, valuesetLabel) {
     input.value = valuesetId;
     li.appendChild(input);
 
-    // Show label in list.
+    // Display span.
     var span = document.createElement('span');
     span.className = 'list-field-display';
     span.textContent = valuesetLabel;

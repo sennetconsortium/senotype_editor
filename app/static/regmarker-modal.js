@@ -69,9 +69,21 @@ function addRegMarker(id, description, action) {
     inputAction.className = 'form-control';
     li.appendChild(inputAction);
 
-    // Visible text: show the description (or id) and action as arrow or question mark
+    // Display span: show the description (or id)
     var span = document.createElement('span');
     span.className = 'list-field-display';
+    span.textContent = description;
+
+    // Give the span a name that links it to its hidden field code.
+    // Use setAttribute (span has no standard .name property)
+    span.setAttribute('name', `regmarker-${ul.children.length}_field_display`);
+    span.name = `regmarker-${ul.children.length}_field_display`;
+
+    li.appendChild(span);
+
+    // Display span: show action as arrow or question mark
+    var spanaction = document.createElement('span');
+    spanaction.className = 'list-field-display';
     let actionSymbol;
     if (action === "up_regulates") {
         actionSymbol = '\u2191'; // up arrow
@@ -80,8 +92,8 @@ function addRegMarker(id, description, action) {
     } else {
         actionSymbol = '?'; // question mark
     }
-    span.textContent =  description + " " + actionSymbol;
-    li.appendChild(span);
+    spanaction.textContent =  actionSymbol;
+    li.appendChild(spanaction);
 
     // Entity detail link
     // Placeholder span for link button

@@ -47,10 +47,16 @@ function addMarker(id, description) {
     input.className = 'form-control';// d-none'; // Hidden but submitted
     li.appendChild(input);
 
-    // Visible text: show the description instead of the ID
+    // Display span: show the description instead of the ID
     var span = document.createElement('span');
     span.className = 'list-field-display';
     span.textContent = description;
+
+    // Give the span a name that links it to its hidden field code.
+    // Use setAttribute (span has no standard .name property)
+    span.setAttribute('name', `marker-${ul.children.length}_field_display`);
+    span.name = `marker-${ul.children.length}_field_display`;
+
     li.appendChild(span);
 
     // Entity detail link

@@ -1342,11 +1342,6 @@ class SenLib:
                 field_values = [form_data.get(key)]
                 display_values = [field_displays.get(key)]
 
-            print('field_values')
-            print(field_values)
-            print('display_values')
-            print(display_values)
-
             if len(field_values) > 0:
 
                 # Pair the field values with the display values.
@@ -1362,9 +1357,6 @@ class SenLib:
                         "term": term_strip,
                     }
                     objects.append(obj)
-
-                print('objects')
-                print(objects)
 
                 if predicate_iri is not None:
                     predicate_object = {
@@ -1447,11 +1439,15 @@ class SenLib:
 
         return assertions
 
-    def buildregmarkerassertions(self, form_data: MultiDict) -> list:
+    def buildregmarkerassertions(self, form_data: MultiDict, field_displays: dict) -> list:
         """
             Builds the elements of the assertions objects for
             regulating markers.
             :param form_data: form data
+            :param field_displays: dict of display values for fields, with
+               key = field name
+               value = ordered list of values, corresponding to the order of
+                       values in the field if the field is a list
         """
 
         # Regulating markers must be distributed among the three types
@@ -1466,6 +1462,7 @@ class SenLib:
 
         assertions = []
         regmarkers = form_data.get('regmarker')
+        display_values = field_displays.get('regmarker')
 
         if len(regmarkers) > 0:
 
@@ -1473,11 +1470,19 @@ class SenLib:
             down_objects = []
             inc_objects = []
 
-            for m in regmarkers:
-                code = m.get('marker')
-                action = m.get('action')
-                obj = {"source": 'external',
-                       "code": code}
+            for rm, term in zip(regmarkers, display_values):
+                action = rm.get('action')
+                code = rm.get('marker')
+                # External assertion displays are generally in the format
+                # code (term).
+                # Strip the code and outermost parentheses
+                term_strip = term.replace(code, '').strip()
+                term_strip = term_strip[1:-1] if term_strip.startswith("(") and term_strip.endswith(")") else term_strip
+                obj = {
+                    "source": "external",
+                    "code": code,
+                    "term": term_strip,
+                }
                 if action == 'up_regulates':
                     up_objects.append(obj)
                 elif action == 'down_regulates':
@@ -1583,7 +1588,7 @@ class SenLib:
         assertions = self.buildsimpleassertions(form_data=form_data, field_displays=field_displays)
 
         # Regulating marker assertions
-        assertions = assertions + self.buildregmarkerassertions(form_data=form_data)
+        assertions = assertions + self.buildregmarkerassertions(form_data=form_data, field_displays=field_displays)
 
         # Optional context assertions
         contextassertions = self.buildcontextassertions(form_data=form_data)

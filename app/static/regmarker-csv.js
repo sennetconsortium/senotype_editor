@@ -212,11 +212,22 @@ document.addEventListener("DOMContentLoaded", function () {
             inputAction.className = 'form-control';
             li.appendChild(inputAction);
 
-            // Visible description
+            // Display span: show the description
             let span = document.createElement('span');
             span.className = 'list-field-display';
-            span.textContent = marker + " (" + description + ") " + actionSymbol;
+            span.textContent = marker + " (" + description + ") ";
+            // Give the span a name that links it to its hidden field code.
+            // Use setAttribute (span has no standard .name property)
+            span.setAttribute('name', `regmarker-${ul.children.length}_field_display`);
+            span.name = `regmarker-${ul.children.length}_field_display`;
             li.appendChild(span);
+
+            // Display span: show action as arrow or question mark
+            let spanaction = document.createElement('span');
+            spanaction.className = 'list-field-display';
+            spanaction.textContent = actionSymbol;
+
+            li.appendChild(spanaction);
 
             // Entity detail link
             // Placeholder span for link button
