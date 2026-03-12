@@ -58,11 +58,19 @@ function addValuesetToList(fieldname, valuesetId, valuesetLabel) {
     input.className = 'form-control w-100';// d-none';
     input.value = valuesetId;
     li.appendChild(input);
+
     // Show label in list.
     var span = document.createElement('span');
     span.className = 'list-field-display';
     span.textContent = valuesetLabel;
+
+    // Give the span a name that links it to its hidden field code.
+    // Use setAttribute (span has no standard .name property)
+    span.setAttribute('name', `${fieldname}-${ul.children.length}_field_display`);
+    span.name = `${fieldname}-${ul.children.length}_field_display`;
+
     li.appendChild(span);
+
     // Remove button for the new item.
     var btn = document.createElement('button');
     btn.className = 'btn btn-sm btn-danger ms-2';

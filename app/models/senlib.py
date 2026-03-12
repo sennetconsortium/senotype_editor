@@ -847,7 +847,7 @@ class SenLib:
         if len(celltypelist) > 0:
             form.celltype.process(form.celltype, [self.truncateddisplaytext(displayid=item['code'],
                                                                             description=item['term'],
-                                                                            trunclength=13)
+                                                                            trunclength=100)
                                                   for item in celltypelist])
         else:
             form.celltype.process([''])
@@ -1301,11 +1301,15 @@ class SenLib:
             "successor": successor
             }
 
-    def buildsimpleassertions(self, form_data: MultiDict) -> list:
+    def buildsimpleassertions(self, form_data: MultiDict, field_displays: dict) -> list:
         """
         Builds the elements of the assertions object of a senotype submission, corresponding
         to simple assertions--i.e., neither context assertions nor marker assertions.
         :param form_data: form data
+        :param field_displays: dict of display values for fields, with
+               key = field name
+               value = ordered list of values, corresponding to the order of
+                       values in the field if the field is a list
         """
 
         # Loop through the keys of form_data that correspond to fields from the Edit
@@ -1314,11 +1318,13 @@ class SenLib:
         # 1. Find the associated assertion predicate and source type.
         # 2. A field can have multiple values. Each field value corresponds to the object
         #    of an assertion. Build a list of "object" objects for each value.
-        # 3. Associate the object list with the assertion information in an assertion object.
-        # 4. Build a list of assertion objects.
+        # 3. Obtain the list of associated display values, or terms.
+        # 4. Associate the object list with the assertion information in an assertion object.
+        # 5. Build a list of assertion objects.
 
         assertions = []
         for key in form_data:
+
             objects = []
             predicate_term = self.get_field_metadata(field_name=key, field_property='predicate_term')
 
@@ -1328,17 +1334,37 @@ class SenLib:
 
             predicate_iri = self.get_iri(predicate_term=predicate_term)
             source = self.get_field_metadata(field_name=key, field_property='object_source')
+
             if isinstance(form_data.get(key), list):
                 field_values = form_data.get(key)
+                display_values = field_displays.get(key)
             else:
                 field_values = [form_data.get(key)]
+                display_values = [field_displays.get(key)]
+
+            print('field_values')
+            print(field_values)
+            print('display_values')
+            print(display_values)
 
             if len(field_values) > 0:
 
-                for fv in field_values:
-                    obj = {"source": source,
-                           "code": fv}
+                # Pair the field values with the display values.
+                for fv, term in zip(field_values, display_values):
+                    # External assertion displays are generally in the format
+                    # code (term).
+                    # Strip the code and outermost parentheses
+                    term_strip = term.replace(fv,'').strip()
+                    term_strip = term_strip[1:-1] if term_strip.startswith("(") and term_strip.endswith(")") else term_strip
+                    obj = {
+                        "source": source,
+                        "code": fv,
+                        "term": term_strip,
+                    }
                     objects.append(obj)
+
+                print('objects')
+                print(objects)
 
                 if predicate_iri is not None:
                     predicate_object = {
@@ -1542,15 +1568,19 @@ class SenLib:
         return assertions
 
     # def buildassertions(self, form_data: MultiDict, ftu_tree: dict) -> list:
-    def buildassertions(self, form_data: MultiDict) -> list:
+    def buildassertions(self, form_data: MultiDict, field_displays:dict) -> list:
         """
         Builds the assertions object of a senotype submission JSON
         :param form_data: form data
-        :param ftu_tree: dict of FTU information
+        :param field_displays: dict of display values for fields, with
+               key = field name
+               value = ordered list of values, corresponding to the order of
+                       values in the field if the field is a list
+        #:param ftu_tree: dict of FTU information
         """
 
         # Simple assertions, including specific markers
-        assertions = self.buildsimpleassertions(form_data=form_data)
+        assertions = self.buildsimpleassertions(form_data=form_data, field_displays=field_displays)
 
         # Regulating marker assertions
         assertions = assertions + self.buildregmarkerassertions(form_data=form_data)
@@ -1569,14 +1599,18 @@ class SenLib:
         return assertions
 
     # def buildsubmissionjson(self, form_data: MultiDict, senotypeid: str, predecessorid: str, ftu_tree: dict) -> dict:
-    def buildsubmissionjson(self, form_data: MultiDict, senotypeid: str, predecessorid: str) -> dict:
+    def buildsubmissionjson(self, form_data: MultiDict, field_displays: dict, senotypeid: str, predecessorid: str) -> dict:
         """
         Builds a Senotype submission JSON from the POSTed request form data.
         :param form_data: form data
         :param senotypeid: id of the senotype to build
         :param predecessorid: id of the predecessor of the senotype, for the case of
                               a new version
-        :param ftu_tree: dict of FTU jstree information
+        :param field_displays: dict of display values for fields, with
+               key = field name
+               value = ordered list of values, corresponding to the order of
+                       values in the field if the field is a list
+        #:param ftu_tree: dict of FTU jstree information
         """
 
         # senotype
@@ -1607,7 +1641,7 @@ class SenLib:
 
         # assertions
         # listassertions = self.buildassertions(form_data=form_data, ftu_tree=ftu_tree)
-        listassertions = self.buildassertions(form_data=form_data)
+        listassertions = self.buildassertions(form_data=form_data, field_displays=field_displays)
 
         dictsubmission = {"senotype": dictsenotype,
                           "submitter": dictsubmitter,
@@ -1617,11 +1651,15 @@ class SenLib:
         return dictsubmission
 
     # def writesubmission(self, form_data: MultiDict, ftu_tree: dict, new_version_id: str = ''):
-    def writesubmission(self, form_data: MultiDict, new_version_id: str = ''):
+    def writesubmission(self, form_data: MultiDict, field_displays: dict, new_version_id: str = ''):
         """
         Writes a senotype submission to the senlib database.
         :param form_data: form data
-        :param ftu_tree: dict of FTU jstree information.
+        :param field_displays: dict of display values for fields, with
+               key = field name
+               value = ordered list of values, corresponding to the order of
+                       values in the field if the field is a list
+        #:param ftu_tree: dict of FTU jstree information.
         :param new_version_id: ID of the new version of an existing senotype.
 
         If new_version_id has a value, then a new version was requested.
@@ -1640,7 +1678,7 @@ class SenLib:
         # self.submissionjson = self.buildsubmissionjson(form_data=form_data, senotypeid=senotypeid,
                                                        # predecessorid=predecessorid, ftu_tree=ftu_tree)
 
-        self.submissionjson = self.buildsubmissionjson(form_data=form_data, senotypeid=senotypeid,
+        self.submissionjson = self.buildsubmissionjson(form_data=form_data, field_displays=field_displays, senotypeid=senotypeid,
                                                        predecessorid=predecessorid)
 
         # If this is a new version of an existing senotype, remove the DOI associated
