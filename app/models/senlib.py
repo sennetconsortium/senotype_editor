@@ -390,7 +390,7 @@ class SenLib:
         oret = []
         for o in rawobjects:
             code = o.get('code')
-            title = o.get('title')
+            title = o.get('term')
             if title is None or title.strip() == '':
                 title = 'unknown'
 
@@ -836,7 +836,7 @@ class SenLib:
         if len(locationlist) > 0:
             form.location.process(form.location, [self.truncateddisplaytext(displayid=item['code'],
                                                                             description=item['term'],
-                                                                            trunclength=50)
+                                                                            trunclength=100)
                                                   for item in locationlist])
 
         else:
@@ -914,10 +914,11 @@ class SenLib:
 
         # Citation (external; multiple possible values)
         citationlist = self.getstoredsimpleassertiondata(assertions=assertions, predicate='has_citation')
+
         if len(citationlist) > 0:
             form.citation.process(form.citation, [self.truncateddisplaytext(displayid=item['code'],
                                                                             description=item['term'],
-                                                                            trunclength=20)
+                                                                            trunclength=100)
                                                   for item in citationlist])
         else:
             form.citation.process([''])
@@ -927,7 +928,7 @@ class SenLib:
         if len(originlist) > 0:
             form.origin.process(form.origin, [self.truncateddisplaytext(displayid=item['code'],
                                                                         description=item['term'],
-                                                                        trunclength=25)
+                                                                        trunclength=100)
                                               for item in originlist])
         else:
             form.origin.process([''])
@@ -937,7 +938,7 @@ class SenLib:
         if len(datasetlist) > 0:
             form.dataset.process(form.dataset, [self.truncateddisplaytext(displayid=item['code'],
                                                                           description=item['term'],
-                                                                          trunclength=15)
+                                                                          trunclength=100)
                                                 for item in datasetlist])
         else:
             form.dataset.process([''])
@@ -963,7 +964,7 @@ class SenLib:
                 [
                     {
                         "marker": self.truncateddisplaytext(displayid=item['code'], description=item['term'],
-                                                            trunclength=50),
+                                                            trunclength=100),
                         "action": item['type']
                     }
                     for item in regmarkerlist
@@ -983,7 +984,7 @@ class SenLib:
         if len(diagnosislist) > 0:
             form.diagnosis.process(form.diagnosis, [self.truncateddisplaytext(displayid=item['code'],
                                                                               description=item['term'],
-                                                                              trunclength=65)
+                                                                              trunclength=100)
                                                     for item in diagnosislist])
         else:
             form.diagnosis.process([''])
@@ -1164,7 +1165,7 @@ class SenLib:
         if len(celltypelist) > 0:
             form.celltype.process(None, [self.truncateddisplaytext(displayid=item['code'],
                                                                    description=item['term'],
-                                                                   trunclength=13)
+                                                                   trunclength=100)
                                          for item in celltypelist])
         else:
             form.celltype.process(None, [''])
@@ -1202,7 +1203,7 @@ class SenLib:
         if len(citationlist) > 0:
             form.citation.process(None, [self.truncateddisplaytext(displayid=item['code'],
                                                                    description=item['term'],
-                                                                   trunclength=15)
+                                                                   trunclength=100)
                                          for item in citationlist])
         else:
             form.citation.process(None, [''])
@@ -1212,7 +1213,7 @@ class SenLib:
         if len(originlist) > 0:
             form.origin.process(None, [self.truncateddisplaytext(displayid=item['code'],
                                                                  description=item['term'],
-                                                                 trunclength=20)
+                                                                 trunclength=100)
                                        for item in originlist])
         else:
             form.origin.process(None, [''])
@@ -1222,7 +1223,7 @@ class SenLib:
         if len(datasetlist) > 0:
             form.dataset.process(None, [self.truncateddisplaytext(displayid=item['code'],
                                                                   description=item['term'],
-                                                                  trunclength=20)
+                                                                  trunclength=100)
                                         for item in datasetlist])
         else:
             form.dataset.process(None, [''])
@@ -1244,7 +1245,7 @@ class SenLib:
             form.regmarker.process(None, [
                     {
                         "marker": self.truncateddisplaytext(displayid=item['code'], description=item['term'],
-                                                            trunclength=50),
+                                                            trunclength=100),
                         "action": item['type']
                     }
                     for item in regmarkerlist
@@ -1258,7 +1259,7 @@ class SenLib:
         if len(diagnosislist) > 0:
             form.diagnosis.process(None, [self.truncateddisplaytext(displayid=item['code'],
                                                                     description=item['term'],
-                                                                    trunclength=65)
+                                                                    trunclength=100)
                                           for item in diagnosislist])
         else:
             form.diagnosis.process(None, [''])
@@ -1342,15 +1343,17 @@ class SenLib:
                 field_values = [form_data.get(key)]
                 display_values = [field_displays.get(key)]
 
+
             if len(field_values) > 0:
 
-                # Pair the field values with the display values.
+                # Pair the assertion object field values with their display values.
                 for fv, term in zip(field_values, display_values):
                     # External assertion displays are generally in the format
                     # code (term).
                     # Strip the code and outermost parentheses
                     term_strip = term.replace(fv,'').strip()
                     term_strip = term_strip[1:-1] if term_strip.startswith("(") and term_strip.endswith(")") else term_strip
+
                     obj = {
                         "source": source,
                         "code": fv,
@@ -1358,19 +1361,22 @@ class SenLib:
                     }
                     objects.append(obj)
 
-                if predicate_iri is not None:
-                    predicate_object = {
-                                        "term": predicate_term,
-                                        "IRI": predicate_iri
-                                    }
-                else:
-                    predicate_object = {
-                        "term": predicate_term
+            if predicate_iri is not None:
+                predicate_object = {
+                        "term": predicate_term,
+                        "IRI": predicate_iri
                     }
-                assertion = {"predicate": predicate_object,
-                             "objects": objects
-                             }
-                assertions.append(assertion)
+            else:
+                predicate_object = {
+                    "term": predicate_term
+                    }
+
+            assertion = {
+                "predicate": predicate_object,
+                "objects": objects
+            }
+            assertions.append(assertion)
+
 
         return assertions
 

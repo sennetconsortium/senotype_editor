@@ -83,7 +83,7 @@ function addRegMarker(id, description, action) {
 
     // Display span: show action as arrow or question mark
     var spanaction = document.createElement('span');
-    spanaction.className = 'list-field-display';
+    spanaction.className = 'action-symbol';
     let actionSymbol;
     if (action === "up_regulates") {
         actionSymbol = '\u2191'; // up arrow

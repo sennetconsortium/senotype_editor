@@ -77,7 +77,7 @@ function createExternalConfig() {
                     id: sennetid,
                     uuid,
                     description,
-                    trunclength: 15
+                    trunclength: 100
                 }];
             },
             link: info => ({
@@ -238,13 +238,13 @@ function createExternalConfig() {
                     return data.map(item => ({
                         id: item.code || '',
                         description: item.term || '',
-                        trunclength: 40
+                        trunclength: 100
                     }));
                 } else if (data && data.code) {
                     return [{
                         id: data.code,
                         description: data.term,
-                        trunclength: 40
+                        trunclength: 100
                     }];
                 }
                 return [];
