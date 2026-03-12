@@ -111,7 +111,9 @@ Arguments:
                     <!-- Add any ordinal numbers for list elements -->
                     <span class="list-field-display" name="{{ entry.marker.name ~ '_field_display' }}" style="padding-left:2px; padding-right:2px;">
                         {{ full_value }}
-                        <span class="action-symbol" style="padding-left:2px; padding-right:2px;"> <strong>{{ action_symbol }}</strong></span>
+                    </span>
+                    <span class="action-symbol" style="padding-left:2px; padding-right:2px;">
+                        <strong>{{ action_symbol }}</strong>
                     </span>
                     <!-- Placeholder for the regmarker link button, id is unique per hidden_value -->
                     <span class="regmarker-link-placeholder ms-2" id="regmarker-link-{{ hidden_value | e }}"></span>

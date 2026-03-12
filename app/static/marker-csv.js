@@ -74,6 +74,8 @@ document.addEventListener("DOMContentLoaded", function () {
             let apiErrors = [];
             let validEntries = [];
             for (let i = 0; i < markers.length; i++) {
+
+                setSpinner(spinnerId, spinnerLabelId, true, `${i+1} of ${markers.length}`)
                 const m = markers[i];
                 let apiUrl = `/ontology/${m.type === "gene" ? "genes" : "proteins"}/${encodeURIComponent(m.id)}`;
                 try {
@@ -127,13 +129,23 @@ document.addEventListener("DOMContentLoaded", function () {
             }
             if (apiErrors.length) {
                 resultsDiv.innerHTML = apiErrors.map(e => `<div class="text-danger">${e}</div>`).join("");
-                return;
+                //return;
             }
-            // All valid
-            parsedMarkers = validEntries;
-            resultsDiv.innerHTML = `<div class="text-success">All entries valid. Ready to add.</div>`;
-            submitBtn.disabled = false;
 
+            // Enable submission of valid entries.
+            parsedMarkers = validEntries;
+
+            if (apiErrors.length > 0) {
+                // Show all errors (red) + one success message (green)
+                resultsDiv.innerHTML =
+                    apiErrors.map(e => `<div class="text-danger">${e}</div>`).join("") +
+                    `<div class="text-success">Valid entries are ready to add.</div>`;
+            } else {
+                resultsDiv.innerHTML =
+                    `<div class="text-success">All entries valid. Ready to add.</div>`;
+            }
+
+            submitBtn.disabled = (validEntries.length === 0);
             // always hide spinner (success or error)
             setSpinner(spinnerId, spinnerLabelId, false, "");
         };

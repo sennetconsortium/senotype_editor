@@ -101,6 +101,9 @@ document.addEventListener("DOMContentLoaded", function () {
             let apiErrors = [];
             let validEntries = [];
             for (let i = 0; i < markers.length; i++) {
+
+                setSpinner(spinnerId, spinnerLabelId, true, `${i+1} of ${markers.length}`)
+
                 const m = markers[i];
                 let apiUrl = `/ontology/${m.type === "gene" ? "genes" : "proteins"}/${encodeURIComponent(m.id)}`;
                 try {
@@ -135,12 +138,23 @@ document.addEventListener("DOMContentLoaded", function () {
             }
             if (apiErrors.length) {
                 resultsDiv.innerHTML = apiErrors.map(e => `<div class="text-danger">${e}</div>`).join("");
-                return;
+                //return;
             }
-            // All valid
+
+            // Enable submission of valid entries.
             parsedMarkers = validEntries;
-            resultsDiv.innerHTML = `<div class="text-success">All entries valid. Ready to add.</div>`;
-            submitBtn.disabled = false;
+
+            if (apiErrors.length > 0) {
+                // Show all errors (red) + one success message (green)
+                resultsDiv.innerHTML =
+                    apiErrors.map(e => `<div class="text-danger">${e}</div>`).join("") +
+                    `<div class="text-success">Valid entries are ready to add.</div>`;
+            } else {
+                resultsDiv.innerHTML =
+                    `<div class="text-success">All entries valid. Ready to add.</div>`;
+            }
+
+            submitBtn.disabled = (validEntries.length === 0);
 
             // always hide spinner (success or error)
             setSpinner(spinnerId, spinnerLabelId, false, "");
@@ -207,7 +221,7 @@ document.addEventListener("DOMContentLoaded", function () {
             const index = ul.querySelectorAll('li').length;
 
             let li = document.createElement('li');
-            li.className = 'list-group-item d-flex justify-content-between align-items-center w-100';
+            li.className = 'list-group-item d-flex justify-content-between align-items-center';
 
             /// hidden input for marker ID
             let input = document.createElement('input');
@@ -228,6 +242,7 @@ document.addEventListener("DOMContentLoaded", function () {
             // Display span: show the description
             let span = document.createElement('span');
             span.className = 'list-field-display';
+            span.style = 'padding-left:2px; padding-right:2px;'
             span.textContent = marker + " (" + description + ") ";
             // Give the span a name that links it to its hidden field code.
             // Use setAttribute (span has no standard .name property)
@@ -237,8 +252,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
             // Display span: show action as arrow or question mark
             let spanaction = document.createElement('span');
-            spanaction.className = 'list-field-display';
+            spanaction.className = 'action-symbol';
+            spanaction.style = 'padding-left:2px; padding-right:2px';
             spanaction.textContent = actionSymbol;
+            //spanaction.innerHTML = `<strong>${actionSymbol}</strong>`;
 
             li.appendChild(spanaction);
 
