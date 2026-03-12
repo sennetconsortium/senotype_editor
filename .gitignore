@@ -21,3 +21,5 @@ BUILD
 
 **/.pytest_cache
 **/dist
+
+/.secrets
