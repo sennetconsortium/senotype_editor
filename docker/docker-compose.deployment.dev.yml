@@ -1,4 +1,4 @@
 services:
-  senotype_editor:
+  senotype-editor:
     # Use the published image and tag from DockerHub
-    image: sennet/senotype_editor-dev:latest
+    image: sennet/senotype-editor-dev:latest

@@ -39,11 +39,11 @@ jobs:
 
       - name: Tag the Docker Image
         # Alternatively we could use ${{ github.sha }} instead of latest
-        run: docker image tag sennet/senotype_editor:$SENOTYPE_EDITOR_VERSION sennet/senotype_editor-dev:latest
+        run: docker image tag sennet/senotype-editor:$SENOTYPE_EDITOR_VERSION sennet/senotype-editor-dev:latest
         working-directory: ./docker
 
       - name: Push the Docker image
-        run: docker push sennet/senotype_editor-dev:latest
+        run: docker push sennet/senotype-editor-dev:latest
         working-directory: ./docker
 
   deploy:
@@ -68,7 +68,7 @@ jobs:
           use_insecure_cipher: true
           script: |
             # Change to codcc user on server
-            sudo su - codcc -c "cd /opt/sennet/senotype_editor/docker/; git pull; docker pull sennet/senotype_editor-dev:latest; ./docker-development.sh down; ./docker-development.sh start;"
+            sudo su - codcc -c "cd /opt/sennet/senotype_editor/docker/; git pull; docker pull sennet/senotype-editor-dev:latest; ./docker-development.sh down; ./docker-development.sh start;"
       - name: Remove GitHub Actions IP
         uses: bbharathkumarreddy/aws-whitelist-ip@v1.0
         if: always()
