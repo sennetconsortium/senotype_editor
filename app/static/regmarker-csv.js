@@ -61,7 +61,6 @@ document.addEventListener("DOMContentLoaded", function () {
         modalEl.addEventListener('hide.bs.modal', cancelProcessing);
     }
 
-
     fileInput.addEventListener("change", async function (e) {
 
         // Reset cancellation each time a new file is selected
@@ -112,8 +111,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 // Validate rows
                 for (let i = 1; i < rows.length; i++) {
+
                     const row = rows[i].map(cell => cell.trim());
                     const type = row[typeIdx].toLowerCase();
+
+                    // id here is either a HGNC symbol (e.g., BRCA1) or a UniprotKB symbol.
                     const id = row[idIdx];
 
                     // Translate action from CSV into corresponding assertion.
@@ -134,12 +136,17 @@ document.addEventListener("DOMContentLoaded", function () {
                         errors.push(`Row ${i + 1}: type must be 'gene' or 'protein'`);
                         continue;
                     }
+
                     if (!id) {
                         errors.push(`Row ${i + 1}: id is missing`);
                         continue;
                     }
+
+                    // Add the marker from the CSV to the list of markers to validate.
                     markers.push({ type, id, action });
                 }
+
+                 // If basic validation errors, stop.
                 if (errors.length) {
                     resultsDiv.innerHTML = errors.map(e => `<div class="text-danger">${e}</div>`).join("");
                     return;
@@ -149,7 +156,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 resultsDiv.innerHTML = "Validating markers, please wait...";
                 setSpinner(spinnerId, spinnerLabelId, true, "Validating markers via API...");
 
-                // Create a controller for fetch cancellation
+                // Create a controller for fetch cancellation.
                 activeAbortController = new AbortController();
 
                 let apiErrors = [];
@@ -159,9 +166,11 @@ document.addEventListener("DOMContentLoaded", function () {
                     // Stop early if modal was closed.
                     if (cancelled) return;
 
+                    // Update progress spinner.
                     setSpinner(spinnerId, spinnerLabelId, true, `${i+1} of ${markers.length}`)
 
                     const m = markers[i];
+                    // Set up the appropriate endpoint.
                     let apiUrl = `/ontology/${m.type === "gene" ? "genes" : "proteins"}/${encodeURIComponent(m.id)}`;
 
                     try {
@@ -170,27 +179,45 @@ document.addEventListener("DOMContentLoaded", function () {
                         /* eslint-disable no-await-in-loop */
                         let resp = await fetch(apiUrl);
                         if (!resp.ok) throw new Error();
+
+                        // Get response as JSON.
                         let data = await resp.json();
 
                         // Check for valid return value (array/object with proper id)
                         if (m.type === "gene") {
+
+                            // If response is an array, then find the element in the array
+                            // that corresponds to the marker from the CSV, searching by
+                            // the HGNC approved symbol; otherwise, check the symbol of the single object.
+                            // The search is case-insensitive.
+                            // (The search may need to be expanded to include aliases and previous symbols.)
                             let found = Array.isArray(data)
                                 ? data.find(obj => obj.approved_symbol && obj.approved_symbol.toLowerCase() === m.id.toLowerCase())
                                 : (data.approved_symbol && data.approved_symbol.toLowerCase() === m.id.toLowerCase() ? data : null);
                             if (!found) throw new Error();
+
                             // HGNC code; approved symbol; action
                             validEntries.push({ type: "gene", code: found.hgnc_id, symbol: found.approved_symbol, action: m.action });
+
                         } else {
+
+                            // If response is an array, then find the element in the array
+                            // that corresponds to the marker from the CSV, searching by
+                            // UniprotKB ID and recommended name; otherwise, check the ID and name of the single object.
+                            // The search is case-insensitive.
                             let found = Array.isArray(data)
                                 ? data.find(obj => obj.uniprotkb_id == m.id)
                                 : (data.uniprotkb_id == m.id ? data : null);
                             let recNameArr = found && found.recommended_name;
                             let recName = recNameArr && Array.isArray(recNameArr) ? recNameArr[0] : recNameArr;
+
                             if (!found) throw new Error();
                             // UniprotKB code; recommended name; action
                             validEntries.push({ type: "protein", code: m.id, recommended_name: recName, action: m.action });
                         }
+
                     } catch (err) {
+
                         // If cancelled, don't show errors or update UI
                         if (cancelled) return;
 
@@ -200,6 +227,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         apiErrors.push(`Row ${i + 2}: ${m.type} ID '${m.id}' not found in ontology.`);
                     }
                 }
+
                 if (apiErrors.length) {
                     resultsDiv.innerHTML = apiErrors.map(e => `<div class="text-danger">${e}</div>`).join("");
                     //return;
@@ -212,7 +240,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 parsedMarkers = validEntries;
 
                 if (apiErrors.length > 0) {
-                    // Show all errors (red) + one success message (green)
+                    // Show all validation errors (red) + one success message (green)
                     resultsDiv.innerHTML =
                         apiErrors.map(e => `<div class="text-danger">${e}</div>`).join("") +
                         `<div class="text-success">Valid entries are ready to add.</div>`;
@@ -224,16 +252,18 @@ document.addEventListener("DOMContentLoaded", function () {
                 submitBtn.disabled = (validEntries.length === 0);
 
             } finally {
-            // Hide spinner no matter what (including cancellation)
-            setSpinner(spinnerId, spinnerLabelId, false, "");
 
-            // Clear active ops
-            activeReader = null;
-            activeAbortController = null;
+                // Hide spinner no matter what (including cancellation)
+                setSpinner(spinnerId, spinnerLabelId, false, "");
+
+                // Clear active ops
+                activeReader = null;
+                activeAbortController = null;
             }
 
         };
 
+        // If failed to read the file at all.
         reader.onerror = function () {
             if (cancelled) return;
             setSpinner(spinnerId, spinnerLabelId, false, "");
@@ -246,7 +276,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Add markers to regmarker-list.
     form.addEventListener("submit", function (e) {
+
         e.preventDefault();
+
         const ul = document.getElementById("regmarker-list");
 
         // Remove any empty or blank <li> (from WTForms or template)

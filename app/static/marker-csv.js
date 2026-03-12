@@ -10,7 +10,7 @@ document.addEventListener("DOMContentLoaded", function () {
     let parsedMarkers = [];
 
     // -----------------------
-    // Support for cancellation
+    //Support for cancellation
     // -----------------------
     let cancelled = false;
     let activeReader = null;
@@ -91,6 +91,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     resultsDiv.textContent = "CSV must have columns named 'type' and 'id' (case-insensitive).";
                     return;
                 }
+
                 const typeIdx = header.indexOf("type");
                 const idIdx = header.indexOf("id");
                 let errors = [];
@@ -100,28 +101,34 @@ document.addEventListener("DOMContentLoaded", function () {
                 for (let i = 1; i < rows.length; i++) {
                     const row = rows[i].map(cell => cell.trim());
                     const type = row[typeIdx].toLowerCase();
+
                     // id here is either a HGNC symbol (e.g., BRCA1) or a UniprotKB symbol.
                     const id = row[idIdx];
                     if (!(type === "gene" || type === "protein")) {
                         errors.push(`Row ${i + 1}: type must be 'gene' or 'protein'`);
                         continue;
                     }
+
                     if (!id) {
                         errors.push(`Row ${i + 1}: id is missing`);
                         continue;
                     }
+
                     // Add the marker from the CSV to the list of markers to validate.
                     markers.push({ type, id });
                 }
+
+                // If basic validation errors, stop.
                 if (errors.length) {
                     resultsDiv.innerHTML = errors.map(e => `<div class="text-danger">${e}</div>`).join("");
                     return;
                 }
+
                 // Validate markers via API.
                 resultsDiv.innerHTML = "Validating markers, please wait...";
                 setSpinner(spinnerId, spinnerLabelId, true, "Validating markers via API...");
 
-                // Create a controller for fetch cancellation
+                // Create a controller for fetch cancellation.
                 activeAbortController = new AbortController();
 
                 let apiErrors = [];
@@ -131,9 +138,13 @@ document.addEventListener("DOMContentLoaded", function () {
                     // Stop early if modal was closed.
                     if (cancelled) return;
 
+                    // Update progress spinner.
                     setSpinner(spinnerId, spinnerLabelId, true, `${i+1} of ${markers.length}`)
+
                     const m = markers[i];
+                    // Set up the appropriate endpoint.
                     let apiUrl = `/ontology/${m.type === "gene" ? "genes" : "proteins"}/${encodeURIComponent(m.id)}`;
+
                     try {
                         // Disable the ESLint no-await-in-loop checks and warnings--i.e.,
                         // that there is an await in a loop.
@@ -157,7 +168,6 @@ document.addEventListener("DOMContentLoaded", function () {
                             let found = Array.isArray(data)
                                 ? data.find(obj => obj.approved_symbol && obj.approved_symbol.toLowerCase() === m.id.toLowerCase())
                                 : (data.approved_symbol && data.approved_symbol.toLowerCase() === m.id.toLowerCase() ? data : null);
-
                             if (!found) throw new Error();
 
                             // If a gene in the CSV was in the response, get the hgnc ID, approved symbol, and approved name.
@@ -180,7 +190,9 @@ document.addEventListener("DOMContentLoaded", function () {
                             // If the protein in the CSV was in the response, get the UniPeotKB ID and recommended name.
                             validEntries.push({ type: "protein", id: m.id, recommended_name: recName });
                         }
+
                     } catch (err) {
+
                         // If cancelled, don't show errors or update UI
                         if (cancelled) return;
 
@@ -190,6 +202,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         apiErrors.push(`Row ${i + 2}: ${m.type} ID '${m.id}' not found in ontology.`);
                     }
                 }
+
                 if (apiErrors.length) {
                     resultsDiv.innerHTML = apiErrors.map(e => `<div class="text-danger">${e}</div>`).join("");
                     //return;
@@ -223,6 +236,7 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         };
 
+        // If failed to read the file at all.
         reader.onerror = function () {
             if (cancelled) return;
             setSpinner(spinnerId, spinnerLabelId, false, "");
@@ -232,8 +246,8 @@ document.addEventListener("DOMContentLoaded", function () {
         reader.readAsText(file);
     });
 
-// Adds the markers specified in the CSV to the list so that the update function
-// can POST them for validation.
+    // Adds the markers specified in the CSV to the list so that the update function
+    // can POST them for validation.
     form.addEventListener("submit", function (e) {
 
         e.preventDefault();
