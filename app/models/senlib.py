@@ -918,7 +918,7 @@ class SenLib:
         if len(citationlist) > 0:
             form.citation.process(form.citation, [self.truncateddisplaytext(displayid=item['code'],
                                                                             description=item['term'],
-                                                                            trunclength=100)
+                                                                            trunclength=200)
                                                   for item in citationlist])
         else:
             form.citation.process([''])
@@ -1343,11 +1343,14 @@ class SenLib:
                 field_values = [form_data.get(key)]
                 display_values = [field_displays.get(key)]
 
+            # Sort field values and display values so that they match.
+            sorted_field_values = sorted(field_values)
+            sorted_display_values = sorted(display_values)
 
-            if len(field_values) > 0:
+            if len(sorted_field_values) > 0:
 
                 # Pair the assertion object field values with their display values.
-                for fv, term in zip(field_values, display_values):
+                for fv, term in zip(sorted_field_values, sorted_display_values):
                     # External assertion displays are generally in the format
                     # code (term).
                     # Strip the code and outermost parentheses
@@ -1470,13 +1473,17 @@ class SenLib:
         regmarkers = form_data.get('regmarker')
         display_values = field_displays.get('regmarker')
 
-        if len(regmarkers) > 0:
+        # Sort field values and display values so that they match.
+        sorted_regmarkers = sorted(regmarkers, key=lambda d: d["marker"])
+        sorted_display_values = sorted(display_values)
+
+        if len(sorted_regmarkers) > 0:
 
             up_objects = []
             down_objects = []
             inc_objects = []
 
-            for rm, term in zip(regmarkers, display_values):
+            for rm, term in zip(sorted_regmarkers, sorted_display_values):
                 action = rm.get('action')
                 code = rm.get('marker')
                 # External assertion displays are generally in the format
