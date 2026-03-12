@@ -31,6 +31,12 @@ document.addEventListener("DOMContentLoaded", function () {
         if (!file) {
             return;
         }
+        // Spinner controls passed to the external setSpinner function (spinner.js)
+        const spinnerId = 'regmarker-spinner';
+        const spinnerLabelId = 'regmarker-spinner-label';
+
+        // show spinner immediately when a file is selected
+        setSpinner(spinnerId, spinnerLabelId, true, "Validating CSV...");
 
         // Read file as text
         const reader = new FileReader();
@@ -90,6 +96,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
             // Validate markers via API
             resultsDiv.innerHTML = "Validating markers, please wait...";
+            setSpinner(spinnerId, spinnerLabelId, true, "Validating markers via API...");
+
             let apiErrors = [];
             let validEntries = [];
             for (let i = 0; i < markers.length; i++) {
@@ -133,8 +141,13 @@ document.addEventListener("DOMContentLoaded", function () {
             parsedMarkers = validEntries;
             resultsDiv.innerHTML = `<div class="text-success">All entries valid. Ready to add.</div>`;
             submitBtn.disabled = false;
+
+            // always hide spinner (success or error)
+            setSpinner(spinnerId, spinnerLabelId, false, "");
         };
+
         reader.readAsText(file);
+
     });
 
     // Add markers to regmarker-list.
