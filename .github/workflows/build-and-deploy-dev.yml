@@ -21,7 +21,7 @@ jobs:
       - name: Create $SENOTYPE_EDITOR_VERSION
         run: |
           export SENOTYPE_EDITOR_VERSION=$(tr -d "\n\r" < ../VERSION | xargs)
-          echo "SENOTYPE_EDITOR_VERSION=SENOTYPE_EDITOR_VERSION" >> $GITHUB_ENV
+          echo "SENOTYPE_EDITOR_VERSION=$SENOTYPE_EDITOR_VERSION" >> $GITHUB_ENV
         working-directory: ./docker
 
 #      - name: Set AWS Log Group
