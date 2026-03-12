@@ -100,9 +100,8 @@ document.addEventListener("DOMContentLoaded", function () {
         // Also include elements with class "list-field-display" that might not be in form.elements
         const listFieldDisplays = Array.from(editForm.querySelectorAll(".list-field-display"))
             .filter(el => editForm.contains(el));
-        console.log(listFieldDisplays);
 
-        // Merge + de-dupe
+        // Merge + de-duplicate
         const allElements = Array.from(new Set([...elements, ...listFieldDisplays]));
 
         // Append relevant elements to the list to be passed to the
@@ -116,7 +115,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 // This is set by both Jinja templates and the modal Javascripts
 
                 const spanName = el.getAttribute("name");
-                console.log(spanName);
+
                 if (!spanName) return;
 
                 // Create a new hidden input based on the span.
@@ -142,7 +141,7 @@ document.addEventListener("DOMContentLoaded", function () {
             hidden.name = el.name;
             hidden.value = el.value;
             hidden.className = "cloned-edit-input";
-            console.log(hidden);
+
             updateForm.appendChild(hidden);
         });
 

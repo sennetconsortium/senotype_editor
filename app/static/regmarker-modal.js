@@ -155,7 +155,6 @@ document.addEventListener('DOMContentLoaded', function () {
             resultsDiv.innerHTML = '<div class="text-muted">Searching UBKG API...</div>';
 
             var apiUrl;
-            console.log(type);
             if (type === "protein") {
                 apiUrl = '/ontology/proteins/' + encodeURIComponent(query.toUpperCase());
             } else {
@@ -168,7 +167,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     return response.json();
                 })
                 .then(data => {
-                    console.log(data);
+
                     resultsDiv.innerHTML = '';
                     var items = Array.isArray(data) ? data : [data];
                     if (items.length === 0) {

@@ -63,7 +63,8 @@ Arguments:
                         <!-- Hidden input used to store value for post -->
                         <!-- List elements will include an ordinal number in the name--e.g., location-0, location-1 -->
                         <input name="{{ field.name }}" type="hidden" value="{{ hidden_value }}">
-                        <!-- Span for value displayed in list -->
+                        <!-- Span for value displayed in list.  -->
+                        <!-- The display value will be used to add a term for a coded entry in the senotype, in case of an update.-->
                         <!-- Add any ordinal numbers for list elements -->
                         <span class="list-field-display" style="padding-left:3px; padding-right:3px;" name="{{ field.name ~ '_field_display' }}">{{ display_value }}</span>
                         <!-- For fields with external links, create a placeholder for the link button created via Javascript. -->
