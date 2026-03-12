@@ -22,7 +22,51 @@ document.addEventListener("DOMContentLoaded", function () {
 
     let parsedMarkers = [];
 
+    // -----------------------
+    // Support for cancellation
+    // -----------------------
+    let cancelled = false;
+    let activeReader = null;
+    let activeAbortController = null;
+
+    function cancelProcessing() {
+        cancelled = true;
+
+        // abort FileReader if still reading
+        if (activeReader && activeReader.readyState === FileReader.LOADING) {
+            try { activeReader.abort(); } catch (err) { /* ignore */ }
+        }
+        activeReader = null;
+
+        // abort any in-flight fetch
+        if (activeAbortController) {
+            try { activeAbortController.abort(); } catch (err) { /* ignore */ }
+        }
+        activeAbortController = null;
+
+        // reset UI state
+
+        resultsDiv.textContent = "";
+
+        // Clear parsed state + file selection
+        parsedMarkers = [];
+        fileInput.value = "";
+        setSpinner(spinnerId, spinnerLabelId, false, "");
+        submitBtn.disabled = true;
+    }
+
+    // Cancel when modal is being hidden (X button, ESC, backdrop click, etc.)
+    const modalEl = document.getElementById('regmarkerCsvModal');
+    if (modalEl) {
+        modalEl.addEventListener('hide.bs.modal', cancelProcessing);
+    }
+
+
     fileInput.addEventListener("change", async function (e) {
+
+        // Reset cancellation each time a new file is selected
+        cancelled = false;
+
         // In case user selected a different file.
         resultsDiv.textContent = "";
         submitBtn.disabled = true;
@@ -41,123 +85,159 @@ document.addEventListener("DOMContentLoaded", function () {
         // Read file as text
         const reader = new FileReader();
         reader.onload = async function (evt) {
-            const text = evt.target.result.trim();
-            // Parse CSV
-            const rows = text.split(/\r?\n/).map(row => row.split(","));
-            if (rows.length < 2) {
-                resultsDiv.textContent = "CSV must have at least one data row.";
-                return;
-            }
-            // Validate header
-            const header = rows[0].map(h => h.trim().toLowerCase());
-            if (!(header.includes("type") && header.includes("id") && header.includes("action"))) {
-                resultsDiv.textContent = "CSV must have columns named 'type', 'id', and 'action' (case-insensitive).";
-                return;
-            }
-            const typeIdx = header.indexOf("type");
-            const idIdx = header.indexOf("id");
-            const actionIdx = header.indexOf("action");
-            let errors = [];
-            let markers = [];
+            try {
+                // Stop early if modal window closed.
+                if (cancelled) return;
 
-            // Validate rows
-            for (let i = 1; i < rows.length; i++) {
-                const row = rows[i].map(cell => cell.trim());
-                const type = row[typeIdx].toLowerCase();
-                const id = row[idIdx];
-
-                // Translate action from CSV into corresponding assertion.
-                const actionRaw = row[actionIdx];
-                let action;
-                if (actionRaw === "1" || actionRaw.toLowerCase() === "up" || actionRaw.toLowerCase() === "up_regulates") {
-                    action = "up_regulates";
-                } else if (actionRaw === "-1" || actionRaw.toLowerCase() === "down" || actionRaw.toLowerCase() === "down_regulates") {
-                    action = "down_regulates";
-                } else if (actionRaw === "0" || actionRaw.toLowerCase() === "inconclusive" || actionRaw.toLowerCase() === "inconclusively_regulates") {
-                    action = "inconclusively_regulates";
-                } else {
-                    errors.push(`Row ${i + 1}: action must be '1' (up), '-1' (down), '0' (inconclusive), or equivalent string`);
-                    continue;
+                const text = evt.target.result.trim();
+                // Parse CSV
+                const rows = text.split(/\r?\n/).map(row => row.split(","));
+                if (rows.length < 2) {
+                    resultsDiv.textContent = "CSV must have at least one data row.";
+                    return;
                 }
-                if (!(type === "gene" || type === "protein")) {
-                    errors.push(`Row ${i + 1}: type must be 'gene' or 'protein'`);
-                    continue;
+
+                // Validate header
+                const header = rows[0].map(h => h.trim().toLowerCase());
+                if (!(header.includes("type") && header.includes("id") && header.includes("action"))) {
+                    resultsDiv.textContent = "CSV must have columns named 'type', 'id', and 'action' (case-insensitive).";
+                    return;
                 }
-                if (!id) {
-                    errors.push(`Row ${i + 1}: id is missing`);
-                    continue;
-                }
-                markers.push({ type, id, action });
-            }
-            if (errors.length) {
-                resultsDiv.innerHTML = errors.map(e => `<div class="text-danger">${e}</div>`).join("");
-                return;
-            }
 
-            // Validate markers via API
-            resultsDiv.innerHTML = "Validating markers, please wait...";
-            setSpinner(spinnerId, spinnerLabelId, true, "Validating markers via API...");
+                const typeIdx = header.indexOf("type");
+                const idIdx = header.indexOf("id");
+                const actionIdx = header.indexOf("action");
+                let errors = [];
+                let markers = [];
 
-            let apiErrors = [];
-            let validEntries = [];
-            for (let i = 0; i < markers.length; i++) {
+                // Validate rows
+                for (let i = 1; i < rows.length; i++) {
+                    const row = rows[i].map(cell => cell.trim());
+                    const type = row[typeIdx].toLowerCase();
+                    const id = row[idIdx];
 
-                setSpinner(spinnerId, spinnerLabelId, true, `${i+1} of ${markers.length}`)
-
-                const m = markers[i];
-                let apiUrl = `/ontology/${m.type === "gene" ? "genes" : "proteins"}/${encodeURIComponent(m.id)}`;
-                try {
-                    // Disable the ESLint no-await-in-loop checks and warnings--i.e.,
-                    // that there is an await in a loop.
-                    /* eslint-disable no-await-in-loop */
-                    let resp = await fetch(apiUrl);
-                    if (!resp.ok) throw new Error();
-                    let data = await resp.json();
-
-                    // Check for valid return value (array/object with proper id)
-                    if (m.type === "gene") {
-                        let found = Array.isArray(data)
-                            ? data.find(obj => obj.approved_symbol && obj.approved_symbol.toLowerCase() === m.id.toLowerCase())
-                            : (data.approved_symbol && data.approved_symbol.toLowerCase() === m.id.toLowerCase() ? data : null);
-                        if (!found) throw new Error();
-                        // HGNC code; approved symbol; action
-                        validEntries.push({ type: "gene", code: found.hgnc_id, symbol: found.approved_symbol, action: m.action });
+                    // Translate action from CSV into corresponding assertion.
+                    const actionRaw = row[actionIdx];
+                    let action;
+                    if (actionRaw === "1" || actionRaw.toLowerCase() === "up" || actionRaw.toLowerCase() === "up_regulates") {
+                        action = "up_regulates";
+                    } else if (actionRaw === "-1" || actionRaw.toLowerCase() === "down" || actionRaw.toLowerCase() === "down_regulates") {
+                        action = "down_regulates";
+                    } else if (actionRaw === "0" || actionRaw.toLowerCase() === "inconclusive" || actionRaw.toLowerCase() === "inconclusively_regulates") {
+                        action = "inconclusively_regulates";
                     } else {
-                        let found = Array.isArray(data)
-                            ? data.find(obj => obj.uniprotkb_id == m.id)
-                            : (data.uniprotkb_id == m.id ? data : null);
-                        let recNameArr = found && found.recommended_name;
-                        let recName = recNameArr && Array.isArray(recNameArr) ? recNameArr[0] : recNameArr;
-                        if (!found) throw new Error();
-                        // UniprotKB code; recommended name; action
-                        validEntries.push({ type: "protein", code: m.id, recommended_name: recName, action: m.action });
+                        errors.push(`Row ${i + 1}: action must be '1' (up), '-1' (down), '0' (inconclusive), or equivalent string`);
+                        continue;
                     }
-                } catch {
-                    apiErrors.push(`Row ${i + 2}: ${m.type} ID '${m.id}' not found in ontology.`);
+
+                    if (!(type === "gene" || type === "protein")) {
+                        errors.push(`Row ${i + 1}: type must be 'gene' or 'protein'`);
+                        continue;
+                    }
+                    if (!id) {
+                        errors.push(`Row ${i + 1}: id is missing`);
+                        continue;
+                    }
+                    markers.push({ type, id, action });
                 }
-            }
-            if (apiErrors.length) {
-                resultsDiv.innerHTML = apiErrors.map(e => `<div class="text-danger">${e}</div>`).join("");
-                //return;
-            }
+                if (errors.length) {
+                    resultsDiv.innerHTML = errors.map(e => `<div class="text-danger">${e}</div>`).join("");
+                    return;
+                }
 
-            // Enable submission of valid entries.
-            parsedMarkers = validEntries;
+                // Validate markers via API
+                resultsDiv.innerHTML = "Validating markers, please wait...";
+                setSpinner(spinnerId, spinnerLabelId, true, "Validating markers via API...");
 
-            if (apiErrors.length > 0) {
-                // Show all errors (red) + one success message (green)
-                resultsDiv.innerHTML =
-                    apiErrors.map(e => `<div class="text-danger">${e}</div>`).join("") +
-                    `<div class="text-success">Valid entries are ready to add.</div>`;
-            } else {
-                resultsDiv.innerHTML =
-                    `<div class="text-success">All entries valid. Ready to add.</div>`;
-            }
+                // Create a controller for fetch cancellation
+                activeAbortController = new AbortController();
 
-            submitBtn.disabled = (validEntries.length === 0);
+                let apiErrors = [];
+                let validEntries = [];
+                for (let i = 0; i < markers.length; i++) {
 
-            // always hide spinner (success or error)
+                    // Stop early if modal was closed.
+                    if (cancelled) return;
+
+                    setSpinner(spinnerId, spinnerLabelId, true, `${i+1} of ${markers.length}`)
+
+                    const m = markers[i];
+                    let apiUrl = `/ontology/${m.type === "gene" ? "genes" : "proteins"}/${encodeURIComponent(m.id)}`;
+
+                    try {
+                        // Disable the ESLint no-await-in-loop checks and warnings--i.e.,
+                        // that there is an await in a loop.
+                        /* eslint-disable no-await-in-loop */
+                        let resp = await fetch(apiUrl);
+                        if (!resp.ok) throw new Error();
+                        let data = await resp.json();
+
+                        // Check for valid return value (array/object with proper id)
+                        if (m.type === "gene") {
+                            let found = Array.isArray(data)
+                                ? data.find(obj => obj.approved_symbol && obj.approved_symbol.toLowerCase() === m.id.toLowerCase())
+                                : (data.approved_symbol && data.approved_symbol.toLowerCase() === m.id.toLowerCase() ? data : null);
+                            if (!found) throw new Error();
+                            // HGNC code; approved symbol; action
+                            validEntries.push({ type: "gene", code: found.hgnc_id, symbol: found.approved_symbol, action: m.action });
+                        } else {
+                            let found = Array.isArray(data)
+                                ? data.find(obj => obj.uniprotkb_id == m.id)
+                                : (data.uniprotkb_id == m.id ? data : null);
+                            let recNameArr = found && found.recommended_name;
+                            let recName = recNameArr && Array.isArray(recNameArr) ? recNameArr[0] : recNameArr;
+                            if (!found) throw new Error();
+                            // UniprotKB code; recommended name; action
+                            validEntries.push({ type: "protein", code: m.id, recommended_name: recName, action: m.action });
+                        }
+                    } catch (err) {
+                        // If cancelled, don't show errors or update UI
+                        if (cancelled) return;
+
+                        // If fetch was aborted, stop quietly
+                        if (err && err.name === "AbortError") return;
+
+                        apiErrors.push(`Row ${i + 2}: ${m.type} ID '${m.id}' not found in ontology.`);
+                    }
+                }
+                if (apiErrors.length) {
+                    resultsDiv.innerHTML = apiErrors.map(e => `<div class="text-danger">${e}</div>`).join("");
+                    //return;
+                }
+
+                // Stop early if cancelled.
+                if (cancelled) return;
+
+                // Enable submission of valid entries.
+                parsedMarkers = validEntries;
+
+                if (apiErrors.length > 0) {
+                    // Show all errors (red) + one success message (green)
+                    resultsDiv.innerHTML =
+                        apiErrors.map(e => `<div class="text-danger">${e}</div>`).join("") +
+                        `<div class="text-success">Valid entries are ready to add.</div>`;
+                } else {
+                    resultsDiv.innerHTML =
+                        `<div class="text-success">All entries valid. Ready to add.</div>`;
+                }
+
+                submitBtn.disabled = (validEntries.length === 0);
+
+            } finally {
+            // Hide spinner no matter what (including cancellation)
             setSpinner(spinnerId, spinnerLabelId, false, "");
+
+            // Clear active ops
+            activeReader = null;
+            activeAbortController = null;
+            }
+
+        };
+
+        reader.onerror = function () {
+            if (cancelled) return;
+            setSpinner(spinnerId, spinnerLabelId, false, "");
+            resultsDiv.innerHTML = `<div class="text-danger">Failed to read the selected file.</div>`;
         };
 
         reader.readAsText(file);
