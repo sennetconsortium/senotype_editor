@@ -105,6 +105,29 @@ document.addEventListener('DOMContentLoaded', function () {
         return;
     }
 
+    function cleanupMarkerModal() {
+        // Clears prior seearch
+
+        const modalEl = document.getElementById('markerSearchModal');
+        if (!modalEl) return;
+
+        // Remove all result buttons
+        modalEl
+        .querySelectorAll('button.btn.btn-link.text-start.w-100.mb-1')
+        .forEach(btn => btn.remove());
+
+        // Clear search input
+        const input = modalEl.querySelector('input#marker-search-input');
+        if (input) input.value = '';
+
+        // Clear results div (including "Searching..." / errors)
+        const resultsDiv = modalEl.querySelector('#marker-search-results');
+        if (resultsDiv) resultsDiv.innerHTML = '';
+
+        // Reset last search so reopening doesn't get stuck
+        lastMarkerSearch = '';
+    }
+
     searchInput.addEventListener('input', function () {
         var query = this.value.trim();
         var resultsDiv = document.getElementById('marker-search-results');
@@ -186,6 +209,8 @@ document.addEventListener('DOMContentLoaded', function () {
                                 .then(validateData => {
                                      // Only add marker if validation succeeded (i.e., exists in ontology)
                                     addMarker(id, description);
+
+                                    cleanupMarkerModal();
 
                                     // Hide modal with Bootstrap 5.
                                     // Move focus out of the modal before hiding.

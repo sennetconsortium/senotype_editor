@@ -359,6 +359,27 @@ function setupExternalModalSearch(type) {
     const resultsDiv = document.getElementById(`${type}-search-results`);
     if (!searchInput || !resultsDiv) return;
 
+    function cleanupModal() {
+
+        // Clears prior search.
+
+        const modalEl = document.getElementById(`${type}SearchModal`);
+        if (!modalEl) return;
+
+        // Remove result buttons
+        modalEl
+        .querySelectorAll('button.btn.btn-link.text-start.w-100.mb-1')
+        .forEach(btn => btn.remove());
+
+        // Clear search input
+        const input = modalEl.querySelector(`input#${CSS.escape(type)}-search-input`);
+        if (input) input.value = '';
+
+        // Clear the results container (recommended)
+        const results = modalEl.querySelector(`#${CSS.escape(type)}-search-results`);
+        if (results) results.innerHTML = '';
+    }
+
     searchInput.addEventListener('input', async function() {
         const query = this.value.trim();
         resultsDiv.innerHTML = '';
@@ -424,6 +445,9 @@ function setupExternalModalSearch(type) {
                         btn.textContent = info.description;
                         btn.onclick = function () {
                             addExternal(type, info);
+
+                            cleanupModal();
+
                             // Hide modal with Bootstrap 5.
 
                             // Move focus out of the modal before hiding.
@@ -463,3 +487,4 @@ function escapeHtml(s) {
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;');
 }
+

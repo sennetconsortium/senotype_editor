@@ -138,6 +138,31 @@ document.addEventListener('DOMContentLoaded', function () {
         console.error('Element #regmarker-search-input not found in DOM!');
         return;
     }
+
+    function cleanupRegMarkerModal() {
+
+        // Clears prior search
+
+        const modalEl = document.getElementById('regmarkerSearchModal');
+        if (!modalEl) return;
+
+        // remove all search result buttons
+        modalEl
+        .querySelectorAll('button.btn.btn-link.text-start.w-100.mb-1')
+        .forEach(btn => btn.remove());
+
+        // clear search input
+        const input = modalEl.querySelector('input#regmarker-search-input');
+        if (input) input.value = '';
+
+        // clear results (removes "Searching..." and any errors)
+        const resultsDiv = modalEl.querySelector('#regmarker-search-results');
+        if (resultsDiv) resultsDiv.innerHTML = '';
+
+        // allow same query again next time
+        lastMarkerSearch = '';
+    }
+
     searchInput.addEventListener('input', function () {
         var query = this.value.trim();
         var resultsDiv = document.getElementById('regmarker-search-results');
@@ -197,6 +222,9 @@ document.addEventListener('DOMContentLoaded', function () {
                             // Use proper prefix for marker ID
                             var markerId = (type === "gene") ? ("HGNC:" + id) : ("UNIPROTKB:" + id);
                             addRegMarker(markerId, description, action);
+
+                            cleanupRegMarkerModal();
+
                             // Move focus out of the modal before hiding.
                             // This avoids triggering prevents accessibility errors about focused
                             // elements inside aria-hidden containers. (Bootstrap apparently inserts
