@@ -10,6 +10,7 @@ import os
 import configobj
 import argparse
 from tqdm import tqdm
+import pandas as pd
 
 from models.appconfig import AppConfig
 from models.senlib_mysql import SenLibMySql
@@ -33,6 +34,8 @@ def getargs() -> argparse.Namespace:
     parser.add_argument("-g", '--group', type=str,
                         help='SenNet group token', required=True)
 
+    parser.add_argument("-i", '--id', type=str,
+                        help='Senotype ID', required=False)
     args = parser.parse_args()
 
     return args
@@ -223,14 +226,21 @@ def getmarkerdescription(code: str) -> str:
                 term = code
     return term
 
-def getregmarkedescription(code: str) -> str:
+def getvaluesetterm(code: str, pred:str, vs: dict) -> str:
     """
-    Calls the UBKG API to obtain the description for specified markers.
-    :param: code - marker code
+    Obtains the term for a member of a value set.
+    :param code: value set code
+    :param pred: The predicate to get the term for
+    :param valuesets: valueset information
     """
-    return code
 
-def gettermforcode(code: str, pred: str, group: str) -> str:
+    term = ''
+    vs_pred = vs[vs['predicate_term']==pred]
+    if len(vs_pred)>0:
+        term = vs_pred.loc[vs_pred['valueset_code']==code]['valueset_term'].values[0]
+    return term
+
+def gettermforcode(code: str, pred: str, group: str, vs: dict) -> str:
     """
     Obtains the term for the given code, based on the predicate.
     :param code: The code to get the term for
@@ -254,15 +264,15 @@ def gettermforcode(code: str, pred: str, group: str) -> str:
         term = getlocationterm(code=code)
     elif pred == 'has_diagnosis':
         term = getdiagnosisterm(code=code)
-    elif pred == 'has_characterizing_marker_set':
+    elif pred in ['has_characterizing_marker_set','up_regulates', 'down_regulates', 'inconclusively_regulates']:
         term = getmarkerdescription(code=code)
-    elif pred in ['up_regulates', 'down_regulates', 'inconclusively_regulates']:
-        term = getregmarkerdescription(code=code)
+    else:
+        # valueset
+        term = getvaluesetterm(code=code, pred=pred, vs=vs)
 
     return term
 
 def main():
-    print('add_terms.py')
 
     # Obtaining SenNet dataset titles requires a SenNet groups token.
     args = getargs()
@@ -274,20 +284,61 @@ def main():
     senlib = SenLibMySql(cfg=cfg)
 
     # Loop through senotypes.
-    listjsons = senlib.getallsenotypejsons()
+    senotypejsons = senlib.getallsenotypejsons()
+    updated_senotypejsons = []
 
-    for j in listjsons:
-        id = j['senotype']['id']
+    for senotypejson in senotypejsons:
+
+        # Copy the existing senotype JSON.
+        id = senotypejson["senotype"]["id"]
         print(id)
-        assertions = j.get('assertions')
-        for a in assertions:
-            pred = a.get('predicate').get('term')
-            objects = a.get('objects')
-            for o in objects:
-                code = o['code']
-                o['term'] = gettermforcode(code=code, pred=pred, group=args.group)
 
-        #break
+        # Allow update for a specific senotype.
+        if id == args.id or args.id is None:
+            updated_senotypejson= {
+                "senotype": senotypejson['senotype'],
+                "submitter": senotypejson['submitter']}
+
+            # Loop through the senotype's set of assertions.
+            assertions = senotypejson.get('assertions')
+            updated_assertions = []
+
+            for assertion in assertions:
+                updated_assertion = { "predicate": assertion['predicate']}
+
+                pred = assertion['predicate']['term']
+                print('assertion: ',pred)
+
+                # Loop through the assertion's objects.
+                objects = assertion.get('objects')
+                updated_objects = []
+
+                for object in tqdm(objects):
+                    if pred == 'has_context':
+                        # Copy context assertions without translation.
+                        updated_object = object
+                    else:
+                        # Add term key to object.
+                        code = object['code']
+                        source = object['source']
+                        vs = senlib.assertionvaluesets
+                        term = gettermforcode(code=code, pred=pred, vs=vs, group=args.group)
+                        updated_object = {"code": code,
+                                          "source": source,
+                                          "term": term}
+                    updated_objects.append(updated_object)
+
+                updated_assertion['objects'] = updated_objects
+                updated_assertions.append(updated_assertion)
+
+            updated_senotypejson['assertions'] = updated_assertions
+            updated_senotypejsons.append(updated_senotypejson)
+
+    # Update the senotypes in the database.
+    for j in updated_senotypejsons:
+        print(f'UPDATING {id}')
+        id = j["senotype"]["id"]
+        senlib.writesenotype(senotypeid=id, senotypejson=j)
 
 if __name__ == "__main__":
     main()
