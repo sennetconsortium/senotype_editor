@@ -1,6 +1,7 @@
-# Senotype Editor
+![editor.png](app/static/editor.png)
+# [Senotype Editor](https://senlib.sennetconsortium.org/)
 
-The Senotype Editor allows a user to manage the individual Senotype Library submission files in the [senlib](https://github.com/sennetconsortium/senlib) database.
+The [Senotype Editor](https://senlib.sennetconsortium.org/) allows a user to manage the individual Senotype Library submission files in the [senlib](https://github.com/sennetconsortium/senlib) database.
 
 The Senotype Editor is a Single Page Application based in Python Flask, Jinja2, jquery, and JavaScript.
 

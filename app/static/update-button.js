@@ -96,16 +96,52 @@ document.addEventListener("DOMContentLoaded", function () {
             (el.tagName === "INPUT" || el.tagName === "SELECT" || el.tagName === "TEXTAREA") &&
             editForm.contains(el)
         );
-        elements.forEach(el => {
+
+        // Also include elements with class "list-field-display" that might not be in form.elements
+        const listFieldDisplays = Array.from(editForm.querySelectorAll(".list-field-display"))
+            .filter(el => editForm.contains(el));
+
+        // Merge + de-duplicate
+        const allElements = Array.from(new Set([...elements, ...listFieldDisplays]));
+
+        // Append relevant elements to the list to be passed to the
+        // update form.
+        allElements.forEach(el => {
+
+            // Handle display spans--e.g.,:
+            // <span class="list-field-display" name="location-0_field_display">...</span>
+            if (el.classList?.contains("list-field-display")) {
+                // For spans, obtain the name attribute, not el.name.
+                // This is set by both Jinja templates and the modal Javascripts
+
+                const spanName = el.getAttribute("name");
+
+                if (!spanName) return;
+
+                // Create a new hidden input based on the span.
+                const hidden = document.createElement("input");
+                hidden.type = "hidden";
+                hidden.name = spanName;
+                hidden.value = (el.textContent || "").trim();
+                hidden.className = "cloned-edit-input";
+                updateForm.appendChild(hidden);
+                return;
+              }
+
+            // Handle real form controls (input/select/textarea)
+
             // For checkboxes/radios, only include checked
             if ((el.type === "checkbox" || el.type === "radio") && !el.checked) return;
+
             // Only clone if it has a name
             if (!el.name) return;
+
             const hidden = document.createElement("input");
             hidden.type = "hidden";
             hidden.name = el.name;
             hidden.value = el.value;
             hidden.className = "cloned-edit-input";
+
             updateForm.appendChild(hidden);
         });
 

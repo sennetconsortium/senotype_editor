@@ -71,7 +71,6 @@ document.getElementById('doi-search-input').addEventListener('input', function (
     if (query !== lastDoiSearch) {
         lastDoiSearch = query;
         resultsDiv.innerHTML = '<div class="text-muted">Searching DataCite...</div>';
-        console.log(query);
         fetch('/doi/search/' + encodeURIComponent(query))
             .then(response => {
                 if (!response.ok) throw new Error('Not found');

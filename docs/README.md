@@ -1,6 +1,8 @@
 # Senotype Editor
 ## User Documentation
 
+* TOC\n{:toc}
+
 # Introduction
 
 ## Senotype
