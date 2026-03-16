@@ -70,15 +70,15 @@ else
 
         echo 'Checks complete, all good :)'
     elif [ "$1" = "config" ]; then
-        docker compose -f docker-compose.yml -p senotype-editor config
+        docker compose -f docker-compose.yml -f docker-compose.development.yml -p senotype-editor config
     elif [ "$1" = "build" ]; then
-        docker compose -f docker-compose.yml -p senotype-editor build --no-cache
+         docker compose -f docker-compose.yml -f docker-compose.development.yml -p senotype-editor build --no-cache
     elif [ "$1" = "start" ]; then
-        docker compose -f  docker-compose.deployment.dev.yml -p senotype-editor up -d
+         docker compose -f docker-compose.yml -f docker-compose.development.yml -p senotype-editor up -d
     elif [ "$1" = "stop" ]; then
-        docker compose -f docker-compose.yml -p senotype-editor stop
+        docker compose -f docker-compose.yml -f docker-compose.development.yml -p senotype-editor stop
     elif [ "$1" = "down" ]; then
-        docker compose -f docker-compose.yml -p senotype-editor down
+        docker compose -f docker-compose.yml -f docker-compose.development.yml -p senotype-editor down
     fi
 fi
 
