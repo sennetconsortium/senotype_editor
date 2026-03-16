@@ -1316,7 +1316,8 @@ class SenLib:
         # Loop through the keys of form_data that correspond to fields from the Edit
         # form with data.
         # For each field,
-        # 1. Find the associated assertion predicate and source type.
+        # 1. If the field corresponds to an assertion, find the associated assertion
+        #    predicate and source type.
         # 2. A field can have multiple values. Each field value corresponds to the object
         #    of an assertion. Build a list of "object" objects for each value.
         # 3. Obtain the list of associated display values, or terms.
@@ -1324,62 +1325,59 @@ class SenLib:
         # 5. Build a list of assertion objects.
 
         assertions = []
+
         for key in form_data:
 
-            objects = []
+            # If this form field corresponds to an assertion,
+            # there will be a predicate term associated with it.
             predicate_term = self.get_field_metadata(field_name=key, field_property='predicate_term')
 
             if predicate_term is None:
-                # This is not a field that corresponds to an assertion.
+                # This is not a field that corresponds to an assertion. Skip.
                 continue
 
+            # If an assertion, obtain the IRI and source of the predicate.
             predicate_iri = self.get_iri(predicate_term=predicate_term)
             source = self.get_field_metadata(field_name=key, field_property='object_source')
 
-            if isinstance(form_data.get(key), list):
-                field_values = form_data.get(key)
-                display_values = field_displays.get(key)
+            # Normalize to list regardless of whether value is a list, scalar, or None
+            val = form_data.get(key)
+            if isinstance(val, list):
+                field_values = val
+            elif val is None or val == '':
+                field_values = []
             else:
-                field_values = [form_data.get(key)]
-                display_values = [field_displays.get(key)]
+                field_values = [val]
 
-            # Sort field values and display values so that they match.
-            sorted_field_values = sorted(field_values)
-            sorted_display_values = sorted(display_values)
+            if not field_values:
+                continue
 
-            if len(sorted_field_values) > 0:
+            # Match with display values; fall back to field_values if no display.
+            display_values = field_displays.get(key, field_values)
 
-                # Pair the assertion object field values with their display values.
-                for fv, term in zip(sorted_field_values, sorted_display_values):
-                    # External assertion displays are generally in the format
-                    # code (term).
-                    # Strip the code and outermost parentheses
-                    term_strip = term.replace(fv,'').strip()
-                    term_strip = term_strip[1:-1] if term_strip.startswith("(") and term_strip.endswith(")") else term_strip
+            objects = []
 
-                    obj = {
-                        "source": source,
-                        "code": fv,
-                        "term": term_strip,
-                    }
-                    objects.append(obj)
+            # Pair the assertion object field values with their display values.
+            for fv, term in zip(sorted(field_values), sorted(display_values)):
+                # External assertion displays are generally in the format
+                # code (term).
+                # Strip the code and outermost parentheses.
+                term_strip = term.replace(fv,'').strip()
+                term_strip = term_strip[1:-1] if term_strip.startswith("(") and term_strip.endswith(")") else term_strip
 
+                obj = {"source": source, "code": fv, "term": term_strip}
+                objects.append(obj)
+
+            predicate_object = {"term": predicate_term}
             if predicate_iri is not None:
-                predicate_object = {
-                        "term": predicate_term,
-                        "IRI": predicate_iri
-                    }
-            else:
-                predicate_object = {
-                    "term": predicate_term
-                    }
+                predicate_object["IRI"] = predicate_iri
 
             assertion = {
                 "predicate": predicate_object,
                 "objects": objects
             }
-            assertions.append(assertion)
 
+            assertions.append(assertion)
 
         return assertions
 
@@ -1457,6 +1455,8 @@ class SenLib:
                key = field name
                value = ordered list of values, corresponding to the order of
                        values in the field if the field is a list
+
+            This is an expanded version of buildsimpleassertions.
         """
 
         # Regulating markers must be distributed among the three types
@@ -1471,55 +1471,59 @@ class SenLib:
 
         assertions = []
         regmarkers = form_data.get('regmarker')
+
+        # Normalize to list regardless of whether value is a list, scalar, or None.
+        if isinstance(regmarkers, list):
+            field_values = regmarkers
+        elif regmarkers is None or regmarkers == '':
+            field_values = []
+        else:
+            field_values = [regmarkers]
+
+        if not field_values:
+            return assertions
+
         display_values = field_displays.get('regmarker')
 
-        # Sort field values and display values so that they match.
-        sorted_regmarkers = sorted(regmarkers, key=lambda d: d["marker"])
-        sorted_display_values = sorted(display_values)
+        # Sort markers by action.
+        up_objects = []
+        down_objects = []
+        inc_objects = []
 
-        if len(sorted_regmarkers) > 0:
+        # Sort both lists together by marker code to keep them aligned.
+        paired = sorted(zip(field_values, display_values), key=lambda x: x[0].get('marker', ''))
 
-            up_objects = []
-            down_objects = []
-            inc_objects = []
+        for rm, term in paired:
+            action = rm.get('action')
+            code = rm.get('marker')
+            # External assertion displays are generally in the format
+            # code (term).
+            # Strip the code and outermost parentheses.
+            term_strip = term.replace(code, '').strip()
+            term_strip = term_strip[1:-1] if term_strip.startswith("(") and term_strip.endswith(")") else term_strip
+            obj = {"source": "external", "code": code, "term": term_strip}
 
-            for rm, term in zip(sorted_regmarkers, sorted_display_values):
-                action = rm.get('action')
-                code = rm.get('marker')
-                # External assertion displays are generally in the format
-                # code (term).
-                # Strip the code and outermost parentheses
-                term_strip = term.replace(code, '').strip()
-                term_strip = term_strip[1:-1] if term_strip.startswith("(") and term_strip.endswith(")") else term_strip
-                obj = {
-                    "source": "external",
-                    "code": code,
-                    "term": term_strip,
-                }
-                if action == 'up_regulates':
-                    up_objects.append(obj)
-                elif action == 'down_regulates':
-                    down_objects.append(obj)
-                else:
-                    inc_objects.append(obj)
+            if action == 'up_regulates':
+                up_objects.append(obj)
+            elif action == 'down_regulates':
+                down_objects.append(obj)
+            else:
+                inc_objects.append(obj)
 
-            if len(up_objects) > 0:
-                predicate = {"term": 'up_regulates'}
-                assertion = {"predicate": predicate,
-                             "objects": up_objects}
-                assertions.append(assertion)
+        if len(up_objects) > 0:
+            predicate = {"term": 'up_regulates'}
+            assertion = {"predicate": predicate, "objects": up_objects}
+            assertions.append(assertion)
 
-            if len(down_objects) > 0:
-                predicate = {"term": 'down_regulates'}
-                assertion = {"predicate": predicate,
-                             "objects": down_objects}
-                assertions.append(assertion)
+        if len(down_objects) > 0:
+            predicate = {"term": 'down_regulates'}
+            assertion = {"predicate": predicate, "objects": down_objects}
+            assertions.append(assertion)
 
-            if len(inc_objects) > 0:
-                predicate = {"term": 'inconclusively_regulates'}
-                assertion = {"predicate": predicate,
-                             "objects": inc_objects}
-                assertions.append(assertion)
+        if len(inc_objects) > 0:
+            predicate = {"term": 'inconclusively_regulates'}
+            assertion = {"predicate": predicate, "objects": inc_objects}
+            assertions.append(assertion)
 
         return assertions
 
