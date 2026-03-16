@@ -1,0 +1,9 @@
+services:
+  senotype-editor:
+    build:
+      context: ..
+      dockerfile: ./docker/Dockerfile
+      args:
+        - HOST_GID=${HOST_GID:-1002}
+        - HOST_UID=${HOST_UID:-1002}
+    image: sennet/senotype-editor:${SENOTYPE_EDITOR_VERSION:?err}
