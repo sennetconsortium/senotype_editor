@@ -9,7 +9,51 @@ document.addEventListener("DOMContentLoaded", function () {
 
     let parsedMarkers = [];
 
+    // -----------------------
+    //Support for cancellation
+    // -----------------------
+    let cancelled = false;
+    let activeReader = null;
+    let activeAbortController = null;
+
+    function cancelProcessing() {
+        cancelled = true;
+
+        // abort FileReader if still reading
+        if (activeReader && activeReader.readyState === FileReader.LOADING) {
+            try { activeReader.abort(); } catch (err) { /* ignore */ }
+        }
+        activeReader = null;
+
+        // abort any in-flight fetch
+        if (activeAbortController) {
+            try { activeAbortController.abort(); } catch (err) { /* ignore */ }
+        }
+        activeAbortController = null;
+
+        // reset UI state
+
+        resultsDiv.textContent = "";
+
+        // Clear parsed state + file selection
+        parsedMarkers = [];
+        fileInput.value = "";
+        setSpinner(spinnerId, spinnerLabelId, false, "");
+        submitBtn.disabled = true;
+    }
+
+    // Cancel when modal is being hidden (X button, ESC, backdrop click, etc.)
+    const modalEl = document.getElementById('markerCsvModal');
+    if (modalEl) {
+        modalEl.addEventListener('hide.bs.modal', cancelProcessing);
+    }
+
+
     fileInput.addEventListener("change", async function (e) {
+
+        // Reset cancellation each time a new file is selected
+        cancelled = false;
+
         // In case user selected a different file.
         resultsDiv.textContent = "";
         submitBtn.disabled = true;
@@ -19,117 +63,191 @@ document.addEventListener("DOMContentLoaded", function () {
             return;
         }
 
+        // Spinner controls passed to the external setSpinner function (spinner.js)
+        const spinnerId = 'marker-spinner';
+        const spinnerLabelId = 'marker-spinner-label';
+
+        // show spinner immediately when a file is selected
+        setSpinner(spinnerId, spinnerLabelId, true, "Validating CSV...");
+
         // Read file as text
         const reader = new FileReader();
         reader.onload = async function (evt) {
-            const text = evt.target.result.trim();
-            // Parse CSV
-            const rows = text.split(/\r?\n/).map(row => row.split(","));
-            if (rows.length < 2) {
-                resultsDiv.textContent = "CSV must have at least one data row.";
-                return;
-            }
-            // Validate header
-            const header = rows[0].map(h => h.trim().toLowerCase());
-            if (!(header.includes("type") && header.includes("id"))) {
-                resultsDiv.textContent = "CSV must have columns named 'type' and 'id' (case-insensitive).";
-                return;
-            }
-            const typeIdx = header.indexOf("type");
-            const idIdx = header.indexOf("id");
-            let errors = [];
-            let markers = [];
-            // Validate rows
-            for (let i = 1; i < rows.length; i++) {
-                const row = rows[i].map(cell => cell.trim());
-                const type = row[typeIdx].toLowerCase();
-                // id here is either a HGNC symbol (e.g., BRCA1) or a UniprotKB symbol.
-                const id = row[idIdx];
-                if (!(type === "gene" || type === "protein")) {
-                    errors.push(`Row ${i + 1}: type must be 'gene' or 'protein'`);
-                    continue;
+            try {
+                // Stop early if modal window closed.
+                if (cancelled) return;
+
+                const text = evt.target.result.trim();
+                // Parse CSV
+                const rows = text.split(/\r?\n/).map(row => row.split(","));
+                if (rows.length < 2) {
+                    resultsDiv.textContent = "CSV must have at least one data row.";
+                    return;
                 }
-                if (!id) {
-                    errors.push(`Row ${i + 1}: id is missing`);
-                    continue;
+
+                // Validate header
+                const header = rows[0].map(h => h.trim().toLowerCase());
+                if (!(header.includes("type") && header.includes("id"))) {
+                    resultsDiv.textContent = "CSV must have columns named 'type' and 'id' (case-insensitive).";
+                    return;
                 }
-                // Add the marker from the CSV to the list of markers to validate.
-                markers.push({ type, id });
-            }
-            if (errors.length) {
-                resultsDiv.innerHTML = errors.map(e => `<div class="text-danger">${e}</div>`).join("");
-                return;
-            }
-            // Validate markers via API.
-            resultsDiv.innerHTML = "Validating markers, please wait...";
-            let apiErrors = [];
-            let validEntries = [];
-            for (let i = 0; i < markers.length; i++) {
-                const m = markers[i];
-                let apiUrl = `/ontology/${m.type === "gene" ? "genes" : "proteins"}/${encodeURIComponent(m.id)}`;
-                try {
-                    // Disable the ESLint no-await-in-loop checks and warnings--i.e.,
-                    // that there is an await in a loop.
-                    /* eslint-disable no-await-in-loop */
 
-                    // Perform synchronous fetch.
-                    let resp = await fetch(apiUrl);
-                    if (!resp.ok) throw new Error();
+                const typeIdx = header.indexOf("type");
+                const idIdx = header.indexOf("id");
+                let errors = [];
+                let markers = [];
 
-                    // Get response as JSON.
-                    let data = await resp.json();
+                // Validate rows
+                for (let i = 1; i < rows.length; i++) {
+                    const row = rows[i].map(cell => cell.trim());
+                    const type = row[typeIdx].toLowerCase();
 
-                    // Check for valid return value (array/object with proper id)
-                    if (m.type === "gene") {
-                        // If response is an array, then find the element in the array
-                        // that corresponds to the marker from the CSV, searching by
-                        // the HGNC approved symbol; otherwise, check the symbol of the single object.
-                        // The search is case-insensitive.
-                        // (The search may need to be expanded to include aliases and previous symbols.)
-                        let found = Array.isArray(data)
-                            ? data.find(obj => obj.approved_symbol && obj.approved_symbol.toLowerCase() === m.id.toLowerCase())
-                            : (data.approved_symbol && data.approved_symbol.toLowerCase() === m.id.toLowerCase() ? data : null);
-
-                         if (!found) throw new Error();
-
-                        // If a gene in the CSV was in the response, get the hgnc ID, approved symbol, and approved name.
-                        validEntries.push({ type: "gene", id: found.hgnc_id, symbol: found.approved_symbol, name: found.approved_name });
-
-                    } else {
-
-                        // If response is an array, then find the element in the array
-                        // that corresponds to the marker from the CSV, searching by
-                        // UniprotKB ID and recommended name; otherwise, check the ID and name of the single object.
-                        // The search is case-insensitive.
-                        let found = Array.isArray(data)
-                            ? data.find(obj => obj.uniprotkb_id == m.id)
-                            : (data.uniprotkb_id == m.id ? data : null);
-                        let recNameArr = found && found.recommended_name;
-                        let recName = recNameArr && Array.isArray(recNameArr) ? recNameArr[0] : recNameArr;
-
-                        if (!found) throw new Error();
-
-                        // If the protein in the CSV was in the response, get the UniPeotKB ID and recommended name.
-                        validEntries.push({ type: "protein", id: m.id, recommended_name: recName });
+                    // id here is either a HGNC symbol (e.g., BRCA1) or a UniprotKB symbol.
+                    const id = row[idIdx];
+                    if (!(type === "gene" || type === "protein")) {
+                        errors.push(`Row ${i + 1}: type must be 'gene' or 'protein'`);
+                        continue;
                     }
-                } catch {
-                    apiErrors.push(`Row ${i + 2}: ${m.type} ID '${m.id}' not found in ontology.`);
+
+                    if (!id) {
+                        errors.push(`Row ${i + 1}: id is missing`);
+                        continue;
+                    }
+
+                    // Add the marker from the CSV to the list of markers to validate.
+                    markers.push({ type, id });
                 }
+
+                // If basic validation errors, stop.
+                if (errors.length) {
+                    resultsDiv.innerHTML = errors.map(e => `<div class="text-danger">${e}</div>`).join("");
+                    return;
+                }
+
+                // Validate markers via API.
+                resultsDiv.innerHTML = "Validating markers, please wait...";
+                setSpinner(spinnerId, spinnerLabelId, true, "Validating markers via API...");
+
+                // Create a controller for fetch cancellation.
+                activeAbortController = new AbortController();
+
+                let apiErrors = [];
+                let validEntries = [];
+                for (let i = 0; i < markers.length; i++) {
+
+                    // Stop early if modal was closed.
+                    if (cancelled) return;
+
+                    // Update progress spinner.
+                    setSpinner(spinnerId, spinnerLabelId, true, `${i+1} of ${markers.length}`)
+
+                    const m = markers[i];
+                    // Set up the appropriate endpoint.
+                    let apiUrl = `/ontology/${m.type === "gene" ? "genes" : "proteins"}/${encodeURIComponent(m.id)}`;
+
+                    try {
+                        // Disable the ESLint no-await-in-loop checks and warnings--i.e.,
+                        // that there is an await in a loop.
+                        /* eslint-disable no-await-in-loop */
+
+                        // Perform synchronous fetch.
+                        //let resp = await fetch(apiUrl);
+                        let resp = await fetch(apiUrl, { signal: activeAbortController.signal });
+                        if (!resp.ok) throw new Error();
+
+                        // Get response as JSON.
+                        let data = await resp.json();
+
+                        // Check for valid return value (array/object with proper id)
+                        if (m.type === "gene") {
+                            // If response is an array, then find the element in the array
+                            // that corresponds to the marker from the CSV, searching by
+                            // the HGNC approved symbol; otherwise, check the symbol of the single object.
+                            // The search is case-insensitive.
+                            // (The search may need to be expanded to include aliases and previous symbols.)
+                            let found = Array.isArray(data)
+                                ? data.find(obj => obj.approved_symbol && obj.approved_symbol.toLowerCase() === m.id.toLowerCase())
+                                : (data.approved_symbol && data.approved_symbol.toLowerCase() === m.id.toLowerCase() ? data : null);
+                            if (!found) throw new Error();
+
+                            // If a gene in the CSV was in the response, get the hgnc ID, approved symbol, and approved name.
+                                validEntries.push({ type: "gene", id: found.hgnc_id, symbol: found.approved_symbol, name: found.approved_name });
+
+                        } else {
+
+                            // If response is an array, then find the element in the array
+                            // that corresponds to the marker from the CSV, searching by
+                            // UniprotKB ID and recommended name; otherwise, check the ID and name of the single object.
+                            // The search is case-insensitive.
+                            let found = Array.isArray(data)
+                                ? data.find(obj => obj.uniprotkb_id == m.id)
+                                : (data.uniprotkb_id == m.id ? data : null);
+                            let recNameArr = found && found.recommended_name;
+                            let recName = recNameArr && Array.isArray(recNameArr) ? recNameArr[0] : recNameArr;
+
+                            if (!found) throw new Error();
+
+                            // If the protein in the CSV was in the response, get the UniPeotKB ID and recommended name.
+                            validEntries.push({ type: "protein", id: m.id, recommended_name: recName });
+                        }
+
+                    } catch (err) {
+
+                        // If cancelled, don't show errors or update UI
+                        if (cancelled) return;
+
+                        // If fetch was aborted, stop quietly
+                        if (err && err.name === "AbortError") return;
+
+                        apiErrors.push(`Row ${i + 2}: ${m.type} ID '${m.id}' not found in ontology.`);
+                    }
+                }
+
+                if (apiErrors.length) {
+                    resultsDiv.innerHTML = apiErrors.map(e => `<div class="text-danger">${e}</div>`).join("");
+                    //return;
+                }
+
+                // Stop early if cancelled.
+                    if (cancelled) return;
+
+                // Enable submission of valid entries.
+                parsedMarkers = validEntries;
+
+                if (apiErrors.length > 0) {
+                    // Show all errors (red) + one success message (green)
+                    resultsDiv.innerHTML =
+                        apiErrors.map(e => `<div class="text-danger">${e}</div>`).join("") +
+                        `<div class="text-success">Valid entries are ready to add.</div>`;
+                } else {
+                    resultsDiv.innerHTML =
+                        `<div class="text-success">All entries valid. Ready to add.</div>`;
+                }
+
+                submitBtn.disabled = (validEntries.length === 0);
+
+        } finally {
+            // Hide spinner no matter what (including cancellation)
+            setSpinner(spinnerId, spinnerLabelId, false, "");
+
+            // Clear active ops
+            activeReader = null;
+            activeAbortController = null;
             }
-            if (apiErrors.length) {
-                resultsDiv.innerHTML = apiErrors.map(e => `<div class="text-danger">${e}</div>`).join("");
-                return;
-            }
-            // All valid
-            parsedMarkers = validEntries;
-            resultsDiv.innerHTML = `<div class="text-success">All entries valid. Ready to add.</div>`;
-            submitBtn.disabled = false;
         };
+
+        // If failed to read the file at all.
+        reader.onerror = function () {
+            if (cancelled) return;
+            setSpinner(spinnerId, spinnerLabelId, false, "");
+            resultsDiv.innerHTML = `<div class="text-danger">Failed to read the selected file.</div>`;
+        };
+
         reader.readAsText(file);
     });
 
-// Adds the markers specified in the CSV to the list so that the update function
-// can POST them for validation.
+    // Adds the markers specified in the CSV to the list so that the update function
+    // can POST them for validation.
     form.addEventListener("submit", function (e) {
 
         e.preventDefault();
@@ -171,11 +289,16 @@ document.addEventListener("DOMContentLoaded", function () {
             input.className = 'form-control';
             li.appendChild(input);
 
-            // Visible text: show the description instead of the ID
+            // Display span: show the description instead of the ID
             var span = document.createElement('span');
             span.className = 'list-field-display';
-            //span.textContent = description || id;
             span.textContent = standardizedId + " (" + description + ")";
+
+            // Give the span a name that links it to its hidden field code.
+            // Use setAttribute (span has no standard .name property)
+            span.setAttribute('name', `marker-${ul.children.length}_field_display`);
+            span.name = `marker-${ul.children.length}_field_display`;
+
             li.appendChild(span);
 
             // Entity detail link

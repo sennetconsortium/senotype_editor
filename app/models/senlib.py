@@ -28,8 +28,8 @@ from models.appconfig import AppConfig
 # Interface to MySql database
 from models.senlib_mysql import SenLibMySql
 
-# For external API requests
-from models.requestretry import RequestRetry
+# Helper class for external APIs
+from models.senlib_api import SenLibAPI
 
 # Configure consistent logging. This is done at the beginning of each module instead of with a superclass of
 # logger to avoid the need to overload function calls to logger.
@@ -321,33 +321,20 @@ class SenLib:
         Calls the DataCite API to obtain the title for a DOI.
         :param senotype: senotype object of a senotype JSON
         """
-        title = ''
+
         doi_url = senotype.get('doi', '')
 
-        api = RequestRetry()
-
+        title = ''
         if doi_url is None:
             return ''
         else:
-            datacite_base = self.cfg.getfield(key='DATACITE_DOI_BASE_URL')
-            doi = doi_url.split(datacite_base)[1]
-            url_base = self.cfg.getfield(key='DATACITE_API_BASE_URL')
-            url = f'{url_base}{doi}'
 
-            logger.info(f'Getting DataCite information for {doi}')
+            # It is possible to obtain the title via external API call;
+            # however, this raises the risk of timeout.
 
-            response = api.getresponse(url=url, format='json')
-            if response is None:
-                urlheartbeat = self.cfg.getfield(key='DATACITE_HEARTBEAT_URL')
-                responseheartbeat = api.getresponse(url=urlheartbeat)
-                if responseheartbeat == 'OK':
-                    title = 'unknown title'
-                else:
-                    title = 'invalid response from DataCite API'
-            else:
-                title = response.get('data').get('attributes').get('titles')[0].get('title', '')
+            title = self.api.getdoidescription(doi_url=doi_url)
 
-            return f'{doi_url} ({title})'
+        return f'{doi_url} ({title})'
 
     def getstoredsimpleassertiondata(self, assertions: list, predicate: str) -> list:
         """
@@ -396,31 +383,21 @@ class SenLib:
     def getcitationobjects(self, rawobjects: list) -> list:
 
         """
-        Calls the NCBI EUtils API (via the citation/search route) to obtain the title for the PMID.
+        Obtains citation assertion information from a Senotype submission JSON.
         :param: rawobjects - a list of PMID objects.
         """
-        api = RequestRetry()
-        base_url = f"{request.host_url.rstrip('/')}/citation/search/id/"
-
-        logging.info('Getting citation data from NCBI EUtils')
 
         oret = []
         for o in rawobjects:
             code = o.get('code')
-            pmid = code.split(':')[1]
-            url = f'{base_url}{pmid}'
+            title = o.get('term')
+            if title is None or title.strip() == '':
+                title = 'unknown'
 
-            citation = api.getresponse(url=url, format='json')
-            result = citation.get('result')
-            title = ''
-            if result is None:
-                title = "unknown"
-            else:
-                entry = result.get(pmid)
-                if entry is None:
-                    title = "unknown"
-                else:
-                    title = entry.get('title', '')
+                # It is possible to obtain the title via external API call;
+                # however, this raises the risk of timeout.
+                #pmid = code.split(':')[1]
+                #title = self.api.getcitationtitle(pmid=pmid)
 
             oret.append({"code": code, "term": title})
 
@@ -504,41 +481,20 @@ class SenLib:
     def getoriginobjects(self, rawobjects: list) -> list:
 
         """
-        Calls the SciCrunch API to obtain the title for the RRID.
+        Obtains origin information for a set of RRIDs.
         :param: rawobjects - the list of RRID objects.
         """
-        api = RequestRetry()
-        base_url = self.cfg.getfield(key='SCICRUNCH_BASE_URL')
-
-        logger.info('Getting origin information from SciCrunch Resolver')
-
-        # SciCrunch Resolver is only used to decorate the code with a term.
-        # Use "unknown" defensively.
 
         oret = []
         for o in rawobjects:
             code = o.get('code')
-            # IDs for Antibodies and cells have higher resolution (vendor)
-            # than RRID, using the dash as delimiter. However, the
-            # search URL that returns JSON only has resolution at the
-            # RRID level. Strip higher-resolution identifiers.
-            searchcode = code
-            if '-' in code:
-                searchcode = code.split('-')[0]
-            url = f'{base_url}{searchcode}.json'
+            description = o.get('term')
+            if description is None or description.strip() == '':
+                description = 'unknown'
 
-            origin = api.getresponse(url=url, format='json')
-            if origin is None:
-                description = "unknown"
-            else:
-                hits = origin.get('hits')
-                if hits is None:
-                    description = "unknown"
-                else:
-                    if len(hits.get('hits')) == 0:
-                        description = 'unknown'
-                    else:
-                        description = hits.get('hits')[0].get('_source').get('item').get('name', '')
+                # It is possible to obtain the description via external API call;
+                # however, this raises the risk of timeout.
+                #description = self.api.getorigindescription(code=code)
 
             oret.append({"code": code, "term": description})
 
@@ -550,21 +506,19 @@ class SenLib:
         Calls the entity API to obtain the description for the SenNet dataset.
         :param: rawobjects - a list of SenNet dataset objects.
         """
-        api = RequestRetry()
-        token = session['groups_token']
-        headers = {"Authorization": f'Bearer {token}'}
-
-        logger.info('Getting dataset information from SenNet entity-api')
 
         oret = []
         for o in rawobjects:
-            code = o.get('code')
-            snid = code
-            base_url = self.cfg.getfield(key='ENTITY_BASE_URL')
-            url = f'{base_url}{snid}'
-            dataset = api.getresponse(url=url, format='json', headers=headers)
-            title = dataset.get('title', '')
-            oret.append({"code": code, "term": title})
+            snid = o.get('code')
+            title = o.get('term')
+            if title is None or title.strip() == '':
+                title = 'unknown'
+
+                # It is possible to obtain the title via external API call;
+                # however, this raises the risk of timeout.
+                #title = self.api.getdatasettitle(snid=snid)
+
+            oret.append({"code": snid, "term": title})
 
         return oret
 
@@ -575,42 +529,22 @@ class SenLib:
             :param: rawobjects - a list of specified marker objects.
         """
 
-        logger.info('Getting marker information from the ontology API')
 
-        api = RequestRetry()
-        cfg = AppConfig()
-        base_url = cfg.getfield('UBKG_BASE_URL')
         oret = []
         for o in rawobjects:
             code = o.get('code').strip()
             if not code or ':' not in code:
-                oret.append({"code": code, "term": None})
+                oret.append({"code": code, "term": f'{code} (unknown)'})
                 continue
-            markerid = code.split(':')[1]
-            markertype = code.split(':')[0]
-            if markertype == 'HGNC':
-                marker = 'genes'
-            else:
-                marker = 'proteins'
 
-            url = f'{base_url}/{marker}/{markerid}'
+            term = o.get('term')
+            if term is None or term.strip() == '':
+                term = 'unknown'
 
-            resp = api.getresponse(url=url, format='json')
-            # Defensive: check if resp is a list and not empty
-            if not resp or not isinstance(resp, list) or not resp[0]:
-                term = code
-            else:
-                data = resp[0]
-                if 'HGNC' in code:
-                    # For genes
-                    term = data.get('approved_symbol', code)
-                else:
-                    # For proteins
-                    recommended_names = data.get('recommended_name')
-                    if isinstance(recommended_names, list) and recommended_names:
-                        term = recommended_names[0].strip()
-                    else:
-                        term = code
+                # It is possible to obtain the title via external API call;
+                # however, this raises the risk of timeout.
+                # term = self.api.getmarkerdescription(code=code)
+
             oret.append({"code": code, "term": term})
 
         return oret
@@ -618,24 +552,23 @@ class SenLib:
     def getcelltypeobjects(self, rawobjects: list) -> list:
 
         """
-        Calls the UBKG API to obtain descriptions for cell types.
+        Obtain information on cell type assertions in a senotype.
         :param: rawobjects - a list of cell type objects
         """
-        api = RequestRetry()
-        base_url = f"{request.host_url.rstrip('/')}/ontology/celltypes/"
 
-        logger.info('Getting celltype information from the ontology API')
 
         oret = []
         for o in rawobjects:
             code = o.get('code').split(':')[1]
-            url = f'{base_url}{code}'
-            celltype = api.getresponse(url=url, format='json')
+            term = o.get('term')
+            if term is None or term.strip() == '':
+                term = 'unknown'
 
-            # celltypes returns a list of JSON objects
-            if len(celltype) > 0:
-                name = celltype[0].get('cell_type').get('name', '')
-                oret.append({"code": f'CL:{code}', "term": name})
+                # It is possible to obtain the title via external API call;
+                # however, this raises the risk of timeout.
+                # term = self.api.getcelltypeterm(code=code)
+
+            oret.append({"code": f'CL:{code}', "term": term})
         return oret
 
     def getdiagnosisobjects(self, rawobjects: list) -> list:
@@ -644,44 +577,40 @@ class SenLib:
         Calls the UBKG API to obtain descriptions for diagnoses.
         :param: rawobjects - a list of diagnosis objects
         """
-        api = RequestRetry()
-        cfg = AppConfig()
-        base_url = f"{request.host_url.rstrip('/')}/ontology/diagnoses/"
-
-        logger.info('Getting diagnosis information from the ontology API')
 
         oret = []
         for o in rawobjects:
             code = o.get('code')
-            url = f'{base_url}{code}/code'
-            diagnoses = api.getresponse(url=url, format='json')
-            # diagnoses returns a list of JSON objects
-            if len(diagnoses) > 0:
-                term = diagnoses[0].get('term')
-                oret.append({"code": code, "term": term})
+            term = o.get('term')
+            if term is None or term.strip() == '':
+                term = f'{code} (unknown)'
+
+                # It is possible to obtain the title via external API call;
+                # however, this raises the risk of timeout.
+                #term = self.api.getdiagnosisterm(code=code)
+
+            oret.append({"code": code, "term": term})
         return oret
 
     def getlocationobjects(self, rawobjects: list) -> list:
 
         """
-        Calls the UBKG API to obtain descriptions for organs.
+        Obtains information on a set of location assertions in a senotype.
         :param: rawobjects - a list of organ objects
         """
-        api = RequestRetry()
-        cfg = AppConfig()
-        base_url = f"{request.host_url.rstrip('/')}/ontology/organs"
-
-        logger.info('Getting organ information from the ontology API')
 
         oret = []
         for o in rawobjects:
             code = o.get('code')
-            url = f'{base_url}/{code}/code'
-            organs = api.getresponse(url=url, format='json')
-            # diagnoses returns a list of JSON objects
-            if len(organs) > 0:
-                term = organs[0].get('term')
-                oret.append({"code": code, "term": term})
+            term = o.get('term')
+            if term is None or term.strip() == '':
+                term = f'{code} (unknown)'
+
+                # It is possible to obtain the term via external API call;
+                # however, this raises the risk of timeout.
+                # term = self.api.getlocationterm(code=code)
+
+            oret.append({"code": code, "term": term})
 
         return oret
 
@@ -907,7 +836,7 @@ class SenLib:
         if len(locationlist) > 0:
             form.location.process(form.location, [self.truncateddisplaytext(displayid=item['code'],
                                                                             description=item['term'],
-                                                                            trunclength=50)
+                                                                            trunclength=100)
                                                   for item in locationlist])
 
         else:
@@ -918,7 +847,7 @@ class SenLib:
         if len(celltypelist) > 0:
             form.celltype.process(form.celltype, [self.truncateddisplaytext(displayid=item['code'],
                                                                             description=item['term'],
-                                                                            trunclength=13)
+                                                                            trunclength=100)
                                                   for item in celltypelist])
         else:
             form.celltype.process([''])
@@ -985,10 +914,11 @@ class SenLib:
 
         # Citation (external; multiple possible values)
         citationlist = self.getstoredsimpleassertiondata(assertions=assertions, predicate='has_citation')
+
         if len(citationlist) > 0:
             form.citation.process(form.citation, [self.truncateddisplaytext(displayid=item['code'],
                                                                             description=item['term'],
-                                                                            trunclength=20)
+                                                                            trunclength=200)
                                                   for item in citationlist])
         else:
             form.citation.process([''])
@@ -998,7 +928,7 @@ class SenLib:
         if len(originlist) > 0:
             form.origin.process(form.origin, [self.truncateddisplaytext(displayid=item['code'],
                                                                         description=item['term'],
-                                                                        trunclength=25)
+                                                                        trunclength=100)
                                               for item in originlist])
         else:
             form.origin.process([''])
@@ -1008,7 +938,7 @@ class SenLib:
         if len(datasetlist) > 0:
             form.dataset.process(form.dataset, [self.truncateddisplaytext(displayid=item['code'],
                                                                           description=item['term'],
-                                                                          trunclength=15)
+                                                                          trunclength=100)
                                                 for item in datasetlist])
         else:
             form.dataset.process([''])
@@ -1034,7 +964,7 @@ class SenLib:
                 [
                     {
                         "marker": self.truncateddisplaytext(displayid=item['code'], description=item['term'],
-                                                            trunclength=50),
+                                                            trunclength=100),
                         "action": item['type']
                     }
                     for item in regmarkerlist
@@ -1054,7 +984,7 @@ class SenLib:
         if len(diagnosislist) > 0:
             form.diagnosis.process(form.diagnosis, [self.truncateddisplaytext(displayid=item['code'],
                                                                               description=item['term'],
-                                                                              trunclength=65)
+                                                                              trunclength=100)
                                                     for item in diagnosislist])
         else:
             form.diagnosis.process([''])
@@ -1235,7 +1165,7 @@ class SenLib:
         if len(celltypelist) > 0:
             form.celltype.process(None, [self.truncateddisplaytext(displayid=item['code'],
                                                                    description=item['term'],
-                                                                   trunclength=13)
+                                                                   trunclength=100)
                                          for item in celltypelist])
         else:
             form.celltype.process(None, [''])
@@ -1273,7 +1203,7 @@ class SenLib:
         if len(citationlist) > 0:
             form.citation.process(None, [self.truncateddisplaytext(displayid=item['code'],
                                                                    description=item['term'],
-                                                                   trunclength=15)
+                                                                   trunclength=100)
                                          for item in citationlist])
         else:
             form.citation.process(None, [''])
@@ -1283,7 +1213,7 @@ class SenLib:
         if len(originlist) > 0:
             form.origin.process(None, [self.truncateddisplaytext(displayid=item['code'],
                                                                  description=item['term'],
-                                                                 trunclength=20)
+                                                                 trunclength=100)
                                        for item in originlist])
         else:
             form.origin.process(None, [''])
@@ -1293,7 +1223,7 @@ class SenLib:
         if len(datasetlist) > 0:
             form.dataset.process(None, [self.truncateddisplaytext(displayid=item['code'],
                                                                   description=item['term'],
-                                                                  trunclength=20)
+                                                                  trunclength=100)
                                         for item in datasetlist])
         else:
             form.dataset.process(None, [''])
@@ -1315,7 +1245,7 @@ class SenLib:
             form.regmarker.process(None, [
                     {
                         "marker": self.truncateddisplaytext(displayid=item['code'], description=item['term'],
-                                                            trunclength=50),
+                                                            trunclength=100),
                         "action": item['type']
                     }
                     for item in regmarkerlist
@@ -1329,7 +1259,7 @@ class SenLib:
         if len(diagnosislist) > 0:
             form.diagnosis.process(None, [self.truncateddisplaytext(displayid=item['code'],
                                                                     description=item['term'],
-                                                                    trunclength=65)
+                                                                    trunclength=100)
                                           for item in diagnosislist])
         else:
             form.diagnosis.process(None, [''])
@@ -1372,58 +1302,82 @@ class SenLib:
             "successor": successor
             }
 
-    def buildsimpleassertions(self, form_data: MultiDict) -> list:
+    def buildsimpleassertions(self, form_data: MultiDict, field_displays: dict) -> list:
         """
         Builds the elements of the assertions object of a senotype submission, corresponding
         to simple assertions--i.e., neither context assertions nor marker assertions.
         :param form_data: form data
+        :param field_displays: dict of display values for fields, with
+               key = field name
+               value = ordered list of values, corresponding to the order of
+                       values in the field if the field is a list
         """
 
         # Loop through the keys of form_data that correspond to fields from the Edit
         # form with data.
         # For each field,
-        # 1. Find the associated assertion predicate and source type.
+        # 1. If the field corresponds to an assertion, find the associated assertion
+        #    predicate and source type.
         # 2. A field can have multiple values. Each field value corresponds to the object
         #    of an assertion. Build a list of "object" objects for each value.
-        # 3. Associate the object list with the assertion information in an assertion object.
-        # 4. Build a list of assertion objects.
+        # 3. Obtain the list of associated display values, or terms.
+        # 4. Associate the object list with the assertion information in an assertion object.
+        # 5. Build a list of assertion objects.
 
         assertions = []
+
         for key in form_data:
-            objects = []
+
+            # If this form field corresponds to an assertion,
+            # there will be a predicate term associated with it.
             predicate_term = self.get_field_metadata(field_name=key, field_property='predicate_term')
 
             if predicate_term is None:
-                # This is not a field that corresponds to an assertion.
+                # This is not a field that corresponds to an assertion. Skip.
                 continue
 
+            # If an assertion, obtain the IRI and source of the predicate.
             predicate_iri = self.get_iri(predicate_term=predicate_term)
             source = self.get_field_metadata(field_name=key, field_property='object_source')
-            if isinstance(form_data.get(key), list):
-                field_values = form_data.get(key)
+
+            # Normalize to list regardless of whether value is a list, scalar, or None
+            val = form_data.get(key)
+            if isinstance(val, list):
+                field_values = val
+            elif val is None or val == '':
+                field_values = []
             else:
-                field_values = [form_data.get(key)]
+                field_values = [val]
 
-            if len(field_values) > 0:
+            if not field_values:
+                continue
 
-                for fv in field_values:
-                    obj = {"source": source,
-                           "code": fv}
-                    objects.append(obj)
+            # Match with display values; fall back to field_values if no display.
+            display_values = field_displays.get(key, field_values)
 
-                if predicate_iri is not None:
-                    predicate_object = {
-                                        "term": predicate_term,
-                                        "IRI": predicate_iri
-                                    }
-                else:
-                    predicate_object = {
-                        "term": predicate_term
-                    }
-                assertion = {"predicate": predicate_object,
-                             "objects": objects
-                             }
-                assertions.append(assertion)
+            objects = []
+
+            # Pair the assertion object field values with their display values.
+            for fv, term in zip(sorted(field_values), sorted(display_values)):
+                # External assertion displays are generally in the format
+                # code (term).
+                # Strip the code and outermost parentheses.
+                term_strip = term.replace(fv,'').strip()
+                term_strip = term_strip[1:-1] if term_strip.startswith("(") and term_strip.endswith(")") else term_strip
+
+                obj = {"source": source, "code": fv, "term": term_strip}
+                objects.append(obj)
+
+            predicate_object = {"term": predicate_term}
+            if predicate_iri is not None:
+                predicate_object["IRI"] = predicate_iri
+
+            assertion = {
+                "predicate": predicate_object,
+                "objects": objects
+            }
+
+            assertions.append(assertion)
 
         return assertions
 
@@ -1492,11 +1446,17 @@ class SenLib:
 
         return assertions
 
-    def buildregmarkerassertions(self, form_data: MultiDict) -> list:
+    def buildregmarkerassertions(self, form_data: MultiDict, field_displays: dict) -> list:
         """
             Builds the elements of the assertions objects for
             regulating markers.
             :param form_data: form data
+            :param field_displays: dict of display values for fields, with
+               key = field name
+               value = ordered list of values, corresponding to the order of
+                       values in the field if the field is a list
+
+            This is an expanded version of buildsimpleassertions.
         """
 
         # Regulating markers must be distributed among the three types
@@ -1512,41 +1472,58 @@ class SenLib:
         assertions = []
         regmarkers = form_data.get('regmarker')
 
-        if len(regmarkers) > 0:
+        # Normalize to list regardless of whether value is a list, scalar, or None.
+        if isinstance(regmarkers, list):
+            field_values = regmarkers
+        elif regmarkers is None or regmarkers == '':
+            field_values = []
+        else:
+            field_values = [regmarkers]
 
-            up_objects = []
-            down_objects = []
-            inc_objects = []
+        if not field_values:
+            return assertions
 
-            for m in regmarkers:
-                code = m.get('marker')
-                action = m.get('action')
-                obj = {"source": 'external',
-                       "code": code}
-                if action == 'up_regulates':
-                    up_objects.append(obj)
-                elif action == 'down_regulates':
-                    down_objects.append(obj)
-                else:
-                    inc_objects.append(obj)
+        display_values = field_displays.get('regmarker')
 
-            if len(up_objects) > 0:
-                predicate = {"term": 'up_regulates'}
-                assertion = {"predicate": predicate,
-                             "objects": up_objects}
-                assertions.append(assertion)
+        # Sort markers by action.
+        up_objects = []
+        down_objects = []
+        inc_objects = []
 
-            if len(down_objects) > 0:
-                predicate = {"term": 'down_regulates'}
-                assertion = {"predicate": predicate,
-                             "objects": down_objects}
-                assertions.append(assertion)
+        # Sort both lists together by marker code to keep them aligned.
+        paired = sorted(zip(field_values, display_values), key=lambda x: x[0].get('marker', ''))
 
-            if len(inc_objects) > 0:
-                predicate = {"term": 'inconclusively_regulates'}
-                assertion = {"predicate": predicate,
-                             "objects": inc_objects}
-                assertions.append(assertion)
+        for rm, term in paired:
+            action = rm.get('action')
+            code = rm.get('marker')
+            # External assertion displays are generally in the format
+            # code (term).
+            # Strip the code and outermost parentheses.
+            term_strip = term.replace(code, '').strip()
+            term_strip = term_strip[1:-1] if term_strip.startswith("(") and term_strip.endswith(")") else term_strip
+            obj = {"source": "external", "code": code, "term": term_strip}
+
+            if action == 'up_regulates':
+                up_objects.append(obj)
+            elif action == 'down_regulates':
+                down_objects.append(obj)
+            else:
+                inc_objects.append(obj)
+
+        if len(up_objects) > 0:
+            predicate = {"term": 'up_regulates'}
+            assertion = {"predicate": predicate, "objects": up_objects}
+            assertions.append(assertion)
+
+        if len(down_objects) > 0:
+            predicate = {"term": 'down_regulates'}
+            assertion = {"predicate": predicate, "objects": down_objects}
+            assertions.append(assertion)
+
+        if len(inc_objects) > 0:
+            predicate = {"term": 'inconclusively_regulates'}
+            assertion = {"predicate": predicate, "objects": inc_objects}
+            assertions.append(assertion)
 
         return assertions
 
@@ -1613,18 +1590,22 @@ class SenLib:
         return assertions
 
     # def buildassertions(self, form_data: MultiDict, ftu_tree: dict) -> list:
-    def buildassertions(self, form_data: MultiDict) -> list:
+    def buildassertions(self, form_data: MultiDict, field_displays:dict) -> list:
         """
         Builds the assertions object of a senotype submission JSON
         :param form_data: form data
-        :param ftu_tree: dict of FTU information
+        :param field_displays: dict of display values for fields, with
+               key = field name
+               value = ordered list of values, corresponding to the order of
+                       values in the field if the field is a list
+        #:param ftu_tree: dict of FTU information
         """
 
         # Simple assertions, including specific markers
-        assertions = self.buildsimpleassertions(form_data=form_data)
+        assertions = self.buildsimpleassertions(form_data=form_data, field_displays=field_displays)
 
         # Regulating marker assertions
-        assertions = assertions + self.buildregmarkerassertions(form_data=form_data)
+        assertions = assertions + self.buildregmarkerassertions(form_data=form_data, field_displays=field_displays)
 
         # Optional context assertions
         contextassertions = self.buildcontextassertions(form_data=form_data)
@@ -1640,14 +1621,18 @@ class SenLib:
         return assertions
 
     # def buildsubmissionjson(self, form_data: MultiDict, senotypeid: str, predecessorid: str, ftu_tree: dict) -> dict:
-    def buildsubmissionjson(self, form_data: MultiDict, senotypeid: str, predecessorid: str) -> dict:
+    def buildsubmissionjson(self, form_data: MultiDict, field_displays: dict, senotypeid: str, predecessorid: str) -> dict:
         """
         Builds a Senotype submission JSON from the POSTed request form data.
         :param form_data: form data
         :param senotypeid: id of the senotype to build
         :param predecessorid: id of the predecessor of the senotype, for the case of
                               a new version
-        :param ftu_tree: dict of FTU jstree information
+        :param field_displays: dict of display values for fields, with
+               key = field name
+               value = ordered list of values, corresponding to the order of
+                       values in the field if the field is a list
+        #:param ftu_tree: dict of FTU jstree information
         """
 
         # senotype
@@ -1678,7 +1663,7 @@ class SenLib:
 
         # assertions
         # listassertions = self.buildassertions(form_data=form_data, ftu_tree=ftu_tree)
-        listassertions = self.buildassertions(form_data=form_data)
+        listassertions = self.buildassertions(form_data=form_data, field_displays=field_displays)
 
         dictsubmission = {"senotype": dictsenotype,
                           "submitter": dictsubmitter,
@@ -1688,11 +1673,15 @@ class SenLib:
         return dictsubmission
 
     # def writesubmission(self, form_data: MultiDict, ftu_tree: dict, new_version_id: str = ''):
-    def writesubmission(self, form_data: MultiDict, new_version_id: str = ''):
+    def writesubmission(self, form_data: MultiDict, field_displays: dict, new_version_id: str = ''):
         """
         Writes a senotype submission to the senlib database.
         :param form_data: form data
-        :param ftu_tree: dict of FTU jstree information.
+        :param field_displays: dict of display values for fields, with
+               key = field name
+               value = ordered list of values, corresponding to the order of
+                       values in the field if the field is a list
+        #:param ftu_tree: dict of FTU jstree information.
         :param new_version_id: ID of the new version of an existing senotype.
 
         If new_version_id has a value, then a new version was requested.
@@ -1711,7 +1700,7 @@ class SenLib:
         # self.submissionjson = self.buildsubmissionjson(form_data=form_data, senotypeid=senotypeid,
                                                        # predecessorid=predecessorid, ftu_tree=ftu_tree)
 
-        self.submissionjson = self.buildsubmissionjson(form_data=form_data, senotypeid=senotypeid,
+        self.submissionjson = self.buildsubmissionjson(form_data=form_data, field_displays=field_displays, senotypeid=senotypeid,
                                                        predecessorid=predecessorid)
 
         # If this is a new version of an existing senotype, remove the DOI associated
@@ -1753,23 +1742,7 @@ class SenLib:
         form.submitterlast.data = session['username'].split(' ')[1]
         form.submitteremail.data = session['userid']
 
-    def getubkgstatus(self) -> str:
 
-        """
-        Check the status of the UBKG API.
-        """
-        api = RequestRetry()
-        statusurl = self.cfg.getfield('UBKG_BASE_URL')
-
-        try:
-            status = api.getresponse(url=statusurl)
-            if 'Hello!' in status:
-                return 'OK'
-            else:
-                return 'NOT OK'
-
-        except ConnectionError as e:
-            abort(500, description=f'Error connecting to the UBKG API: {e}')
 
     def __init__(self, cfg: AppConfig, userid: str):
 
@@ -1782,7 +1755,6 @@ class SenLib:
         """
 
         self.cfg = cfg
-
 
         # Connect to the senlib database.
         logger.info(f'Connecting to SenLib database')
@@ -1807,13 +1779,13 @@ class SenLib:
 
         self.submissionjson = {}
 
-        api = RequestRetry()
+        # Helper for calls to external APIs.
+        self.api = SenLibAPI()
 
-        urlheartbeat = self.cfg.getfield('DATACITE_HEARTBEAT_URL')
-        self.datacitestatus = api.getresponse(url=urlheartbeat)
+        self.datacitestatus = self.api.getdatacitestatus()
         logger.info(f'DataCite status = {self.datacitestatus}')
 
-        self.ubkgstatus = self.getubkgstatus()
+        self.ubkgstatus = self.api.getubkgstatus()
         logger.info(f'UBKG API status = {self.ubkgstatus}')
 
         # List of the prefixes of categorical fields in the Edit form that are required
@@ -1821,13 +1793,5 @@ class SenLib:
             'taxon-',
             'location-',
             'celltype-',
-            'hallmark-',
-            #'inducer-',
-            #'assay-',
-            #'citation-',
-            #'origin-',
-            #'dataset-',
-            #'marker-',
-            #'regmarker-',
-            #'microenvironment-'
+            'hallmark-'
         ]

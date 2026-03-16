@@ -393,7 +393,7 @@
 {{ search_modal(
     modal_id="celltypeSearchModal",
     modal_label="Search UBKG for cell type",
-    modal_help="Enter either a string that is in the name of the cell type or the Cell Ontology ID (e.g., CL:0020011, 0020011",
+    modal_help="Enter either a string that is in the name of the cell type or the Cell Ontology ID (e.g., CL:0020011; 0020011)",
     input_id="celltype-search-input",
     explore_url="/bio/home/cl",
     explore_text="Explore Cell Ontology",
@@ -576,6 +576,18 @@ the divs will not display with transparent background--apparently, a known bug i
                         </li>
                     </ul>
                     <input type="file" class="form-control mb-2" id="marker-csv-file" accept=".csv" required>
+                    <!-- Spinner (Bootstrap) -->
+                    <div id="marker-spinner"
+                           class="spinner-border text-primary"
+                           role="status"
+                           style="display:none; margin-left: 10px; width:2rem; height:2rem; z-index:10;">
+                        <span class="visually-hidden">Loading...</span>
+                      </div>
+                    <!-- Spinner Label -->
+                    <div id="marker-spinner-label"
+                           style="display:none; margin-left: 10px; white-space:nowrap;">
+                        Updating...
+                    </div>
                     <div id="csv-validation-results" class="mt-2 small">
                         <!--Container of status messages from the marker-csv script-->
                     </div>
@@ -639,6 +651,18 @@ the divs will not display with transparent background--apparently, a known bug i
                      <br>
                     <br>
                      <input type="file" class="form-control mb-2" id="regmarker-csv-file" accept=".csv" required>
+                    <!-- Spinner (Bootstrap) -->
+                    <div id="regmarker-spinner"
+                           class="spinner-border text-primary"
+                           role="status"
+                           style="display:none; margin-left: 10px; width:2rem; height:2rem; z-index:10;">
+                        <span class="visually-hidden">Loading...</span>
+                      </div>
+                    <!-- Spinner Label -->
+                    <div id="regmarker-spinner-label"
+                           style="display:none; margin-left: 10px; white-space:nowrap;">
+                        Updating...
+                    </div>
                     <div id="regcsv-validation-results" class="mt-2 small">
                         <!--Container of status messages from the regmarker-csv script-->
                     </div>

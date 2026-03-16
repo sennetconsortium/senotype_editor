@@ -77,7 +77,7 @@ function createExternalConfig() {
                     id: sennetid,
                     uuid,
                     description,
-                    trunclength: 15
+                    trunclength: 100
                 }];
             },
             link: info => ({
@@ -116,7 +116,7 @@ function createExternalConfig() {
                 .map(pmid => ({
                     id: `PMID:${pmid}`,
                     description: summaryData.result[pmid]?.title || pmid,
-                    trunclength: 20
+                    trunclength: 100
                 }));
             },
             link: info => ({
@@ -142,7 +142,7 @@ function createExternalConfig() {
                     id: item.docid.replace(/^rrid:/i, match => match.toUpperCase()),
                     //description: item.docid + ' (' + item.name + ')'|| '',
                     description: item.name,
-                    trunclength: 25
+                    trunclength: 100
                 }));
             },
             link: info => ({
@@ -165,7 +165,7 @@ function createExternalConfig() {
                     id: item.docid.replace(/^rrid:/i, match => match.toUpperCase()),
                     //description: item.docid + ' (' + item.name + ')'|| '',
                     description: item.name,
-                    trunclength: 25
+                    trunclength: 100
                 }));
             }
         },
@@ -179,13 +179,13 @@ function createExternalConfig() {
                     return data.map(item => ({
                         id: item.code || '',
                         description: item.term || '',
-                        trunclength: 65
+                        trunclength: 100
                     }));
                 } else if (data && data.code) {
                     return [{
                         id: data.code,
                         description: data.term,
-                        trunclength: 65
+                        trunclength: 100
                     }];
                 }
                 return [];
@@ -217,7 +217,7 @@ function createExternalConfig() {
                 return items.map(item => ({
                     id: item.id || item.identifier || '',
                     description: item.name || item.identifier || '',
-                    trunclength: 13
+                    trunclength: 100
                 }));
             },
             link: info => ({
@@ -238,13 +238,13 @@ function createExternalConfig() {
                     return data.map(item => ({
                         id: item.code || '',
                         description: item.term || '',
-                        trunclength: 40
+                        trunclength: 100
                     }));
                 } else if (data && data.code) {
                     return [{
                         id: data.code,
                         description: data.term,
-                        trunclength: 40
+                        trunclength: 100
                     }];
                 }
                 return [];
@@ -308,6 +308,12 @@ function addExternal(type, info) {
     const span = document.createElement('span');
     span.className = 'list-field-display';
     span.textContent = config.displayText(info);
+
+    // Give the span a name that links it to its hidden field code.
+    // Use setAttribute (span has no standard .name property)
+    span.setAttribute('name', `${type}-${ul.children.length}_field_display`);
+    span.name = `${type}-${ul.children.length}_field_display`;
+
     li.appendChild(span);
 
     // Placeholder span for link button
@@ -352,6 +358,27 @@ function setupExternalModalSearch(type) {
     const searchInput = document.getElementById(`${type}-search-input`);
     const resultsDiv = document.getElementById(`${type}-search-results`);
     if (!searchInput || !resultsDiv) return;
+
+    function cleanupModal() {
+
+        // Clears prior search.
+
+        const modalEl = document.getElementById(`${type}SearchModal`);
+        if (!modalEl) return;
+
+        // Remove result buttons
+        modalEl
+        .querySelectorAll('button.btn.btn-link.text-start.w-100.mb-1')
+        .forEach(btn => btn.remove());
+
+        // Clear search input
+        const input = modalEl.querySelector(`input#${CSS.escape(type)}-search-input`);
+        if (input) input.value = '';
+
+        // Clear the results container (recommended)
+        const results = modalEl.querySelector(`#${CSS.escape(type)}-search-results`);
+        if (results) results.innerHTML = '';
+    }
 
     searchInput.addEventListener('input', async function() {
         const query = this.value.trim();
@@ -418,6 +445,9 @@ function setupExternalModalSearch(type) {
                         btn.textContent = info.description;
                         btn.onclick = function () {
                             addExternal(type, info);
+
+                            cleanupModal();
+
                             // Hide modal with Bootstrap 5.
 
                             // Move focus out of the modal before hiding.
@@ -457,3 +487,4 @@ function escapeHtml(s) {
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;');
 }
+

@@ -5,6 +5,8 @@ Updates the Senotype repository by writing/overwriting a submission JSON file.
 from flask import Blueprint, request, render_template, flash, redirect, session, url_for
 
 from werkzeug.datastructures import MultiDict
+import re
+from collections import defaultdict
 
 
 # Helper classes
@@ -40,8 +42,74 @@ def normalize_multidict(md: MultiDict) -> MultiDict:
         if cleaned:
             for entry in cleaned:
                 normalized.add(key, entry)
-
     return normalized
+
+def get_field_displays(md: MultiDict) -> dict:
+
+    """
+    Takes a WTForms/werkzeug MultiDict
+    (e.g., request.form) and produces a normal Python dict
+    that groups all *_field_display submissions by field name
+    (e.g., celltype, location) and returns the display strings \
+    in the correct -0, -1, ... order.
+
+    :param md: a WTForms/werkzeug MultiDict (or anything with .items(multi=True) or .items()).
+
+    Returns:
+      dict like:
+        {
+          "celltype": ["CL:0020011 (abc)", "CL:0000005 (def)"],
+          "location": [...],
+          ...
+        }
+    """
+    # Werkzeug’s MultiDict can contain repeated keys,
+    # so the function tries multidict.items(multi=True) first, to
+    # keep duplicates.
+
+    # If multidict.items(multi=True) isn’t supported, it falls back
+    # to multidict.items().
+
+    # Get all (key, value) pairs, including duplicates if supported
+
+    if hasattr(md, "items"):
+        try:
+            pairs = list(md.items(multi=True))  # werkzeug MultiDict
+        except TypeError:
+            pairs = list(md.items())
+    else:
+        pairs = list(md)
+
+
+    # Keep only *_field_display keys and sort by key
+    display_pairs = sorted(
+        ((k, v) for (k, v) in pairs if "_field_display" in k),
+        key=lambda kv: kv[0],
+    )
+
+
+    # Group by the prefix before "-<ordinal>_field_display"
+    grouped = defaultdict(list)
+
+    # matches: celltype-0_field_display -> group=celltype, index=0
+    pat = re.compile(r"^(?P<group>.+?)-(?P<idx>\d+)_field_display$")
+
+    for k, v in display_pairs:
+        m = pat.match(k)
+        if not m:
+            continue  # skip anything that doesn't match the expected pattern
+        group = m.group("group")
+        idx = int(m.group("idx"))
+        grouped[group].append((idx, v))
+
+
+    # Sort each group's values by ordinal index and return plain dict
+    result = {
+        group: [v for _, v in sorted(items, key=lambda t: t[0])]
+        for group, items in sorted(grouped.items(), key=lambda t: t[0])
+    }
+
+    return result
 
 
 def validate_form(form, required_field_list_prefixes:list) ->dict:
@@ -165,6 +233,11 @@ def update():
     # Normalize form data values of [''] and ['None'] to [].
     normalized_form_data = normalize_multidict(request.form)
 
+    # Extract field display values from the request form.
+    # The display values are not true WTF fields, but are obtained
+    # via the UI, which calls external APIs.
+    field_displays = get_field_displays(normalized_form_data)
+
     # Load the edit form with the normalized form data.
     form = EditForm(normalized_form_data)
 
@@ -201,7 +274,8 @@ def update():
         # Write to the database. If new_version_id has a value, then the writesubmission
         # script will also update the provenance of the penultimate version.
         # senlib.writesubmission(form_data=form.data, new_version_id=new_version_id, ftu_tree=ftu_tree)
-        senlib.writesubmission(form_data=form.data, new_version_id=new_version_id)
+
+        senlib.writesubmission(form_data=form.data, field_displays=field_displays,new_version_id=new_version_id)
 
         flash(f'Successfully {result_action_root}ed senotype with ID {update_id}.')
 
