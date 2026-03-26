@@ -1,0 +1,4 @@
+services:
+  senotype-editor:
+    # Use the published image and tag from DockerHub
+    image: sennet/senotype-editor:${SENOTYPE_EDITOR_VERSION:?err}
