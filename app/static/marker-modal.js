@@ -47,10 +47,16 @@ function addMarker(id, description) {
     input.className = 'form-control';// d-none'; // Hidden but submitted
     li.appendChild(input);
 
-    // Visible text: show the description instead of the ID
+    // Display span: show the description instead of the ID
     var span = document.createElement('span');
     span.className = 'list-field-display';
     span.textContent = description;
+
+    // Give the span a name that links it to its hidden field code.
+    // Use setAttribute (span has no standard .name property)
+    span.setAttribute('name', `marker-${ul.children.length}_field_display`);
+    span.name = `marker-${ul.children.length}_field_display`;
+
     li.appendChild(span);
 
     // Entity detail link
@@ -97,6 +103,29 @@ document.addEventListener('DOMContentLoaded', function () {
     if (!searchInput) {
         console.error('Element #marker-search-input not found in DOM!');
         return;
+    }
+
+    function cleanupMarkerModal() {
+        // Clears prior seearch
+
+        const modalEl = document.getElementById('markerSearchModal');
+        if (!modalEl) return;
+
+        // Remove all result buttons
+        modalEl
+        .querySelectorAll('button.btn.btn-link.text-start.w-100.mb-1')
+        .forEach(btn => btn.remove());
+
+        // Clear search input
+        const input = modalEl.querySelector('input#marker-search-input');
+        if (input) input.value = '';
+
+        // Clear results div (including "Searching..." / errors)
+        const resultsDiv = modalEl.querySelector('#marker-search-results');
+        if (resultsDiv) resultsDiv.innerHTML = '';
+
+        // Reset last search so reopening doesn't get stuck
+        lastMarkerSearch = '';
     }
 
     searchInput.addEventListener('input', function () {
@@ -180,6 +209,8 @@ document.addEventListener('DOMContentLoaded', function () {
                                 .then(validateData => {
                                      // Only add marker if validation succeeded (i.e., exists in ontology)
                                     addMarker(id, description);
+
+                                    cleanupMarkerModal();
 
                                     // Hide modal with Bootstrap 5.
                                     // Move focus out of the modal before hiding.

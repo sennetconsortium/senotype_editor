@@ -69,9 +69,21 @@ function addRegMarker(id, description, action) {
     inputAction.className = 'form-control';
     li.appendChild(inputAction);
 
-    // Visible text: show the description (or id) and action as arrow or question mark
+    // Display span: show the description (or id)
     var span = document.createElement('span');
     span.className = 'list-field-display';
+    span.textContent = description;
+
+    // Give the span a name that links it to its hidden field code.
+    // Use setAttribute (span has no standard .name property)
+    span.setAttribute('name', `regmarker-${ul.children.length}_field_display`);
+    span.name = `regmarker-${ul.children.length}_field_display`;
+
+    li.appendChild(span);
+
+    // Display span: show action as arrow or question mark
+    var spanaction = document.createElement('span');
+    spanaction.className = 'action-symbol';
     let actionSymbol;
     if (action === "up_regulates") {
         actionSymbol = '\u2191'; // up arrow
@@ -80,8 +92,8 @@ function addRegMarker(id, description, action) {
     } else {
         actionSymbol = '?'; // question mark
     }
-    span.textContent =  description + " " + actionSymbol;
-    li.appendChild(span);
+    spanaction.textContent =  actionSymbol;
+    li.appendChild(spanaction);
 
     // Entity detail link
     // Placeholder span for link button
@@ -126,6 +138,31 @@ document.addEventListener('DOMContentLoaded', function () {
         console.error('Element #regmarker-search-input not found in DOM!');
         return;
     }
+
+    function cleanupRegMarkerModal() {
+
+        // Clears prior search
+
+        const modalEl = document.getElementById('regmarkerSearchModal');
+        if (!modalEl) return;
+
+        // remove all search result buttons
+        modalEl
+        .querySelectorAll('button.btn.btn-link.text-start.w-100.mb-1')
+        .forEach(btn => btn.remove());
+
+        // clear search input
+        const input = modalEl.querySelector('input#regmarker-search-input');
+        if (input) input.value = '';
+
+        // clear results (removes "Searching..." and any errors)
+        const resultsDiv = modalEl.querySelector('#regmarker-search-results');
+        if (resultsDiv) resultsDiv.innerHTML = '';
+
+        // allow same query again next time
+        lastMarkerSearch = '';
+    }
+
     searchInput.addEventListener('input', function () {
         var query = this.value.trim();
         var resultsDiv = document.getElementById('regmarker-search-results');
@@ -143,7 +180,6 @@ document.addEventListener('DOMContentLoaded', function () {
             resultsDiv.innerHTML = '<div class="text-muted">Searching UBKG API...</div>';
 
             var apiUrl;
-            console.log(type);
             if (type === "protein") {
                 apiUrl = '/ontology/proteins/' + encodeURIComponent(query.toUpperCase());
             } else {
@@ -156,7 +192,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     return response.json();
                 })
                 .then(data => {
-                    console.log(data);
+
                     resultsDiv.innerHTML = '';
                     var items = Array.isArray(data) ? data : [data];
                     if (items.length === 0) {
@@ -186,6 +222,9 @@ document.addEventListener('DOMContentLoaded', function () {
                             // Use proper prefix for marker ID
                             var markerId = (type === "gene") ? ("HGNC:" + id) : ("UNIPROTKB:" + id);
                             addRegMarker(markerId, description, action);
+
+                            cleanupRegMarkerModal();
+
                             // Move focus out of the modal before hiding.
                             // This avoids triggering prevents accessibility errors about focused
                             // elements inside aria-hidden containers. (Bootstrap apparently inserts

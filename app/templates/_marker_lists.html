@@ -38,7 +38,10 @@ Arguments:
                     {% set marker_code = field.data.split('(')[0].strip() if field.data else '' %}
                     <li class="list-group-item d-flex justify-content-between align-items-center">
                         <input type="hidden" name="{{ field.name }}" value="{{ marker_code }}">
-                        <span class="list-field-display" name="{{ field_name }}_field_display">{{ full_value }}</span>
+                        <!-- Span for value displayed in list -->
+                        <!-- The display value will be used to add a term for a coded entry in the senotype, in case of an update.-->
+                        <!-- Add any ordinal numbers for list elements -->
+                        <span class="list-field-display" name="{{ field.name ~ '_field_display' }}">{{ full_value }}</span>
                         <!-- Placeholder for the marker link button, id is unique per hidden_value -->
                         <span class="marker-link-placeholder ms-2" id="marker-link-{{ hidden_value | e }}"></span>
                         <button type="button" class="btn btn-sm btn-danger ms-2" style="width: 2.5em;" onclick="removeMarker(this)">-</button>
@@ -105,9 +108,18 @@ Arguments:
                 <li class="list-group-item d-flex justify-content-between align-items-center">
                     <input type="hidden" name="{{ entry.marker.name }}" value="{{ marker_code }}">
                     <input type="hidden" name="{{ entry.action.name }}" value="{{ action_code }}">
-                    <span class="list-field-display" style="padding-left:2px; padding-right:2px;">
+                    <!-- Span for value displayed in list -->
+                    <!-- The display value will be used to add a term for a coded entry in the senotype, in case of an update.-->
+                    <!-- Add any ordinal numbers for list elements -->
+                    <!-- The regmarker field from the form is a FieldList with both marker and action.
+                         Parse out the -marker portion for the span name. -->
+                    <span class="list-field-display"
+                          name="{{ entry.marker.name.rsplit('-marker', 1)[0] ~ '_field_display' }}"
+                          style="padding-left:2px; padding-right:2px;">
                         {{ full_value }}
-                        <span class="action-symbol" style="padding-left:2px; padding-right:2px;"> <strong>{{ action_symbol }}</strong></span>
+                    </span>
+                    <span class="action-symbol" style="padding-left:2px; padding-right:2px;">
+                        <strong>{{ action_symbol }}</strong>
                     </span>
                     <!-- Placeholder for the regmarker link button, id is unique per hidden_value -->
                     <span class="regmarker-link-placeholder ms-2" id="regmarker-link-{{ hidden_value | e }}"></span>

@@ -1,11 +1,21 @@
-# Senotype Editor
+# [Senotype Editor](https://senlib.sennetconsortium.org/)
+
 ## User Documentation
+
+* TOC
+{:toc}
 
 # Introduction
 
 ## Senotype
-A *senotype*, or _senescence associated secretory phenotype_, is a cellular senescence functional definition and associated multidimensional description. 
-A senotype associates a phenotype with other characteristics, including
+A senotype is a senescent cell subtype with distinct transcriptional, 
+spatial, and functional characteristics. Each senotype is described by a cellular senescence 
+functional definition and associated multidimensional characteristics. 
+A senotype refers to the complex interplay of features that associates a cell phenotype 
+with other characteristics that vary widely by tissue type, cell lineage, inducing stimulus, and 
+senescence hallmarks such as cell cycle arrest, SASP production, DNA damage, and chromatin remodeling.
+
+A senotype associates a phenotype with characteristics that include:
 - taxa
 - locations in the body
 - cell types
@@ -32,12 +42,12 @@ identified with codes from HGNC and UniProt, with a relationship encoded by the
 Relations Ontology.
 
 
-##  The Senlib Database
-Senotype definitions are maintained in the *Senotype library* (**SenLib**). Senotype definitions are stored in Senlib in JSON format and conform
+##  The SenLib Database
+Senotype definitions are maintained in the *Senotype Library* (**SenLib**). Senotype definitions are stored in SenLib in JSON format and conform
 to the schema defined in the [senlib](https://github.com/sennetconsortium/senlib/blob/main/doc/Senotype_Submission_Schema.md) GitHub repository.
 
 ## The Senotype Editor
-The **Senotype Editor** application allows users to manage senotype definitions in the Senlib database. 
+The **[Senotype Editor](https://senlib.sennetconsortium.org/)** application allows users to manage senotype definitions in the SenLib database. 
 Because the majority of the assertions in a senotype definition involve categorical data, most of the work of defining a senotype will
 involve the selection of values from lists.
 
@@ -86,7 +96,7 @@ A senotype definition is represented in the Navigator tree with a folder node ( 
 displays the senotype submissions associated with the definition.
 
 Senotype submission files are represented with a file node (![img_2.png](img_2.png) ). Submission nodes are organized hierarchically in terms of provenance
-in the Senlib database. If a submission has a predecessor, the node for the submission can be expanded to view the 
+in the SenLib database. If a submission has a predecessor, the node for the submission can be expanded to view the 
 predecessor.
 
 When the user selects a submission file node in the Navigator, the Senotype Editor will load data 
@@ -112,7 +122,6 @@ into the Definition section defaults for the new submission, including:
 1. a new SenNet ID
 2. the Globus name and email of the user, as submitter
 
-
 # Using the Senotype Definition tools
 
 ## Required data
@@ -120,10 +129,15 @@ into the Definition section defaults for the new submission, including:
 A senotype definition requires a minimal set of data. Data that are 
 required for a senotype are indicated with a red asterisk.
 
-## Submission information
-The user can edit the **name** and **description** for the submission. 
-The Navigator will use the name for the latest version of a senotype definition as 
-the name of the definition node.
+## Submission information: name and description
+The **name** and **description** of the senotype definition are required data.
+
+Both the **name** and **description** fields are free text. 
+
+The Senotype Library Navigator tree view will use the value of **name** for the latest version of a senotype definition in 
+the representation of the senotype definition.
+
+![img_37.png](img_37.png)
 
 ## Assertions
 The Definition section allows the definition of assertions between a senotype and its characteristics.
@@ -300,10 +314,20 @@ Depending on the type of origin, the SciCrunch detail page may redirect to anoth
 
 ![img_18.png](img_18.png)
 
-A senotype definition has two types of markers:
-- _specified_ markers
-- _regulating_ markers--markers characterized in terms of how they regulate the senotype
+A senotype definition can have two types of _markers_. 
+The association of a senotype definition with a marker is a statement of tentative expert opinion. 
+Associations are not just the result of a single experiment, but also not necessarily clear evidence.
 
+#### Specified markers
+These gene or protein markers are a list an investigator might recommend be used to describe the markers that would help 
+identify or characterize a senescent cell of this senotype--e.g., to use as a gene panel for a probed assay.
+
+#### Regulating markers
+These are typically a longer list of gene or protein markers that have been tested for the senotype. 
+The investigator observes these markers to be up-regulated; down-regulated; or tested but inconclusive whether up- or down- regulated 
+(e.g., using log2FC and p-value).
+
+#### Collapsible section
 Because it is anticipated that a senotype will be associated with many markers, the entire Markers section is collapsible.
 
 Marker assertion management for both specified and regulating markers is similar:
@@ -355,7 +379,7 @@ gene,BRCA1
 protein,Q13201
 ```
 ### Regulating markers
-The CSV used for bulk upload of regulating arkers must have the following structure:
+The CSV used for bulk upload of regulating markers must have the following structure:
 
 | column | values                                                                                                                         |
 |--------|--------------------------------------------------------------------------------------------------------------------------------|
@@ -385,7 +409,7 @@ The Editor verifies that:
 2. Context assertions are ordered such that **lowerbound** <= **value** <= **upperbound**.
 
 If the data passed validation, the Editor:
-* writes the data to the Senlib database 
+* writes the data to the SenLib database 
 * displays a success message in green at the top of the Editor page
 * resets the Navigator to point to the updated submission
 
