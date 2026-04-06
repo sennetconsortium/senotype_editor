@@ -89,16 +89,7 @@ def edit():
                     form_field = getattr(form, field_name)
                     form_field.errors = errs
 
-    elif request.method == 'GET':
-
-        # This scenario occurs on the initial load of the form as a result of a
-        # redirect--either from Globus login or from a failed update.
-
-        # Load an empty form.
-        form = EditForm()
-        senlib.setdefaults(form=form)
-
-    elif request.method == 'POST':
+    elif request.method == 'POST' or 'selected_node_id' in session:
 
         # This is the result of a POST triggered by the change event in the senotype
         # treeview.  Fetch submission data from the senlib database if the
@@ -108,7 +99,9 @@ def edit():
         form = EditForm(request.form)
 
         # Obtain the selected senotype id
-        id = request.form.get('selected_node_id')
+        id = session.pop('selected_node_id', None)
+        if id is None:
+            id = request.form.get('selected_node_id')
 
         if id == 'new' or id is None:
 
@@ -129,6 +122,15 @@ def edit():
             # Load from existing data.
             senlib.fetchfromdb(senotypeid=id, form=form)
 
+    elif request.method == 'GET':
+
+        # This scenario occurs on the initial load of the form as a result of a
+        # redirect--either from Globus login or from a failed update.
+
+        # Load an empty form.
+        form = EditForm()
+        senlib.setdefaults(form=form)
+
     selected_node_id = request.form.get('selected_node_id') or request.args.get('selected_node_id')
 
     # Pass to the edit form:
@@ -146,3 +148,9 @@ def edit():
                            form=form,
                            response={'tree_data': senlib.senotypetree},
                            selected_node_id=selected_node_id)
+
+@edit_blueprint.route('/<senotype_id>', methods=['GET'])
+def edit_senotype_id(senotype_id):
+    session['selected_node_id'] = senotype_id
+
+    return redirect(url_for('edit.edit'), code=307)

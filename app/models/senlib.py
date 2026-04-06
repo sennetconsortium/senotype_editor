@@ -1717,6 +1717,13 @@ class SenLib:
         if new_version_id != '':
             self.updatesuccessor(senotypeid=predecessorid, successorid=new_version_id)
 
+        # Call Search API to reindex this senotype
+        token = session["groups_token"]
+        headers = {"Authorization": f"Bearer {token}"}
+        response = requests.put(url=self.search_base_api+'reindex/'+senotypeid, headers=headers)
+        if not response.ok:
+            logger.error(f'Failed to reindex senotype with ID {senotypeid}')
+
     def updatesuccessor(self, senotypeid: str, successorid: str):
         """
         Updates the successor for an existing senotype, for the case in which a
@@ -1781,6 +1788,9 @@ class SenLib:
 
         # Helper for calls to external APIs.
         self.api = SenLibAPI()
+
+        # SenNet Search API
+        self.search_base_api = self.cfg.getfield(key='SEARCH_BASE_URL')
 
         self.datacitestatus = self.api.getdatacitestatus()
         logger.info(f'DataCite status = {self.datacitestatus}')

@@ -20,6 +20,8 @@ UUID_BASE_URL='https://uuid-api.dev.sennetconsortium.org/uuid'
 UBKG_BASE_URL='https://ontology.api.hubmapconsortium.org'
 # entity-api
 ENTITY_BASE_URL='https://entity.api.sennetconsortium.org/entities/'
+# search-api
+SEARCH_BASE_URL='https://search.api.sennetconsortium.org/senotypes/'
 # Data Portal
 DATA_PORTAL_BASE_URL='https://data.sennetconsortium.org'
 
