@@ -157,7 +157,7 @@ def logout():
     session.clear()
     response = make_response(redirect(globus_logout_url))
     for cookie in request.cookies:
-        response.delete_cookie(cookie)
+        response.delete_cookie(cookie, domain='.sennetconsortium.org', path='/')
 
     return response
 
