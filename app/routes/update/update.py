@@ -224,7 +224,7 @@ def update():
         action = request.form.get('action')
         if action == 'new_version':
             # Mint a new SenNet ID.
-            update_id = senlib.getnewsenotypeid()
+            update_id, update_uuid = senlib.getnewsenotypeid()
             isnewversion = True
         else:
             update_id = selected_node_id
