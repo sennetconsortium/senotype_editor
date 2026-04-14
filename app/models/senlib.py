@@ -752,6 +752,7 @@ class SenLib:
 
         # Senotype and Submitter
         form.senotypeid.data = ''
+        form.senotypeuuid.data = ''
         form.senotypename.data = ''
         form.senotypedescription.data = ''
         form.doi.data = ''
@@ -810,6 +811,7 @@ class SenLib:
         # Get senotype data
         dictsenlib = self.getsenotypejson(id=senotypeid)
         senotype = dictsenlib.get('senotype')
+        form.senotypeuuid.data = senotype.get('uuid', '')
         form.senotypename.data = senotype.get('name', '')
         form.senotypedescription.data = senotype.get('definition', '')
         form.doi.data = self.getdoi(senotype=senotype)
@@ -989,7 +991,7 @@ class SenLib:
         else:
             form.diagnosis.process([''])
 
-    def getnewsenotypeid(self) -> str:
+    def getnewsenotypeid(self):
         """
         Calls the uuid-api to obtain a new SenNet ID.
         """
@@ -1008,7 +1010,8 @@ class SenLib:
         response = requests.post(url=uuid_url, headers=headers, json=data)
         responsejson = response.json()[0]
         sennet_id = responsejson.get('sennet_id', '')
-        return sennet_id
+        uuid = responsejson.get('uuid', '')
+        return sennet_id, uuid
 
     def get_field_metadata(self, field_name: str, field_property: str) -> str:
         """
@@ -1648,6 +1651,7 @@ class SenLib:
 
         dictsenotype = {
             "id": senotypeid,
+            "uuid": form_data.get('senotypeuuid'),
             "provenance": self.getprovenanceids(senotypeid=senotypeid, predecessorid=predecessorid),
             "doi": doiurl,
             "name": form_data.get('senotypename'),

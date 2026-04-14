@@ -110,7 +110,7 @@ def edit():
             senlib.setdefaults(form=form)
 
             # Mint a new SenNet ID.
-            form.senotypeid.data = senlib.getnewsenotypeid()
+            form.senotypeid.data, form.senotypeuuid.data = senlib.getnewsenotypeid()
 
             # Use the Globus authentication information to identify the submitter's
             # privileges. Currently, a user is only allowed to edit unpublished
