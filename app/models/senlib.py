@@ -1135,6 +1135,7 @@ class SenLib:
         """
 
         # Senotype data
+        form.senotypeuuid.data = form_data['senotypeuuid']
         form.senotypename.data = form_data['senotypename']
         form.senotypedescription.data = form_data['senotypedescription']
         form.doi.data = form_data['doi']

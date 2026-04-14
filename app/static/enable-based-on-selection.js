@@ -67,7 +67,7 @@ $(function() {
         if (leaveAlone.includes(el.id)) return;
 
         // Readonly controls are always disabled.
-        var readonly = ['senotypeid','submitterfirst',
+        var readonly = ['senotypeid', 'senotypeuuid','submitterfirst',
         'submitterlast','submitteremail','ageunit','bmiunit'];
         if (readonly.includes(el.id)) {
             el.disabled = true;
