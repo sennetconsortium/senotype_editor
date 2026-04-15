@@ -11,15 +11,18 @@ def load_app_client(consortium: str) -> ConfidentialAppAuthClient:
     """
     cfg = AppConfig()
 
-    if consortium == 'CONTEXT_HUBMAP':
-        globus_client = cfg.getfield(key='GLOBUS_HUBMAP_CLIENT')
-        globus_secret = cfg.getfield(key='GLOBUS_HUBMAP_SECRET')
-    elif consortium == 'CONTEXT_SENNET':
-        globus_client = cfg.getfield(key='GLOBUS_SENNET_CLIENT')
-        globus_secret = cfg.getfield(key='GLOBUS_SENNET_SECRET')
-    else:
-        msg = f'Unknown consortium: {consortium}. Check the configuration file.'
-        abort(400, msg)
+    #if consortium == 'CONTEXT_HUBMAP':
+        #globus_client = cfg.getfield(key='GLOBUS_HUBMAP_CLIENT')
+        #globus_secret = cfg.getfield(key='GLOBUS_HUBMAP_SECRET')
+    #elif consortium == 'CONTEXT_SENNET':
+        #globus_client = cfg.getfield(key='GLOBUS_SENNET_CLIENT')
+        #globus_secret = cfg.getfield(key='GLOBUS_SENNET_SECRET')
+    #else:
+        #msg = f'Unknown consortium: {consortium}. Check the configuration file.'
+        #abort(400, msg)
+
+    globus_client = cfg.getfield(key='GLOBUS_SENNET_CLIENT')
+    globus_secret = cfg.getfield(key='GLOBUS_SENNET_SECRET')
 
     return ConfidentialAppAuthClient(globus_client, globus_secret)
 

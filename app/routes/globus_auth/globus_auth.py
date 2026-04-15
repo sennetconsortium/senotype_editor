@@ -79,7 +79,8 @@ def login():
     if 'state' in request.args:
         consortium = request.args.get('state').split(' ')[0]
     else:
-        consortium = session['consortium']
+        consortium = 'CONTEXT_SENNET'
+        #consortium = session['consortium']
 
     client = load_app_client(consortium)
 
@@ -92,7 +93,7 @@ def login():
     # If there's no "code" argument in the request object, then this is the first execution of the route.
     # Redirect out to Globus Auth, identifying the consortium and donor id via the state key.
     if 'code' not in request.args:
-        state = f'{session["consortium"]}'
+        state = "CONTEXT_SENNET"
         params: dict = {"scope": "openid profile email"
                                  " urn:globus:auth:scope:transfer.api.globus.org:all"
                                  " urn:globus:auth:scope:auth.globus.org:view_identities"
