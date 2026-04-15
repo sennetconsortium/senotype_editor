@@ -2,8 +2,10 @@
 Globus authentication routes.
 
 """
+import base64
+import json
 
-from flask import Blueprint, request, redirect, session, abort, render_template
+from flask import Blueprint, request, redirect, session, abort, render_template, make_response
 
 # Helper classes
 from models.appconfig import AppConfig
@@ -16,8 +18,6 @@ logout_blueprint = Blueprint('logout', __name__, url_prefix='/logout')
 
 @auth_blueprint.route('', methods=['GET'])
 def auth():
-    cfg = AppConfig()
-
     # Check if user is already logged in and token is still active. Redirect to edit page
     if 'userid' in session and 'groups_token' in session:
         client = load_app_client(session['consortium'])
@@ -25,16 +25,29 @@ def auth():
         if  validation_data['active']:
             return redirect(f'/edit')
 
-        is_senotype_edit_member = None
-        user_groups = get_group_info(session['groups_token'])
-        for group in user_groups:
-            if group['id'] == cfg.getfield(key='GLOBUS_EDIT_GROUP_UUID'):
-                is_senotype_edit_member = True
-                break
+    # Check if 'info' exists in cookies (means they have logged in via the Portal already)
+    info = request.cookies.get('info', None)
+    if info:
+        info =json.loads(base64.b64decode(info).decode('utf-8'))
 
-        if not is_senotype_edit_member:
-            abort(code=403,
-                  description='Your Globus account does not have the necessary group privileges to use this application. Visit https://app.globus.org/groups to check if you have a pending invitation to the Globus group "Senotype Edit ".')
+        # Obtain consortium
+        if 'state' in request.args:
+            consortium = request.args.get('state').split(' ')[0]
+        else:
+            consortium = session['consortium']
+
+
+        user_info = get_user_info(info['auth_token'])
+        userid = user_info.get('preferred_username')
+
+        session['auth_token'] = info['auth_token']
+        session['groups_token'] = info['groups_token']
+        session['consortium'] = consortium
+        session['userid'] = userid
+        session['username'] = user_info.get('name')
+        check_senotype_edit_member()
+
+        return redirect(f'/edit')
 
     return render_template('login.html')
 
@@ -120,17 +133,7 @@ def login():
         session['userid'] = userid
         session['username'] = user_info.get('name')
 
-        is_senotype_edit_member = None
-        user_groups = get_group_info(groups_token)
-        for group in user_groups:
-            if group['id'] == cfg.getfield(key='GLOBUS_EDIT_GROUP_UUID'):
-                is_senotype_edit_member = True
-                break
-
-        if not is_senotype_edit_member:
-            abort(code=403,
-                  description='Your Globus account does not have the necessary group privileges to use this application.')
-
+        check_senotype_edit_member()
         return redirect(f'/edit')
 
 @logout_blueprint.route('', methods=['GET'])
@@ -144,13 +147,29 @@ def logout():
     if 'groups_token' in session:
         client.oauth2_revoke_token(session['groups_token'])
 
-    session.clear()
-
     globus_logout_url = (
-        "https://auth.globus.org/v2/web/logout"
-        + "?client={}".format(cfg.getfield("GLOBUS_SENNET_CLIENT"))
-        + "&redirect_uri={}".format(cfg.getfield("FLASK_APP_BASE_URI"))
-        + "&redirect_name={}".format("Senotype Editor")
+            "https://auth.globus.org/v2/web/logout"
+            + "?client={}".format(cfg.getfield("GLOBUS_SENNET_CLIENT"))
+            + "&redirect_uri={}".format(cfg.getfield("FLASK_APP_BASE_URI"))
+            + "&redirect_name={}".format("Senotype Editor")
     )
 
-    return redirect(globus_logout_url)
+    session.clear()
+    response = make_response(redirect(globus_logout_url))
+    for cookie in request.cookies:
+        response.delete_cookie(cookie, domain='.sennetconsortium.org', path='/')
+
+    return response
+
+def check_senotype_edit_member():
+    cfg = AppConfig()
+    is_senotype_edit_member = False
+    user_groups = get_group_info(session['groups_token'])
+    for group in user_groups:
+        if group['id'] == cfg.getfield(key='GLOBUS_EDIT_GROUP_UUID'):
+            is_senotype_edit_member = True
+            break
+
+    if not is_senotype_edit_member:
+        abort(code=403,
+              description='Your Globus account does not have the necessary group privileges to use this application. Visit https://app.globus.org/groups to check if you have a pending invitation to the Globus group "Senotype Edit ".')
