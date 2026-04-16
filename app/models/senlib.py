@@ -1008,7 +1008,6 @@ class SenLib:
 
         # The uuid-api returns a list of dicts. The default call returns one element.
         response = requests.post(url=uuid_url, headers=headers, json=data)
-        logger.info("UUID Response", response)
         responsejson = response.json()[0]
         sennet_id = responsejson.get('sennet_id', '')
         uuid = responsejson.get('uuid', '')
