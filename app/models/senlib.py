@@ -1008,10 +1008,15 @@ class SenLib:
 
         # The uuid-api returns a list of dicts. The default call returns one element.
         response = requests.post(url=uuid_url, headers=headers, json=data)
-        responsejson = response.json()[0]
-        sennet_id = responsejson.get('sennet_id', '')
-        uuid = responsejson.get('uuid', '')
-        return sennet_id, uuid
+        if response.status_code == 200:
+            responsejson = response.json()[0]
+            sennet_id = responsejson.get('sennet_id', '')
+            uuid = responsejson.get('uuid', '')
+            return sennet_id, uuid
+        else:
+            logger.info("Token: " + token)
+            logger.error(response.json())
+            return None
 
     def get_field_metadata(self, field_name: str, field_property: str) -> str:
         """
