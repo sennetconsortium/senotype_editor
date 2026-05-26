@@ -73,6 +73,8 @@ def edit():
         # ftu_tree = []
     # senlib.ftutree = ftu_tree
 
+    selected_node_id = request.form.get('selected_node_id') or request.args.get('selected_node_id')
+
     if form_data:
         # Populate the form with session data--i.e., the data for the submission that
         # the user is attempting to add or update.
@@ -121,6 +123,7 @@ def edit():
         else:
             # Load from existing data.
             senlib.fetchfromdb(senotypeid=id, form=form)
+            selected_node_id = id
 
     elif request.method == 'GET':
 
@@ -130,8 +133,6 @@ def edit():
         # Load an empty form.
         form = EditForm()
         senlib.setdefaults(form=form)
-
-    selected_node_id = request.form.get('selected_node_id') or request.args.get('selected_node_id')
 
     # Pass to the edit form:
     # 1. the tree of senotype id information for the jstree control
