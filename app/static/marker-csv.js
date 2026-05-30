@@ -85,15 +85,17 @@ document.addEventListener("DOMContentLoaded", function () {
                     return;
                 }
 
-                // Validate header
+                // Validate header.
+                // The organism column is optional.
                 const header = rows[0].map(h => h.trim().toLowerCase());
-                if (!(header.includes("type") && header.includes("id"))) {
-                    resultsDiv.textContent = "CSV must have columns named 'type' and 'id' (case-insensitive).";
+                if (!(header.includes("type") && header.includes("id") && header.includes("organism"))) {
+                    resultsDiv.textContent = "CSV must have columns named 'type', 'organism', and 'id' (case-insensitive).";
                     return;
                 }
 
                 const typeIdx = header.indexOf("type");
                 const idIdx = header.indexOf("id");
+                const org = header.indexOf("organism");
                 let errors = [];
                 let markers = [];
 
@@ -101,8 +103,14 @@ document.addEventListener("DOMContentLoaded", function () {
                 for (let i = 1; i < rows.length; i++) {
                     const row = rows[i].map(cell => cell.trim());
                     const type = row[typeIdx].toLowerCase();
+                    const organism = row[org].toLowerCase();
 
                     // id here is either a HGNC symbol (e.g., BRCA1) or a UniprotKB symbol.
+                    // id:
+                    // - if type is gene:
+                    //   - if organism is human (default), a HGNC symbol
+                    //   - if organism is mouse, a MGI symbol
+                    // - if type is protein, a UniProtKB symbol
                     const id = row[idIdx];
                     if (!(type === "gene" || type === "protein")) {
                         errors.push(`Row ${i + 1}: type must be 'gene' or 'protein'`);
@@ -115,7 +123,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     }
 
                     // Add the marker from the CSV to the list of markers to validate.
-                    markers.push({ type, id });
+                    markers.push({ type, id, organism });
                 }
 
                 // If basic validation errors, stop.
@@ -143,7 +151,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
                     const m = markers[i];
                     // Set up the appropriate endpoint.
-                    let apiUrl = `/ontology/${m.type === "gene" ? "genes" : "proteins"}/${encodeURIComponent(m.id)}`;
+                    let apiUrl =`/ontology/${m.type === "gene" ? "genes" : "proteins"}/${encodeURIComponent(m.id)}` +
+                    (m.type === "gene" ? `?organism=${encodeURIComponent(m.organism)}` : "");
 
                     try {
                         // Disable the ESLint no-await-in-loop checks and warnings--i.e.,
@@ -157,6 +166,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
                         // Get response as JSON.
                         let data = await resp.json();
+                        console.log(data);
 
                         // Check for valid return value (array/object with proper id)
                         if (m.type === "gene") {
@@ -170,8 +180,8 @@ document.addEventListener("DOMContentLoaded", function () {
                                 : (data.approved_symbol && data.approved_symbol.toLowerCase() === m.id.toLowerCase() ? data : null);
                             if (!found) throw new Error();
 
-                            // If a gene in the CSV was in the response, get the hgnc ID, approved symbol, and approved name.
-                                validEntries.push({ type: "gene", id: found.hgnc_id, symbol: found.approved_symbol, name: found.approved_name });
+                            // If a gene in the CSV was in the response, get the organism, HGNC/MGI ID, approved symbol, and approved name.
+                            validEntries.push({ type: "gene", organism: m.organism, id: (m.organism === "human" ? found.hgnc_id: found.mgi_id), symbol: found.approved_symbol, name: found.approved_name });
 
                         } else {
 
@@ -266,7 +276,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
         parsedMarkers.forEach(m => {
             // id in format SAB:code
-            const standardizedId = m.type === "gene" ? "HGNC:" + m.id : "UNIPROTKB:" + m.id;
+            const standardizedId =
+                m.type === "gene" ?
+                (m.organism === "human" ? "HGNC:" : "MGI:") + m.id
+                : "UNIPROTKB:" + m.id;
             const description = m.type === "gene"
                 ? m.approved_symbol || m.symbol || m.id
                 : m.recommended_name || m.id;
