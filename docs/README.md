@@ -337,17 +337,26 @@ Marker assertion management for both specified and regulating markers is similar
 #### Search windows (individual addition)
 A marker Search window searches for gene or protein markers. 
 
-The user can enter different types of identifiers for markers, including:
-1. HGNC numbers (e.g., 7178)
-2. HGNC approved symbols (e.g., MMRN1)
-3. HGNC aliases (ECM)
-4. HGNC prior symbols (e.g., MMRN)
-5. UniProtKB ID (e.g., Q13201)
-6. UniProtKB entry name (e.g., MMRN1_HUMAN)
+The user can enter different types of identifiers for markers:
 
-![img_35.png](img_35.png)
+| Type of identifier   | organism       | example     |
+|----------------------|:---------------|-------------|
+| HGNC number          | human          | 7178        |
+| HGNC approved symbol | human          | MMRN1       |
+| HGNC alias           | human          | ECM         |
+| HGNC prior symbol    | human          | MMRN        |
+| MGI number           | mouse          | 2152878     |
+| MGI number           | mouse          | A1bg        |
+| UniProtKB ID         | human or mouse | Q13201      |
+| UniProtKG entry name | human or mouse | MMRN1_HUMAN |
 
-The Search window for regulating markers includes a field for type of regulating:
+Note case for gene identifiers:
+1. HGNC identifiers combine uppercase letters and numbers
+2. MGI numbers use mixed case for letters.
+
+![img_38.png](img_38.png)
+
+The Search window for regulating markers includes a field for type of regulation:
 + upregulation
 + downregulation
 + inconclusive regulation
@@ -355,7 +364,7 @@ The Search window for regulating markers includes a field for type of regulating
 ![img_36.png](img_36.png)
 
 Both types of Search window feature an Explore button ( ![img_12.png](img_12.png) ) that will open a home page for
-a marker vocabulary (HGNC or UniProtKB), based on the selected type of marker.
+a marker vocabulary (HGNC, MGI, or UniProtKB), based on the selected type of marker.
 
 #### Bulk Addition windows
 Bulk addition windows allow the user to load a large number of markers from a local CSV file that the user specifies.
@@ -367,32 +376,36 @@ The bulk addition windows will only add information from a CSV if:
 ### Specified markers
 The CSV used for bulk upload of specified markers must have the following structure:
 
-| column | values                                                                |
-|--------|-----------------------------------------------------------------------|
-| type   | either **gene** or **protein**                                        |
-| id     | * if a _gene_, the HGNC symbol<br/>* if a _protein_, the UniProtKB ID |
+| column   | values                                                                                                                |
+|----------|-----------------------------------------------------------------------------------------------------------------------|
+| type     | either **gene** or **protein**                                                                                        |
+| organism | either **human** or **mouse**                                                                                         |
+| id       | * if a  _human gene_, the HGNC symbol<br/>* if a _mouse gene_, the MGI symbol <br/> *if a _protein_, the UniProtKB ID |
 
 Example:
 ```commandline
-type,id
-gene,BRCA1
-protein,Q13201
+type,organism,id
+gene,human,BRCA1
+protein,human,Q13201
+gene,mouse,A1bg
 ```
 ### Regulating markers
 The CSV used for bulk upload of regulating markers must have the following structure:
 
-| column | values                                                                                                                         |
-|--------|--------------------------------------------------------------------------------------------------------------------------------|
-| type   | either **gene** or **protein**                                                                                                 |
-| id     | * if a _gene_, the HGNC symbol<br/>* if a _protein_, the UniProtKB ID                                                          |
-| action | one of the following:<br/>* **1** for up regulation <br/>* **0** for inconclusive regulation <br/>* **-1** for down regulation |                                                                 
+| column   | values                                                                                                                         |
+|----------|--------------------------------------------------------------------------------------------------------------------------------|
+| type     | either **gene** or **protein**                                                                                                 |
+| organism | either **human** or **mouse**                                                                                                  
+| id       | * if a _human gene_, the HGNC symbol<br/>* if a _mouse gene_, the MGI symbol <br/> * if a _protein_, the UniProtKB ID          |
+| action   | one of the following:<br/>* **1** for up regulation <br/>* **0** for inconclusive regulation <br/>* **-1** for down regulation |                                                                 
 
 Example:
 ```commandline
-type,id,action
-gene,BRCA1,1
-protein,Q13201,0
-gene,BRAF,-1
+type,organism,id,action
+gene,human,BRCA1,1
+protein,human,Q13201,0
+gene,human,BRAF,-1
+gene,mouse,A1bg,1
 ```
 
 # Validation
