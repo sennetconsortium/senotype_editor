@@ -1358,6 +1358,8 @@ class SenLib:
 
             # Match with display values; fall back to field_values if no display.
             display_values = field_displays.get(key, field_values)
+            print(display_values)
+            print(field_values)
 
             objects = []
 

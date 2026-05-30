@@ -430,7 +430,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="markerSearchModalLabel">Search UBKG for marker</h5>
-                <h6 class="modal-help" id="markerSearchModalHelpLabel">For <strong>genes</strong>, enter HGNC ID, symbol, alias, or past symbol; for <strong>proteins</strong>, enter UniprotKB ID or symbol.</h6>
+                <h6 class="modal-help" id="markerSearchModalHelpLabel">For <strong>genes</strong>, enter HGNC ID, symbol, alias, or past symbol; for <strong>proteins</strong>, enter UniprotKB ID or symbol. For <strong>organism</strong>, select <i>human</i> or <i>mouse</i>.</h6>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
@@ -448,9 +448,26 @@
                         </div>
                     </div>
                 </div>
+                <!-- Radio buttons for organism -->
+                <div class="mb-3">
+                    <label class="form-label">Organism:</label>
+                    <div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="marker-organism" id="marker-organism-human" value="human" checked>
+                            <label class="form-check-label" for="marker-organism-human">human</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="marker-organism" id="marker-organism-mouse" value="mouse">
+                            <label class="form-check-label" for="marker-organism-mouse">mouse</label>
+                        </div>
+                    </div>
+                </div>
                 <div class="input-group mb-2">
                     <input type="text" id="marker-search-input" class="form-control" placeholder="Enter query...">
                     <!--Add explore button to external site-->
+                    <!--Default is HGNC, but the updateMarkerExploreUrl script will
+                        update the URL if the selected organism is mouse.
+                    -->
                     {{ explore_button(
                         btn_id="marker-explore",
                         explore_url="/explore/hgnc",
@@ -708,4 +725,5 @@ the divs will not display with transparent background--apparently, a known bug i
 <script src="{{ url_for('static', filename='regmarker-csv.js') }}"></script>
 <script src="{{ url_for('static', filename='marker-explore-update.js') }}"></script>
 <script src="{{ url_for('static', filename='doi-modal.js') }}"></script>
+<script src="{{ url_for('static', filename='explore.js') }}"></script>
 {% endblock %}

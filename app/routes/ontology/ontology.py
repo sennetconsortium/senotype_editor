@@ -3,11 +3,13 @@ Calls the hs-ontology API.
 
 """
 import re
-from flask import Blueprint, make_response
+from flask import Blueprint, request, make_response
 from models.ontology_class import OntologyAPI
+from utils.http_param import HttpParam
 
 ontology_blueprint = Blueprint('ontology', __name__, url_prefix='/ontology')
 ontapi = OntologyAPI()
+http_param = HttpParam()
 
 def prepare_id(id:str) -> str:
     """
@@ -16,6 +18,7 @@ def prepare_id(id:str) -> str:
     """
 
     stripped = re.sub(r'(?i)hgnc:', '', id)
+    stripped = re.sub(r'(?i)mgi:','',id)
     stripped = re.sub(r'(?i)uniprotkb:', '', stripped)
     stripped = re.sub(r'(?i)cl:', '', stripped)
 
@@ -23,8 +26,25 @@ def prepare_id(id:str) -> str:
 
 @ontology_blueprint.route('/genes/<subpath>')
 def ontology_genes_proxy(subpath):
+    # Check for invalid parameter names.
+    err = http_param.validate_query_parameter_names(parameter_name_list=['organism'])
+    if err != 'ok':
+        return make_response(err, 400)
 
-    endpoint = f'genes/{prepare_id(subpath)}'
+    # Check for valid parameter values.
+    organism = request.args.get('organism')
+    if organism is None:
+        organism = 'human'
+    else:
+        organism = organism.lower()
+        val_enum = ['human', 'mouse']
+        err = http_param.validate_parameter_value_in_enum(param_name='organism', param_value=organism,
+                                               enum_list=val_enum)
+        if err != 'ok':
+            return make_response(err, 400)
+
+
+    endpoint = f'genes/{prepare_id(subpath)}?organism={organism}'
     return ontapi.get_ontology_api_response(endpoint=endpoint,target='genes')
 
 
