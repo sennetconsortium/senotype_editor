@@ -171,7 +171,6 @@ document.addEventListener('DOMContentLoaded', function () {
                         return;
                     }
                     items.forEach(item => {
-                        console.log(item);
                         var id, description, validateId;
                         if (type === "protein") {
 

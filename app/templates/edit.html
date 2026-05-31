@@ -504,6 +504,20 @@
                         </div>
                     </div>
                 </div>
+                <!-- Radio buttons for organism -->
+                <div class="mb-3">
+                    <label class="form-label">Organism:</label>
+                    <div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="regmarker-organism" id="regmarker-organism-human" value="human" checked>
+                            <label class="form-check-label" for="regmarker-organism-human">human</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="regmarker-organism" id="regmarker-organism-mouse" value="mouse">
+                            <label class="form-check-label" for="regmarker-organism-mouse">mouse</label>
+                        </div>
+                    </div>
+                </div>
                 <!-- Radio buttons for marker action -->
                 <div class="mb-3">
                     <label class="form-label">Action:</label>
@@ -578,7 +592,7 @@ the divs will not display with transparent background--apparently, a known bug i
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <p>Please upload a CSV file with <strong>type</strong>, <strong>id</strong>, and <strong>organism</strong> columns.
+                <p>Please upload a CSV file with <strong>type</strong>, <strong>organism</strong>, and <strong>id</strong> columns.
                     <ul>
                         <li>
                             <small>
@@ -637,7 +651,7 @@ the divs will not display with transparent background--apparently, a known bug i
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <p>Please upload a CSV file with <strong>type</strong>, <strong>id</strong>, and <strong>action</strong> columns.
+                <p>Please upload a CSV file with <strong>type</strong>, <strong>organism</strong>, </strong><strong>id</strong>, and <strong>action</strong> columns.
                     <br>
                     <ul>
                         <li>
@@ -647,8 +661,17 @@ the divs will not display with transparent background--apparently, a known bug i
                         </li>
                         <li>
                             <small>
-                                A gene <strong>id</strong> must correspond to a HGNC symbol--e.g., <code>BRCA1</code>.
+                                <strong>organism</strong> must be either <code>human</code> or <code>mouse</code>.
                             </small>
+                        </li>
+                        <li>
+                            <small>
+                                A gene <strong>id</strong> must correspond to either
+                                <ul>
+                                    <li> if <strong>organism</strong> is <code>human</code>, a HGNC symbol with numbers and uppercase letters --e.g., <code>BRCA1</code>
+                                    <li> if <strong>organism</strong> is <code>mouse</code>, a MGI symbol with numbers and mixed case letters--e.g., <code>A1bg</code></li>
+                                </ul>
+                             </small>
                         </li>
                         <li>
                             <small>

@@ -16,3 +16,18 @@ function updateMarkerExploreUrl() {
     });
 
     updateMarkerExploreUrl();
+
+function updateregMarkerExploreUrl() {
+        const organism = document.querySelector('input[name="regmarker-organism"]:checked')?.value;
+        const exploreButton = document.getElementById('regmarker-explore');
+
+        if (!exploreButton) return;
+
+        exploreButton.href = organism === 'human' ? '/explore/hgnc' : '/explore/mgi';
+    }
+
+    document.querySelectorAll('input[name="regmarker-organism"]').forEach(radio => {
+        radio.addEventListener('change', updateregMarkerExploreUrl);
+    });
+
+    updateregMarkerExploreUrl();
