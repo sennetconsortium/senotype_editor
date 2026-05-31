@@ -171,6 +171,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         return;
                     }
                     items.forEach(item => {
+                        console.log(item);
                         var id, description, validateId;
                         if (type === "protein") {
 
@@ -179,7 +180,8 @@ document.addEventListener('DOMContentLoaded', function () {
                             if (!validateId) return;
 
                             // UniProtKB recommended name
-                            var recNameArr = item.recommended_name || [];
+                            //var recNameArr = item.recommended_name || [];
+                            var recNameArr = item.entry_name || item.recommended_name || [];
                             var recName = Array.isArray(recNameArr) ? recNameArr[0] : recNameArr;
                             id = "UNIPROTKB:" + validateId;
                             description = id + " (" + (recName ? recName.trim() : validateId) + ")";

@@ -192,7 +192,8 @@ document.addEventListener("DOMContentLoaded", function () {
                             let found = Array.isArray(data)
                                 ? data.find(obj => obj.uniprotkb_id == m.id)
                                 : (data.uniprotkb_id == m.id ? data : null);
-                            let recNameArr = found && found.recommended_name;
+                            //let recNameArr = found && found.recommended_name;
+                            let recNameArr = found && found.entry_name;
                             let recName = recNameArr && Array.isArray(recNameArr) ? recNameArr[0] : recNameArr;
 
                             if (!found) throw new Error();
