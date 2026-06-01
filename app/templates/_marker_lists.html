@@ -1,14 +1,14 @@
 <!--
-Categorical lists for specified and regulating markers in edit.html represent encoded values.
+Categorical lists for specified and regulated markers in edit.html represent encoded values.
 The WTForm for edit.html provides list controls with information including
 - code
 - symbol (gene) or description (protein)
-- if a regulating marker, the type of regulation (e.g., upregulation)
+- if a regulated marker, the type of regulation (e.g., upregulation)
 
 Build lists with:
 - A hidden input with value SAB:code
-- For specified and regulating markers, an organism filtering list.
-- For regulating markers, a hidden input for type of regulation
+- For specified and regulated markers, an organism filtering list.
+- For regulated markers, a hidden input for type of regulation
 The Update button will POST the hidden list values.
 - A span with a display term in format
   - SAB:code (description), where description is HGNC symbol for gene or recommended name for protein

@@ -439,7 +439,7 @@ def fetchfromdb(id: str, senlib: SenLib, form: EditForm):
     else:
         form.marker.process([''])
 
-    # Regulating Markers (multiple possible values).
+    # Regulated Markers (multiple possible values).
     # The format of the process call is different because the regmarker
     # control is a FieldList(FormField) instead of just a Fieldlist.
     regmarkerlist = getregmarkerobjects(assertions=assertions)

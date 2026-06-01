@@ -1,9 +1,9 @@
-// CSV upload and validation for regulating marker bulk add
+// CSV upload and validation for regulated marker bulk add
 
 document.addEventListener("DOMContentLoaded", function () {
 
     document.getElementById('regmarker-type-gene').checked = true;
-    // Elements from the modal div/form for regulating markers in edit.html
+    // Elements from the modal div/form for regulated markers in edit.html
     const form = document.getElementById("regmarker-csv-form");
     const fileInput = document.getElementById("regmarker-csv-file");
     const resultsDiv = document.getElementById("regcsv-validation-results");

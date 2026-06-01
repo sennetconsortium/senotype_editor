@@ -4,7 +4,7 @@ HGNC
 UNIPROTKB
 
 Used by the modal windows that add individual specified markers or
-regulating markers.
+regulated markers.
 """
 
 from flask import Blueprint, redirect, abort

@@ -322,7 +322,7 @@ Associations are not just the result of a single experiment, but also not necess
 These gene or protein markers are a list an investigator might recommend be used to describe the markers that would help 
 identify or characterize a senescent cell of this senotype--e.g., to use as a gene panel for a probed assay.
 
-#### Regulating markers
+#### Regulated markers
 These are typically a longer list of gene or protein markers that have been tested for the senotype. 
 The investigator observes these markers to be up-regulated; down-regulated; or tested but inconclusive whether up- or down- regulated 
 (e.g., using log2FC and p-value).
@@ -330,7 +330,7 @@ The investigator observes these markers to be up-regulated; down-regulated; or t
 #### Collapsible section
 Because it is anticipated that a senotype will be associated with many markers, the entire Markers section is collapsible.
 
-Marker assertion management for both specified and regulating markers is similar:
+Marker assertion management for both specified and regulated markers is similar:
 1. The ![img_9.png](img_9.png) button opens a search window that allows the addition of a single marker.
 2. The ![img_19.png](img_19.png) button opens a window for bulk import of a group of markers.
 
@@ -356,7 +356,7 @@ Note case for gene identifiers:
 
 ![img_38.png](img_38.png)
 
-The Search window for regulating markers includes a field for type of regulation:
+The Search window for regulated markers includes a field for type of regulation:
 + upregulation
 + downregulation
 + inconclusive regulation
@@ -374,7 +374,7 @@ The bulk addition windows will only add information from a CSV if:
 * all markers in the CSV can be found in an external source
 
 > [!NOTE]
-> A single CSV file can be used for bulk additions of either specified or regulating markers. Bulk addition of regulating markers requires an **action** column, as specified below.
+> A single CSV file can be used for bulk additions of either specified or regulated markers. Bulk addition of regulated markers requires an **action** column, as specified below.
 
 
 ### Specified markers
@@ -393,8 +393,8 @@ gene,human,BRCA1
 protein,human,Q13201
 gene,mouse,A1bg
 ```
-### Regulating markers
-The CSV used for bulk upload of regulating markers must have the following structure:
+### Regulated markers
+The CSV used for bulk upload of regulated markers must have the following structure:
 
 | column   | values                                                                                                                         |
 |----------|--------------------------------------------------------------------------------------------------------------------------------|

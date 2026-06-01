@@ -1,4 +1,4 @@
-// Features to support management of individual regulating markers for Senotype submission.
+// Features to support management of individual regulated markers for Senotype submission.
 // Works with the provided modal HTML and list <ul id="regmarker-list">
 
 // Reindex all marker inputs after removal so names are always sequential
@@ -18,7 +18,7 @@ function removeRegMarker(btn) {
     reindexRegMarkerInputs();
 }
 
-// Add regulating marker from API result.
+// Add regulated marker from API result.
 function addRegMarker(id, description, action) {
 
     var ul = document.getElementById('regmarker-list');
@@ -119,7 +119,7 @@ function addRegMarker(id, description, action) {
     btn.style = 'width: 2.5em;'
     btn.textContent = '-';
     btn.onclick = function () { removeRegMarker(btn); };
-    btn.title = 'Remove ' + description + ' from regulating marker list';
+    btn.title = 'Remove ' + description + ' from regulated marker list';
     li.appendChild(btn);
 
     ul.appendChild(li);

@@ -351,11 +351,11 @@ Depending on the type of origin, the SciCrunch detail page may redirect to anoth
 
 A senotype definition has two types of markers:
 - _specified_ markers
-- _regulating_ markers--markers characterized in terms of how they regulate the senotype
+- _regulated_ markers--markers characterized in terms of how they regulate the senotype
 
 Because it is anticipated that a senotype will be associated with many markers, the entire Markers section is collapsible.
 
-Marker assertion management for both specified and regulating markers is similar:
+Marker assertion management for both specified and regulated markers is similar:
 1. The ![img_9.png](img_9.png) button opens a search window that allows the addition of a single marker.
 2. The ![img_19.png](img_19.png) button opens a window for bulk import of a group of markers.
 
@@ -372,7 +372,7 @@ The user can enter different types of identifiers for markers, including:
 
 ![img_20.png](img_20.png)
 
-The Search window for regulating markers includes a field for type of regulating:
+The Search window for regulated markers includes a field for type of regulating:
 + upregulation
 + downregulation
 + inconclusive regulation
@@ -400,8 +400,8 @@ type,id
 gene,BRCA1
 protein,Q13201
 ```
-### Regulating markers
-The CSV used for bulk upload of regulating arkers must have the following structure:
+### Regulated markers
+The CSV used for bulk upload of regulated markers must have the following structure:
 
 | column | values                                                                                                                         |
 |--------|--------------------------------------------------------------------------------------------------------------------------------|
