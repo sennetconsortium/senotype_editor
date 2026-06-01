@@ -81,14 +81,17 @@ document.addEventListener("DOMContentLoaded", function () {
                 // Parse CSV
                 const rows = text.split(/\r?\n/).map(row => row.split(","));
                 if (rows.length < 2) {
-                    resultsDiv.textContent = "CSV must have at least one data row.";
+
+                   resultsDiv.innerHTML =
+                   `<div class="text-danger">CSV must have at least one data row.</div>`;
                     return;
                 }
 
                 // Validate header.
                 const header = rows[0].map(h => h.trim().toLowerCase());
                 if (!(header.includes("type") && header.includes("id") && header.includes("organism"))) {
-                    resultsDiv.textContent = "CSV must have columns named 'type', 'organism', and 'id' (case-insensitive).";
+                   resultsDiv.innerHTML =
+                   `<div class="text-danger">CSV must have columns named <strong>type</strong>, <strong>organism</strong>, and <strong>id</strong>..</div>`;
                     return;
                 }
 

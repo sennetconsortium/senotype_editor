@@ -92,14 +92,18 @@ document.addEventListener("DOMContentLoaded", function () {
                 // Parse CSV
                 const rows = text.split(/\r?\n/).map(row => row.split(","));
                 if (rows.length < 2) {
-                    resultsDiv.textContent = "CSV must have at least one data row.";
-                    return;
+
+                   resultsDiv.innerHTML =
+                        `<div class="text-danger">CSV must have at least one data row.</div>`;
+                  return;
                 }
 
                 // Validate header
                 const header = rows[0].map(h => h.trim().toLowerCase());
-                if (!(header.includes("type") && header.includes("id") && header.includes("action"))) {
-                    resultsDiv.textContent = "CSV must have columns named 'type', 'id', and 'action' (case-insensitive).";
+                if (!(header.includes("type") && header.includes("organism") && header.includes("id") && header.includes("action"))) {
+
+                    resultsDiv.innerHTML =
+                        `<div class="text-danger">CSV must have columns named <strong>type</strong>, <strong>organism</strong>, <strong>id</strong>, and <strong>action</strong>.</div>`;
                     return;
                 }
 
