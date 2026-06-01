@@ -373,6 +373,10 @@ The bulk addition windows will only add information from a CSV if:
 * the CSV has the expected format
 * all markers in the CSV can be found in an external source
 
+> [!NOTE]
+> A single CSV file can be used for bulk additions of either specified or regulating markers. Bulk addition of regulating markers requires an **action** column, as specified below.
+
+
 ### Specified markers
 The CSV used for bulk upload of specified markers must have the following structure:
 
