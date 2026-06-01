@@ -283,7 +283,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 : "UNIPROTKB:" + m.id;
             const description = m.type === "gene"
                 ? m.approved_symbol || m.symbol || m.id
-                : m.recommended_name || m.id;
+                : m.entry_name || m.recommended_name || m.id;
 
             // Prevent duplicates in the marker list.
             if (Array.from(ul.querySelectorAll('input')).some(input => input.value === standardizedId)) return;
