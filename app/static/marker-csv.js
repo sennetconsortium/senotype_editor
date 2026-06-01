@@ -86,7 +86,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 }
 
                 // Validate header.
-                // The organism column is optional.
                 const header = rows[0].map(h => h.trim().toLowerCase());
                 if (!(header.includes("type") && header.includes("id") && header.includes("organism"))) {
                     resultsDiv.textContent = "CSV must have columns named 'type', 'organism', and 'id' (case-insensitive).";
@@ -187,18 +186,17 @@ document.addEventListener("DOMContentLoaded", function () {
 
                             // If response is an array, then find the element in the array
                             // that corresponds to the marker from the CSV, searching by
-                            // UniprotKB ID and recommended name; otherwise, check the ID and name of the single object.
+                            // UniprotKB ID and entry name; otherwise, check the ID and name of the single object.
                             // The search is case-insensitive.
                             let found = Array.isArray(data)
                                 ? data.find(obj => obj.uniprotkb_id == m.id)
                                 : (data.uniprotkb_id == m.id ? data : null);
-                            //let recNameArr = found && found.recommended_name;
                             let recNameArr = found && found.entry_name;
                             let recName = recNameArr && Array.isArray(recNameArr) ? recNameArr[0] : recNameArr;
 
                             if (!found) throw new Error();
 
-                            // If the protein in the CSV was in the response, get the UniPeotKB ID and recommended name.
+                            // If the protein in the CSV was in the response, get the UniProtKB ID and recommended name.
                             validEntries.push({ type: "protein", id: m.id, recommended_name: recName });
                         }
 
