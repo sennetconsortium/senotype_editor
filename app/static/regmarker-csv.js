@@ -1,9 +1,9 @@
-// CSV upload and validation for regulating marker bulk add
+// CSV upload and validation for regulated marker bulk add
 
 document.addEventListener("DOMContentLoaded", function () {
 
     document.getElementById('regmarker-type-gene').checked = true;
-    // Elements from the modal div/form for regulating markers in edit.html
+    // Elements from the modal div/form for regulated markers in edit.html
     const form = document.getElementById("regmarker-csv-form");
     const fileInput = document.getElementById("regmarker-csv-file");
     const resultsDiv = document.getElementById("regcsv-validation-results");
@@ -92,20 +92,25 @@ document.addEventListener("DOMContentLoaded", function () {
                 // Parse CSV
                 const rows = text.split(/\r?\n/).map(row => row.split(","));
                 if (rows.length < 2) {
-                    resultsDiv.textContent = "CSV must have at least one data row.";
-                    return;
+
+                   resultsDiv.innerHTML =
+                        `<div class="text-danger">CSV must have at least one data row.</div>`;
+                  return;
                 }
 
                 // Validate header
                 const header = rows[0].map(h => h.trim().toLowerCase());
-                if (!(header.includes("type") && header.includes("id") && header.includes("action"))) {
-                    resultsDiv.textContent = "CSV must have columns named 'type', 'id', and 'action' (case-insensitive).";
+                if (!(header.includes("type") && header.includes("organism") && header.includes("id") && header.includes("action"))) {
+
+                    resultsDiv.innerHTML =
+                        `<div class="text-danger">CSV must have columns named <strong>type</strong>, <strong>organism</strong>, <strong>id</strong>, and <strong>action</strong>.</div>`;
                     return;
                 }
 
                 const typeIdx = header.indexOf("type");
                 const idIdx = header.indexOf("id");
                 const actionIdx = header.indexOf("action");
+                const org = header.indexOf("organism");
                 let errors = [];
                 let markers = [];
 
@@ -114,6 +119,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
                     const row = rows[i].map(cell => cell.trim());
                     const type = row[typeIdx].toLowerCase();
+                    const organism = row[org].toLowerCase();
 
                     // id here is either a HGNC symbol (e.g., BRCA1) or a UniprotKB symbol.
                     const id = row[idIdx];
@@ -143,7 +149,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     }
 
                     // Add the marker from the CSV to the list of markers to validate.
-                    markers.push({ type, id, action });
+                    markers.push({ type, id, action, organism });
                 }
 
                  // If basic validation errors, stop.
@@ -171,7 +177,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
                     const m = markers[i];
                     // Set up the appropriate endpoint.
-                    let apiUrl = `/ontology/${m.type === "gene" ? "genes" : "proteins"}/${encodeURIComponent(m.id)}`;
+                    let apiUrl =`/ontology/${m.type === "gene" ? "genes" : "proteins"}/${encodeURIComponent(m.id)}` +
+                    (m.type === "gene" ? `?organism=${encodeURIComponent(m.organism)}` : "");
+
+                    console.log(apiUrl);
 
                     try {
                         // Disable the ESLint no-await-in-loop checks and warnings--i.e.,
@@ -197,23 +206,30 @@ document.addEventListener("DOMContentLoaded", function () {
                             if (!found) throw new Error();
 
                             // HGNC code; approved symbol; action
-                            validEntries.push({ type: "gene", code: found.hgnc_id, symbol: found.approved_symbol, action: m.action });
+                            //validEntries.push({ type: "gene", code: found.hgnc_id, symbol: found.approved_symbol, action: m.action });
+
+                            // If a gene in the CSV was in the response, get the organism, HGNC/MGI ID, approved symbol, and approved name.
+                            validEntries.push({ type: "gene", organism: m.organism, id: (m.organism === "human" ? found.hgnc_id: found.mgi_id), symbol: found.approved_symbol, action: m.action });
+
 
                         } else {
 
                             // If response is an array, then find the element in the array
                             // that corresponds to the marker from the CSV, searching by
-                            // UniprotKB ID and recommended name; otherwise, check the ID and name of the single object.
+                            // UniprotKB ID and entry name; otherwise, check the ID and name of the single object.
                             // The search is case-insensitive.
                             let found = Array.isArray(data)
                                 ? data.find(obj => obj.uniprotkb_id == m.id)
                                 : (data.uniprotkb_id == m.id ? data : null);
-                            let recNameArr = found && found.recommended_name;
+                            let recNameArr = found && found.entry_name;
                             let recName = recNameArr && Array.isArray(recNameArr) ? recNameArr[0] : recNameArr;
 
                             if (!found) throw new Error();
                             // UniprotKB code; recommended name; action
-                            validEntries.push({ type: "protein", code: m.id, recommended_name: recName, action: m.action });
+                            //validEntries.push({ type: "protein", code: m.id, recommended_name: recName, action: m.action });
+                            // If the protein in the CSV was in the response, get the UniPeotKB ID and recommended name.
+                            validEntries.push({ type: "protein", id: m.id, recommended_name: recName, action: m.action});
+
                         }
 
                     } catch (err) {
@@ -295,7 +311,8 @@ document.addEventListener("DOMContentLoaded", function () {
         });
 
         parsedMarkers.forEach(m => {
-            let marker, description, action;
+            //let marker, description, action;
+
             // Translate the action into an icon for display.
             let actionSymbol;
             if (m.action === "up_regulates") {
@@ -306,16 +323,13 @@ document.addEventListener("DOMContentLoaded", function () {
                 actionSymbol = "?";
             }
 
-            if (m.type === "gene") {
-                // visible: HGNC:code (approved symbol) action symbol
-                // hidden: HGNC:code action
-                marker = "HGNC:" + m.code;
-                description = m.symbol;
-            } else {
-                // visible: UNIPROTKB:code (recommended name) action symbol
-                marker = "UNIPROTKB:" + m.code;
-                description = m.recommended_name;
-            }
+            const standardizedId =
+                m.type === "gene" ?
+                (m.organism === "human" ? "HGNC:" : "MGI:") + m.id
+                : "UNIPROTKB:" + m.id;
+            const description = m.type === "gene"
+                ? m.approved_symbol || m.symbol || m.id
+                : m.entry_name || m.recommended_name || m.id;
             action = m.action;
 
             // Prevent duplicates of combinations of marker and action.
@@ -323,7 +337,7 @@ document.addEventListener("DOMContentLoaded", function () {
             let exists = Array.from(ul.querySelectorAll('li')).some(li => {
                  let codeInput = li.querySelector('input[name^="regmarker-"][name$="-marker"]');
                 let actionInput = li.querySelector('input[name^="regmarker-"][name$="-action"]');
-                return codeInput && actionInput && codeInput.value === marker && actionInput.value === action;
+                return codeInput && actionInput && codeInput.value === standardizedId && actionInput.value === action;
               });
             if (exists) {
                 return;
@@ -339,7 +353,7 @@ document.addEventListener("DOMContentLoaded", function () {
             let input = document.createElement('input');
             input.type = 'hidden';
             input.name = `regmarker-${index}-marker`;
-            input.value = marker;
+            input.value = standardizedId;
             input.className = 'form-control w-100';
             li.appendChild(input);
 
@@ -355,7 +369,7 @@ document.addEventListener("DOMContentLoaded", function () {
             let span = document.createElement('span');
             span.className = 'list-field-display';
             span.style = 'padding-left:2px; padding-right:2px;'
-            span.textContent = marker + " (" + description + ") ";
+            span.textContent = standardizedId + " (" + description + ") ";
             // Give the span a name that links it to its hidden field code.
             // Use setAttribute (span has no standard .name property)
             span.setAttribute('name', `regmarker-${ul.children.length}_field_display`);
@@ -375,12 +389,12 @@ document.addEventListener("DOMContentLoaded", function () {
             // Placeholder span for link button
             const placeholder = document.createElement('span');
             placeholder.className = `$marker-link-placeholder ms-2`;
-            placeholder.id = `$marker-link-${marker}`;
+            placeholder.id = `$marker-link-${standardizedId}`;
             // Link button
             const markerlink = document.createElement('a');
             markerlink.className = 'btn btn-sm btn-outline-primary ms-2';
             markerlink.style.width = '2.5em';
-            markerlink.href = `/bio/marker/detail/${encodeURIComponent(marker)}`;
+            markerlink.href = `/bio/marker/detail/${encodeURIComponent(standardizedId)}`;
             markerlink.target = '_blank';
             markerlink.title = description;
             markerlink.textContent = '🔗';

@@ -106,7 +106,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function cleanupMarkerModal() {
-        // Clears prior seearch
+        // Clears prior search
 
         const modalEl = document.getElementById('markerSearchModal');
         if (!modalEl) return;
@@ -120,7 +120,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const input = modalEl.querySelector('input#marker-search-input');
         if (input) input.value = '';
 
-        // Clear results div (including "Searching..." / errors)
+        // Clear results div (incluxding "Searching..." / errors)
         const resultsDiv = modalEl.querySelector('#marker-search-results');
         if (resultsDiv) resultsDiv.innerHTML = '';
 
@@ -137,6 +137,10 @@ document.addEventListener('DOMContentLoaded', function () {
         var markerType = document.querySelector('input[name="marker-type"]:checked');
         var type = markerType ? markerType.value : "gene"; // Default to "gene" if not found
 
+        // Check which radio button is selected for marker organism
+        var markerOrganism = document.querySelector('input[name="marker-organism"]:checked')
+        var organism = markerOrganism ? markerOrganism.value : "human"; // Default to "human" if not found
+
         // Only search if >0 chars and changed
         if (query.length > 0 && query !== lastMarkerSearch) {
             lastMarkerSearch = query;
@@ -147,7 +151,11 @@ document.addEventListener('DOMContentLoaded', function () {
             if (type === "protein") {
                 apiUrl = '/ontology/proteins/' + encodeURIComponent(query.toUpperCase());
             } else {
-                apiUrl = '/ontology/genes/' + encodeURIComponent(query.toUpperCase());
+                if (organism === "human") {
+                    apiUrl = '/ontology/genes/' + encodeURIComponent(query.toUpperCase()) + '?organism=' + organism;
+                } else {
+                    apiUrl = '/ontology/genes/' + encodeURIComponent(query) + '?organism=' + organism;
+                }
             }
 
             fetch(apiUrl)
@@ -171,20 +179,27 @@ document.addEventListener('DOMContentLoaded', function () {
                             if (!validateId) return;
 
                             // UniProtKB recommended name
-                            var recNameArr = item.recommended_name || [];
+                            //var recNameArr = item.recommended_name || [];
+                            var recNameArr = item.entry_name || item.recommended_name || [];
                             var recName = Array.isArray(recNameArr) ? recNameArr[0] : recNameArr;
                             id = "UNIPROTKB:" + validateId;
                             description = id + " (" + (recName ? recName.trim() : validateId) + ")";
 
                         } else {
 
-                            // Standardized marker id for genes
-                            validateId = item.hgnc_id;
+                            // Standardized marker id for genes--HGNC for human; MGI for mouse
+                            if (organism === "human") {
+                                validateId = item.hgnc_id;
+                                id = "HGNC:" + validateId;
+                            } else {
+                                validateId = item.mgi_id;
+                                id = "MGI:" + validateId;
+                            }
                             if (!validateId) return;
                             var approved_symbol = item.approved_symbol || validateId;
-                            id = "HGNC:" + validateId;
                             description = id + " (" + approved_symbol + ")";
                         }
+
                         var btn = document.createElement('button');
                         btn.className = 'btn btn-link text-start w-100 mb-1';
                         btn.textContent = description;
@@ -199,8 +214,9 @@ document.addEventListener('DOMContentLoaded', function () {
                             if (type === "protein") {
                                 validateUrl = '/ontology/proteins/' + encodeURIComponent(validateId);
                             } else {
-                                validateUrl = '/ontology/genes/' + encodeURIComponent(validateId);
+                                validateUrl = '/ontology/genes/' + encodeURIComponent(validateId) + '?organism=' + organism;
                             }
+
                             fetch(validateUrl)
                                 .then(validateResponse => {
                                     if (!validateResponse.ok) throw new Error("Not found");

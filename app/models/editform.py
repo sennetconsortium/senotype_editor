@@ -155,12 +155,12 @@ def validate_integer(field):
 class RegMarkerEntryForm(Form):
 
     """
-    Custom form class for regulating markers, which store data in two hidden inputs:
+    Custom form class for regulated markers, which store data in two hidden inputs:
     - the marker code
     - the regulating action
     """
 
-    marker = StringField('Regulating Marker')
+    marker = StringField('Regulated Marker')
     action = StringField('Regulating Action')
 
 
@@ -233,8 +233,8 @@ class EditForm(Form):
     # Specified markers
     marker = FieldList(StringField('Specified Marker'), min_entries=0, label='Specified Marker')
 
-    # Regulating markers
-    regmarker = FieldList(FormField(RegMarkerEntryForm), min_entries=0, label='Regulating Marker')
+    # Regulated markers
+    regmarker = FieldList(FormField(RegMarkerEntryForm), min_entries=0, label='Regulated Marker')
 
     # Hidden field used to validate whether at least one FTU path was selected.
     # This field works with the update-button.js and the update route.

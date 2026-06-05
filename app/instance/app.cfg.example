@@ -65,4 +65,6 @@ DOID_HOME_URL='https://disease-ontology.org'
 HGNC_BASE_URL='https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/'
 HGNC_HOME_URL='https://www.genenames.org/'
 UNIPROTKB_BASE_URL='https://www.uniprot.org/uniprotkb/'
+MGI_BASE_URL='https://www.informatics.jax.org/marker/summary?nomen='
+MGI_HOME_URL='https://www.informatics.jax.org/marker/'
 

@@ -81,19 +81,23 @@ document.addEventListener("DOMContentLoaded", function () {
                 // Parse CSV
                 const rows = text.split(/\r?\n/).map(row => row.split(","));
                 if (rows.length < 2) {
-                    resultsDiv.textContent = "CSV must have at least one data row.";
+
+                   resultsDiv.innerHTML =
+                   `<div class="text-danger">CSV must have at least one data row.</div>`;
                     return;
                 }
 
-                // Validate header
+                // Validate header.
                 const header = rows[0].map(h => h.trim().toLowerCase());
-                if (!(header.includes("type") && header.includes("id"))) {
-                    resultsDiv.textContent = "CSV must have columns named 'type' and 'id' (case-insensitive).";
+                if (!(header.includes("type") && header.includes("id") && header.includes("organism"))) {
+                   resultsDiv.innerHTML =
+                   `<div class="text-danger">CSV must have columns named <strong>type</strong>, <strong>organism</strong>, and <strong>id</strong>..</div>`;
                     return;
                 }
 
                 const typeIdx = header.indexOf("type");
                 const idIdx = header.indexOf("id");
+                const org = header.indexOf("organism");
                 let errors = [];
                 let markers = [];
 
@@ -101,8 +105,14 @@ document.addEventListener("DOMContentLoaded", function () {
                 for (let i = 1; i < rows.length; i++) {
                     const row = rows[i].map(cell => cell.trim());
                     const type = row[typeIdx].toLowerCase();
+                    const organism = row[org].toLowerCase();
 
                     // id here is either a HGNC symbol (e.g., BRCA1) or a UniprotKB symbol.
+                    // id:
+                    // - if type is gene:
+                    //   - if organism is human (default), a HGNC symbol
+                    //   - if organism is mouse, a MGI symbol
+                    // - if type is protein, a UniProtKB symbol
                     const id = row[idIdx];
                     if (!(type === "gene" || type === "protein")) {
                         errors.push(`Row ${i + 1}: type must be 'gene' or 'protein'`);
@@ -115,7 +125,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     }
 
                     // Add the marker from the CSV to the list of markers to validate.
-                    markers.push({ type, id });
+                    markers.push({ type, id, organism });
                 }
 
                 // If basic validation errors, stop.
@@ -143,7 +153,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
                     const m = markers[i];
                     // Set up the appropriate endpoint.
-                    let apiUrl = `/ontology/${m.type === "gene" ? "genes" : "proteins"}/${encodeURIComponent(m.id)}`;
+                    let apiUrl =`/ontology/${m.type === "gene" ? "genes" : "proteins"}/${encodeURIComponent(m.id)}` +
+                    (m.type === "gene" ? `?organism=${encodeURIComponent(m.organism)}` : "");
 
                     try {
                         // Disable the ESLint no-await-in-loop checks and warnings--i.e.,
@@ -157,6 +168,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
                         // Get response as JSON.
                         let data = await resp.json();
+                        console.log(data);
 
                         // Check for valid return value (array/object with proper id)
                         if (m.type === "gene") {
@@ -170,24 +182,24 @@ document.addEventListener("DOMContentLoaded", function () {
                                 : (data.approved_symbol && data.approved_symbol.toLowerCase() === m.id.toLowerCase() ? data : null);
                             if (!found) throw new Error();
 
-                            // If a gene in the CSV was in the response, get the hgnc ID, approved symbol, and approved name.
-                                validEntries.push({ type: "gene", id: found.hgnc_id, symbol: found.approved_symbol, name: found.approved_name });
+                            // If a gene in the CSV was in the response, get the organism, HGNC/MGI ID, approved symbol, and approved name.
+                            validEntries.push({ type: "gene", organism: m.organism, id: (m.organism === "human" ? found.hgnc_id: found.mgi_id), symbol: found.approved_symbol, name: found.approved_name });
 
                         } else {
 
                             // If response is an array, then find the element in the array
                             // that corresponds to the marker from the CSV, searching by
-                            // UniprotKB ID and recommended name; otherwise, check the ID and name of the single object.
+                            // UniprotKB ID and entry name; otherwise, check the ID and name of the single object.
                             // The search is case-insensitive.
                             let found = Array.isArray(data)
                                 ? data.find(obj => obj.uniprotkb_id == m.id)
                                 : (data.uniprotkb_id == m.id ? data : null);
-                            let recNameArr = found && found.recommended_name;
+                            let recNameArr = found && found.entry_name;
                             let recName = recNameArr && Array.isArray(recNameArr) ? recNameArr[0] : recNameArr;
 
                             if (!found) throw new Error();
 
-                            // If the protein in the CSV was in the response, get the UniPeotKB ID and recommended name.
+                            // If the protein in the CSV was in the response, get the UniProtKB ID and recommended name.
                             validEntries.push({ type: "protein", id: m.id, recommended_name: recName });
                         }
 
@@ -266,10 +278,13 @@ document.addEventListener("DOMContentLoaded", function () {
 
         parsedMarkers.forEach(m => {
             // id in format SAB:code
-            const standardizedId = m.type === "gene" ? "HGNC:" + m.id : "UNIPROTKB:" + m.id;
+            const standardizedId =
+                m.type === "gene" ?
+                (m.organism === "human" ? "HGNC:" : "MGI:") + m.id
+                : "UNIPROTKB:" + m.id;
             const description = m.type === "gene"
                 ? m.approved_symbol || m.symbol || m.id
-                : m.recommended_name || m.id;
+                : m.entry_name || m.recommended_name || m.id;
 
             // Prevent duplicates in the marker list.
             if (Array.from(ul.querySelectorAll('input')).some(input => input.value === standardizedId)) return;
