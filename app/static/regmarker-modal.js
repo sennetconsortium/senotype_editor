@@ -1,4 +1,4 @@
-// Features to support management of individual regulating markers for Senotype submission.
+// Features to support management of individual regulated markers for Senotype submission.
 // Works with the provided modal HTML and list <ul id="regmarker-list">
 
 // Reindex all marker inputs after removal so names are always sequential
@@ -18,7 +18,7 @@ function removeRegMarker(btn) {
     reindexRegMarkerInputs();
 }
 
-// Add regulating marker from API result.
+// Add regulated marker from API result.
 function addRegMarker(id, description, action) {
 
     var ul = document.getElementById('regmarker-list');
@@ -119,7 +119,7 @@ function addRegMarker(id, description, action) {
     btn.style = 'width: 2.5em;'
     btn.textContent = '-';
     btn.onclick = function () { removeRegMarker(btn); };
-    btn.title = 'Remove ' + description + ' from regulating marker list';
+    btn.title = 'Remove ' + description + ' from regulated marker list';
     li.appendChild(btn);
 
     ul.appendChild(li);
@@ -174,6 +174,10 @@ document.addEventListener('DOMContentLoaded', function () {
         var markerActionRadio = document.querySelector('input[name="regmarker-action"]:checked');
         var action = markerActionRadio ? markerActionRadio.value : "up_regulates";
 
+        // Check which radio button is selected for marker organism
+        var markerOrganism = document.querySelector('input[name="regmarker-organism"]:checked')
+        var organism = markerOrganism ? markerOrganism.value : "human"; // Default to "human" if not found
+
         // Only search if >0 chars and changed
         if (query.length > 0 && query !== lastMarkerSearch) {
             lastMarkerSearch = query;
@@ -183,7 +187,11 @@ document.addEventListener('DOMContentLoaded', function () {
             if (type === "protein") {
                 apiUrl = '/ontology/proteins/' + encodeURIComponent(query.toUpperCase());
             } else {
-                apiUrl = '/ontology/genes/' + encodeURIComponent(query.toUpperCase());
+                if (organism === "human") {
+                    apiUrl = '/ontology/genes/' + encodeURIComponent(query.toUpperCase()) + '?organism=' + organism;
+                } else {
+                    apiUrl = '/ontology/genes/' + encodeURIComponent(query) + '?organism=' + organism;
+                }
             }
 
             fetch(apiUrl)
@@ -200,28 +208,41 @@ document.addEventListener('DOMContentLoaded', function () {
                         return;
                     }
                     items.forEach(item => {
-                        var id, description;
+                        var id, description, validateId;
                         if (type === "protein") {
-                            // Standardized protein id
-                            id = item.uniprotkb_id || query;
-                            var recNameArr = item.recommended_name || [];
+
+                            // Standardized marker ID for proteins
+                            validateId = item.uniprotkb_id;
+                            if (!validateId) return;
+
+                            // UniProtKB entry name
+                            var recNameArr = item.entry_name || item.recommended_name || [];
                             var recName = Array.isArray(recNameArr) ? recNameArr[0] : recNameArr;
-                            description = "UNIPROTKB:" + id + " (" + recName.trim() + ")" ;
+                            id = "UNIPROTKB:" + validateId;
+                            description = id + " (" + (recName ? recName.trim() : validateId) + ")";
+
                         } else {
-                            // Standardized gene id
-                            id = item.hgnc_id || query;
-                            var approved_symbol = item.approved_symbol;
-                            var approved_name = item.approved_name;
-                            description =  "HGNC:" + id + " (" + approved_symbol + ")" ;
+
+                            // Standardized marker id for genes--HGNC for human; MGI for mouse
+                            if (organism === "human") {
+                                validateId = item.hgnc_id;
+                                id = "HGNC:" + validateId;
+                            } else {
+                                validateId = item.mgi_id;
+                                id = "MGI:" + validateId;
+                            }
+                            if (!validateId) return;
+                            var approved_symbol = item.approved_symbol || validateId;
+                            description = id + " (" + approved_symbol + ")";
+
                         }
                         var btn = document.createElement('button');
                         btn.type = "button";
                         btn.className = 'btn btn-link text-start w-100 mb-1';
                         btn.textContent = description;
                         btn.onclick = function () {
-                            // Use proper prefix for marker ID
-                            var markerId = (type === "gene") ? ("HGNC:" + id) : ("UNIPROTKB:" + id);
-                            addRegMarker(markerId, description, action);
+
+                            addRegMarker(id, description, action);
 
                             cleanupRegMarkerModal();
 

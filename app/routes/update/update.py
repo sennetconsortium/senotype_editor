@@ -152,7 +152,7 @@ def validate_form(form, required_field_list_prefixes:list) ->dict:
             if base_name == 'marker':
                 errname = 'specified marker'
             elif base_name == 'regmarker':
-                errname = 'regulating marker'
+                errname = 'regulated marker'
             else:
                 errname = base_name
             errors[base_name] = [f'At least one {errname} required.']

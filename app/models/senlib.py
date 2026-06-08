@@ -466,7 +466,7 @@ class SenLib:
             predicate_term = predicate.get('term')
 
             if predicate_term in ['up_regulates', 'down_regulates', 'inconclusively_regulates']:
-                # Regulating marker.
+                # Regulated marker.
                 rawobjects = assertion.get('objects')
                 logger.info(f'Getting information from ontology API on markers with {predicate_term} assertions')
                 listassertion = self.getmarkerobjects(rawobjects=rawobjects)
@@ -956,7 +956,7 @@ class SenLib:
         else:
             form.marker.process([''])
 
-        # Regulating Markers (external; multiple possible values).
+        # Regulated Markers (external; multiple possible values).
         # The format of the process call is different because the regmarker
         # control is a FieldList(FormField) instead of just a Fieldlist.
         regmarkerlist = self.getregmarkerobjects(assertions=assertions)
@@ -1109,7 +1109,7 @@ class SenLib:
 
     def build_session_regmarkerlist(self, form_data: dict) -> list:
         """
-        Builds content for the regulating marker list on the Edit Form based on session data.
+        Builds content for the regulated marker list on the Edit Form based on session data.
         :param form_data: dict of form state data.
         """
 
@@ -1247,7 +1247,7 @@ class SenLib:
         else:
             form.marker.process(None, [''])
 
-        # Regulating markers. The field processing is different because regmarker is a
+        # Regulated markers. The field processing is different because regmarker is a
         # FieldList(FormField) instead of a simple FieldList.
         regmarkerlist = self.build_session_regmarkerlist(form_data=form_data)
         if len(regmarkerlist) > 0:
@@ -1363,6 +1363,8 @@ class SenLib:
 
             # Match with display values; fall back to field_values if no display.
             display_values = field_displays.get(key, field_values)
+            print(display_values)
+            print(field_values)
 
             objects = []
 
@@ -1458,7 +1460,7 @@ class SenLib:
     def buildregmarkerassertions(self, form_data: MultiDict, field_displays: dict) -> list:
         """
             Builds the elements of the assertions objects for
-            regulating markers.
+            regulated markers.
             :param form_data: form data
             :param field_displays: dict of display values for fields, with
                key = field name
@@ -1468,7 +1470,7 @@ class SenLib:
             This is an expanded version of buildsimpleassertions.
         """
 
-        # Regulating markers must be distributed among the three types
+        # Regulated markers must be distributed among the three types
         # of assertions--up_regulates, down_regulates, and inconclusively_regulates.
         # Aside from this sorting, the function is similar to buildsimpleassertions
 
@@ -1613,7 +1615,7 @@ class SenLib:
         # Simple assertions, including specific markers
         assertions = self.buildsimpleassertions(form_data=form_data, field_displays=field_displays)
 
-        # Regulating marker assertions
+        # Regulated marker assertions
         assertions = assertions + self.buildregmarkerassertions(form_data=form_data, field_displays=field_displays)
 
         # Optional context assertions

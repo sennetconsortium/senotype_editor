@@ -4,7 +4,7 @@ HGNC
 UNIPROTKB
 
 Used by the modal windows that add individual specified markers or
-regulating markers.
+regulated markers.
 """
 
 from flask import Blueprint, redirect, abort
@@ -22,6 +22,8 @@ def getmarkerdetailidroute(id):
         base_url = cfg.getfield(key='HGNC_HOME_URL')
     elif 'UNIPROTKB' in id.upper():
         base_url = cfg.getfield(key='UNIPROTKB_BASE_URL')
+    elif 'MGI' in id.upper():
+        base_url = cfg.getfield(key='MGI_BASE_URL')
     else:
         abort(404, f"unknown sab {id}")
 

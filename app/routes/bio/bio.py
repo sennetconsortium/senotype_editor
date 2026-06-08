@@ -5,12 +5,15 @@ genes
 proteins
 """
 
-from flask import Blueprint, redirect, abort
+from flask import Blueprint, redirect, abort, request
 
 from models.appconfig import AppConfig
+from models.ontology_class import OntologyAPI
+from utils.http_param import HttpParam
 
 bio_blueprint = Blueprint('bio', __name__, url_prefix='/bio')
-
+ontapi = OntologyAPI()
+http_param = HttpParam()
 
 @bio_blueprint.route('/obo/detail', methods=['GET'])
 def getobodetailroute():
@@ -27,6 +30,8 @@ def getobodetailidroute(id):
 def getmarkerdetailidroute(id):
     if 'HGNC' in id.upper():
         return gethgncdetailidroute(id)
+    elif 'MGI' in id.upper():
+        return getmgidetailidroute(id)
     else:
         return getuniprotkbdetailidroute(id)
 
@@ -36,10 +41,15 @@ def gethgncdetailroute():
     return getbiodetail(sab='HGNC')
 
 
-# Return the SciCrunch detail page for an origin.
+# Return the HGNC detail page for a human gene.
 @bio_blueprint.route('/hgnc/detail/<id>', methods=['GET'])
 def gethgncdetailidroute(id):
     return getbiodetail(sab='HGNC', id=id)
+
+# Return the MGI detail page for a mouse gene.
+@bio_blueprint.route('/mgi/detail/<id>', methods=['GET'])
+def getmgidetailidroute(id):
+    return getbiodetail(sab='MGI', id=id)
 
 
 @bio_blueprint.route('/uniprotkb/detail', methods=['GET'])
@@ -52,6 +62,17 @@ def getuniprotkbdetailroute():
 def getuniprotkbdetailidroute(id):
     return getbiodetail(sab='UNIPROTKB', id=id)
 
+
+def _getmgisymbol(id: str):
+    """
+    Obtains the MGI approved symbol from a MGI ID, using the genes endpoint.
+    """
+    endpoint = f'genes/{id}?organism=mouse'
+    ret = ontapi.get_ontology_api_response(endpoint=endpoint, target='genes')
+    symbol = ''
+    if len(ret) > 0:
+        symbol = ret[0]['approved_symbol']
+    return symbol
 
 def getbiodetail(sab: str, id: str = ''):
 
@@ -77,10 +98,16 @@ def getbiodetail(sab: str, id: str = ''):
         # Strip the SAB from the code.
         base_url = cfg.getfield(key='UNIPROTKB_BASE_URL')
         idsubmit = id.split(':')[1]
+    elif sab.upper() == 'MGI':
+        base_url = cfg.getfield(key='MGI_BASE_URL')
+        mgi_id = id.split(':')[1]
+        # Get MGI symbol from MGI ID.
+        idsubmit = _getmgisymbol(mgi_id)
     else:
         abort(404, f"unknown sab {sab}")
 
     url = f"{base_url}{idsubmit}"
+    print(url)
     return redirect(url)
 
 
