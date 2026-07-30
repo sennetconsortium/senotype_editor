@@ -17,6 +17,8 @@ import logging
 
 from lib.auth import load_app_client
 
+from routes.globus_auth.globus_auth import check_senotype_edit_member
+
 # Configure consistent logging. This is done at the beginning of each module instead of with a superclass of
 # logger to avoid the need to overload function calls to logger.
 logging.basicConfig(format='[%(asctime)s] %(levelname)s in %(module)s: %(message)s',
@@ -48,6 +50,7 @@ def edit():
     # Read the app.cfg file outside the Flask application context.
 
     cfg = AppConfig()
+    check_senotype_edit_member()
 
     # Get IDs for existing Senotype submissions.
 
